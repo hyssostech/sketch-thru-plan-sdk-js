@@ -1,0 +1,30 @@
+{
+    "openrpc": "2.0.0",
+    "info": {
+      "title": "Sketch-thru-Plan API",
+      "version": "0.0.0"
+    },
+    "methods": [
+      {
+        "name": "SendPenDown",
+        "description": "User started a sketched gesture",
+        "params": [
+          {
+            "name": "location",
+            "description": "Location of the initial sketched point",
+            "schema": {
+                "$ref": "#/components/schemas/location"
+            }
+          },
+          {
+            "name": "timestamp",
+            "description": "UTC time when the initial point was placed",
+            "schema": {
+                "type": "date-time"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  
