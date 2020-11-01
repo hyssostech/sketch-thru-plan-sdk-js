@@ -6,7 +6,7 @@ STP operates by combining multiple types of user input (or *modalities*) such as
 
 Taking advantage of this natural style, STP uses sketch start events as anchors points around which speech produced within a window of a few seconds is considered for combined interpretation. A few strategies for handling speech interpretation are therefore possible:
 
-* Activate recognition at the start of each stroke - this is a simple, but effective strategy. Users need to be mindful in this case that whatever they speak before the stroke is started will not be captured by the system. This is the strategy used in the [quickstart](../../quickstart/js)
+* Activate recognition at the start of each stroke - this is a simple, but effective strategy. Users need to be mindful in this case that whatever they speak before the stroke is started will not be captured by the system. This is the strategy used in the [quickstarts](../../quickstart/)
 
 * Capture 2 seconds of audio before the start of each stroke - ideally, audio buffers would be accessed to extract a limited amount of audio just before the start of a stroke, so that no part of the speech is lost, even if users start to talk a bit before sketching. This depends on specific audio techniques that are out of scope of the present discussion
 

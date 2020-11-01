@@ -2,21 +2,20 @@
   "compilerOptions": {
     "declaration": true,
     "lib": ["es6", "dom", "dom.iterable"],
-    "module": "es6",
+    "module": "commonjs",
     "moduleResolution": "node",
     "removeComments": true,
     "sourceMap": true,
     "strict": true,
     "target": "es6",
-    "outDir": "/dist",
+    "outDir": "./dist",
     "skipLibCheck": true  // To avoid TS2611 on azure speech compilation
   },
-  "files": ["/src/**/*.ts"],
   "include": [
-    "/src/**/*"
+    "./src/**/*.ts",
+    "./dist",
   ],
   "exclude": [
-    "/dist",
     "node_modules"
   ]
 }

@@ -1,6 +1,6 @@
 # STP Plugin: Websockets connector
 
-The Sketch-thru-Plan (STP) recognizer requires a connector configuration during initialization. This connection is used by the recognizer to send and receive messages/events to/from STP (see the [javascript quicktstart](../../quickstart/js) ).
+The Sketch-thru-Plan (STP) recognizer requires a connector configuration during initialization. This connection is used by the recognizer to send and receive messages/events to/from STP (see the [quicktstarts](../../quickstart) ).
 
 The STP recognizer expects connection services to comply with the `IStpConnector` interface:
 
@@ -69,4 +69,4 @@ export interface IStpConnector {
 }
 ```
 
-The `stpconnector.ts` sample implements this interface via calls to the Microsoft Cognitive Services Speech SDK. This plugin is used in the [javascript quicktstart](../../quickstart/js) 
+The `stpconnector.ts` sample implements this interface via calls to the Microsoft Cognitive Services Speech SDK. This plugin is used in the [quicktstarts](../../quickstart) 

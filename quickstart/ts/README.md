@@ -16,20 +16,6 @@ The speech recognition plugin is optional, and can be replaced for example by a 
 * A PC or Mac with a working microphone
 * Means to serve a page over http
 
-## Referencing the STP SDK
-
-Install the STP SDK npm package
-
-```
-npm i --save sketch-thru-plan-sdk
-```
-
-Add a `jdelivr` reference to the main html page. This external dependency is not bundled with the quickstart to keep it small
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.1.0/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
-
-
 ## Configuration
 
 Enter servers and keys by editing `index.ts`:
@@ -62,7 +48,16 @@ const mapCenter = {lat: 58.967774948, lng: 11.196062412};
 const zoomLevel = 13;  
 ```
 
-## Run the `index.html` sample
+## Building the project
+
+Run npm on the cloned repository quickstart/ts folder:
+
+```
+npm install
+npm run build
+```
+
+## Run the `quicktstart/ts/dist/index.html` sample
 * Load the page on a browser
 * A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 * Enter symbols by sketching and speaking, for example:

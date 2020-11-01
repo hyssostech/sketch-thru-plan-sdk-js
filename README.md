@@ -1,4 +1,4 @@
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/hyssostech/sketch-thru-plan-sdk) [![](https://data.jsdelivr.com/v1/package/npm/sketch-thru-plan-sdk/badge)](https://www.jsdelivr.com/package/npm/sketch-thru-plan-sdk) ![GitHub All Releases](https://img.shields.io/github/downloads/hyssostech/sketch-thru-plan-sdk/total) ![GitHub](https://img.shields.io/github/license/hyssostech/sketch-thru-plan-sdk)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/hyssostech/sketch-thru-plan-sdk-resources-resources) [![](https://data.jsdelivr.com/v1/package/npm/sketch-thru-plan-sdk-resources/badge)](https://www.jsdelivr.com/package/npm/sketch-thru-plan-sdk-resources) ![GitHub All Releases](https://img.shields.io/github/downloads/hyssostech/sketch-thru-plan-sdk-resources/total) ![GitHub](https://img.shields.io/github/license/hyssostech/sketch-thru-plan-sdk-resources)
 
 # Sketch-thru-Plan SDK Resources
 

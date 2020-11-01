@@ -20,7 +20,7 @@ The speech recognition plugin is optional, and can be replaced for example by a 
 Add a `jdelivr` reference to the main html page
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.1.0/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
 ```
 
 ## Configuration
