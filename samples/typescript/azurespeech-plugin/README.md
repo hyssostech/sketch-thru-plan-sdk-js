@@ -69,4 +69,4 @@ export interface ISpeechRecoItem {
 
 The SDK bundles an implementation of the Microsoft Cognitive Services Speech to Text. It implements the simpler strategy of performing recognition once at a time. The expectation is that the `recognize` method is invoked by the client app whenever a pen down is detected (see [quicktstart](../../quickstart/js) for an example)
 
-The typescript implementation is available in  [`stpazurespeech.ts`](stpazurespeech.ts)
+The typescript implementation is available in  [`stpazurespeech.ts`](stpazurespeech.ts). This plugin is used in the [quicktstarts](../../quickstart) 

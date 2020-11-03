@@ -1,7 +1,7 @@
 import { IStpConnector } from "./interfaces/IStpConnector";
 
 /**
- * Implements a connector to STP's pub/sub service via WebSockets
+ * Implements a connector to STP's native OAA pub/sub service via WebSockets
  * @implements IStpConnector - {@link IStpConnector}
  */
 export class StpWebSocketsConnector implements IStpConnector {
@@ -67,7 +67,7 @@ export class StpWebSocketsConnector implements IStpConnector {
 
             // COnnect and register
             try {
-                this.socket = await this.promiseWithTimeout(0, this.tryConnect(this.connstring));
+                this.socket = await this.promiseWithTimeout<WebSocket>(0, this.tryConnect(this.connstring));
                 await this.register(this.serviceName, this.solvables, this.timeout);
             } catch (e) {
                 reject(new Error("Failed to connect: " + e.message));
@@ -109,13 +109,13 @@ export class StpWebSocketsConnector implements IStpConnector {
         if (!this.isConnected) {
             throw new Error("Failed to register: connection is not open (" + this.connState+ ")");
         }
-        return this.promiseWithTimeout(timeout, 
+        return this.promiseWithTimeout<void>(timeout, 
             new Promise<void>(async (resolve, reject) => {
                 // Set the names
                 this.baseName = serviceName;
                 this.name = this.baseName + "_" + this.uniqueId(9);
 
-                // Register with the pub/sub system
+                // Handshake with OAA
                 this.socket.send(JSON.stringify(
                     {
                         method: "Register", 
@@ -131,7 +131,7 @@ export class StpWebSocketsConnector implements IStpConnector {
     }
 
     disconnect(timeout?: number): Promise<void> {
-        return this.promiseWithTimeout(timeout, 
+        return this.promiseWithTimeout<void>(timeout, 
             new Promise<void>(async (resolve, reject) => {
                 if (!this.isConnected) {
                     // Attempt to close
@@ -149,7 +149,7 @@ export class StpWebSocketsConnector implements IStpConnector {
         if (!this.isConnected) {
             throw new Error("Failed to send message: connection is not open (" + this.connState+ ")");
         }
-        return this.promiseWithTimeout(timeout, 
+        return this.promiseWithTimeout<void>(timeout, 
             new Promise<void>(async (resolve, reject) => {
                 // Attempt to send
                 this.socket.send(message);
@@ -159,13 +159,12 @@ export class StpWebSocketsConnector implements IStpConnector {
     }
 
     request(message: string, timeout?: number): Promise<string[]> {
-        // TODO: complete the request (emulates a synchronous RPC call)
         throw new Error("Method not implemented");
         // Error if the connection is dead
         if (!this.isConnected) {
-            throw new Error("Failed to send request: connection is not open (" + this.connState+ ")");
+            throw new Error("Failed to send message: connection is not open (" + this.connState+ ")");
         }
-        return this.promiseWithTimeout(timeout, 
+        return this.promiseWithTimeout<void>(timeout, 
             new Promise<void>(async (resolve, reject) => {
                 // Attempt to send
                 this.socket.send(message);
@@ -200,7 +199,7 @@ export class StpWebSocketsConnector implements IStpConnector {
      * @param timeout Timeout in seconds
      * @param promise Promise that will be aborted if timeout is exceeded
      */
-    private promiseWithTimeout(timeout: number, promise: Promise<any>) {
+    private promiseWithTimeout<T>(timeout: number, promise: Promise<T>) : Promise<T | any> {
         // Set timeout to default (30s) if not provided (zero)
         if (! timeout)  timeout = this.DEFAULT_TIMEOUT;
         // Returns the promise that first resolves/rejects - that bounds the execution time to be that of the timeout,
@@ -225,5 +224,8 @@ export class StpWebSocketsConnector implements IStpConnector {
             numChars = 9;
         return Math.random().toString(36).substr(2, numChars);
     }
+
     //#endregion 
 }
+
+export default StpWebSocketsConnector;

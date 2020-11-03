@@ -69,4 +69,4 @@ export interface IStpConnector {
 }
 ```
 
-The `stpconnector.ts` sample implements this interface via calls to the Microsoft Cognitive Services Speech SDK. This plugin is used in the [quicktstarts](../../quickstart) 
+The [`stpconnector.ts`](stpconnector.ts) sample implements this interface via calls to the Microsoft Cognitive Services Speech SDK. This plugin is used in the [quicktstarts](../../quickstart) 
