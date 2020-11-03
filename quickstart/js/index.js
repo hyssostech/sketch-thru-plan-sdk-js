@@ -10,7 +10,7 @@ const mapCenter = {lat: 58.967774948, lng: 11.196062412};
 const zoomLevel = 13; 
 
 const azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
-const azureServiceRegion = "<Enter Azure's subscription region>";  
+const azureServiceRegion = "<Enter Azure's subscription region>"; 
 const azureLanguage = "en-US"; 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
