@@ -259,7 +259,7 @@ STP symbols provide detailed information in their properties that can be used to
 | ---------------   | ----------------------------------------------------------------------------- |
 | fsTYPE            | Location type: point,line, area |
 | width             | Location width, if applicable |
-| shpae             | Gesture type, normally point, line or area. Other types include straightline, arrowthin, arrowfat, hook, ubend, ubendthreepoints, vee, opencircle, multipoint see "STP Military Symbol Gestures" documentation for details |
+| shpae             | Gesture type, normally point, line or area. Other types include straightline, arrowthin, arrowfat, hook, ubend, ubendthreepoints, vee, opencircle, multipoint see "STP Military Symbol Gestures" documentation for details  (available from Hyssos Tech upon request)|
 | radius            | Radius of the area containing the symbol, if applicable (zero for point locations) |
 | coords            | Array of { lat: latitude, lon: longitude } |
 | centroid          | Corrdinates of the location centroid { lat: latitude, lon: longitude } |

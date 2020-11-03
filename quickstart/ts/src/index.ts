@@ -4,7 +4,7 @@
 
 import { AzureSpeechRecognizer, LatLon, Size, StpMessageLevel, StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-plan-sdk";
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 const webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://echo.websocket.org";
 
 const googleMapsKey = "<Enter your Google Maps API key here>";
@@ -15,7 +15,7 @@ const zoomLevel = 13;
 const azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
 const azureServiceRegion = "<Enter Azure's subscription region>"; 
 const azureLanguage = "en-US"; 
-////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
 /**
  * Script-wide map object that gets updated as user sketches and stp responds with symbols

@@ -57,8 +57,8 @@ npm install
 npm run build
 ```
 
-## Run the `quicktstart/ts/dist/index.html` sample
-* Load the page on a browser
+## Run the  sample
+* Load the `quicktstart/ts/dist/index.html` on a browser
 * A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 * Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
@@ -258,7 +258,7 @@ STP symbols provide detailed information in their properties that can be used to
 | ---------------   | ----------------------------------------------------------------------------- |
 | fsTYPE            | Location type: point,line, area |
 | width             | Location width, if applicable |
-| shpae             | Gesture type, normally point, line or area. Other types include straightline, arrowthin, arrowfat, hook, ubend, ubendthreepoints, vee, opencircle, multipoint see "STP Military Symbol Gestures" documentation for details |
+| shpae             | Gesture type, normally point, line or area. Other types include straightline, arrowthin, arrowfat, hook, ubend, ubendthreepoints, vee, opencircle, multipoint see "STP Military Symbol Gestures" documentation for details (available from Hyssos Tech upon request) |
 | radius            | Radius of the area containing the symbol, if applicable (zero for point locations) |
 | coords            | Array of { lat: latitude, lon: longitude } |
 | centroid          | Corrdinates of the location centroid { lat: latitude, lon: longitude } |

@@ -1,5 +1,3 @@
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/hyssostech/sketch-thru-plan-sdk-resources-resources) [![](https://data.jsdelivr.com/v1/package/npm/sketch-thru-plan-sdk-resources/badge)](https://www.jsdelivr.com/package/npm/sketch-thru-plan-sdk-resources) ![GitHub All Releases](https://img.shields.io/github/downloads/hyssostech/sketch-thru-plan-sdk-resources/total) ![GitHub](https://img.shields.io/github/license/hyssostech/sketch-thru-plan-sdk-resources)
-
 # Sketch-thru-Plan SDK Resources
 
 This project hosts developer resources related to Hyssos Tech Sketh-Thru-Plan Natural Language Planning Engine SDK.
@@ -20,5 +18,3 @@ The [samples](samples) folder contains examples covering particular aspects of t
 ## Reference
 
 [Sketch-thru-Plan SDK Reference](https://hyssostech.github.io/stp-docs/sdk/index.html)
-
-[STP Military Symbol Gestures](https://hyssostech.github.io/stp-docs/STP%20Military%20Symbol%20Gestures.pdf) 
