@@ -48,17 +48,9 @@ const mapCenter = {lat: 58.967774948, lng: 11.196062412};
 const zoomLevel = 13;  
 ```
 
-## Building the project
-
-Run npm on the cloned repository quickstart/ts folder:
-
-```
-npm install
-npm run build
-```
-
 ## Run the  sample
-* Load the `quicktstart/ts/dist/index.html` on a browser
+
+* Load the `quicktstart/ts/dist/index.html` on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions
 * A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 * Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
@@ -70,6 +62,14 @@ npm run build
 * Successful recognition of the symbol results in generic blue rectangles (for friendly) or red lozenges (enemy) to be displayed, with Tactical Graphics displayed in black
 * To pan and zoom, hold the `Ctrl` key while dragging the mouse
 
+## Building the project
+
+THe repository includes a pre-built [`dist`](dist) folder that can be used directly for testing. If changes are made to the sample and there is a need to rebuild, change to the `quickstart/ts` directory and run:
+
+```
+npm install
+npm run build
+```
 
 ## Brief code walkthrough
 

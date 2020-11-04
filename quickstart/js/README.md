@@ -1,6 +1,6 @@
 # Quickstart: Add military symbols to Google Maps via Speech and Sketch
 
-This quickstart demonstrates the how sketches (and optionally speech) collected by a javascript browser app can be sent for processing by Sketch-thru-Plan (STP) for interpretation. If successfully interpreted, the combined/fused speech and sketch are turned into military symbols by STP, and sent back to the app for rendering.
+This quickstart demonstrates the how sketches (and optionally speech) collected by a vanilla javascript browser app can be sent for processing by Sketch-thru-Plan (STP) for interpretation. If successfully interpreted, the combined/fused speech and sketch are turned into military symbols by STP, and sent back to the app for rendering.
 
 The connection to STP and the speech recognizer that is used are configurable via plugins. For this quickstart, the following plugins are used:
 
@@ -15,9 +15,9 @@ The speech recognition plugin is optional, and can be replaced for example by a 
 * Optional: a subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
 
-## Referencing the STP SDK
+## References to the STP SDK
 
-Add a `jdelivr` reference to the main html page
+The SDK is included via a `jdelivr` reference on the main html page. Here we show a reference to `@latest`, but as usual, the use of specific version is recommended to prevent breaking changes from affecting existing code
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
@@ -56,7 +56,7 @@ const zoomLevel = 13;
 ```
 
 ## Run the `index.html` sample
-* Load the page on a browser
+* Load the page on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions
 * A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 * Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"

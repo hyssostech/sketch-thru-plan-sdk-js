@@ -18,3 +18,5 @@ The [samples](samples) folder contains examples covering particular aspects of t
 ## Reference
 
 [Sketch-thru-Plan SDK Reference](https://hyssostech.github.io/stp-docs/sdk/index.html)
+
+[MIL-STD-2525D Joint Military Symbology](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf)
