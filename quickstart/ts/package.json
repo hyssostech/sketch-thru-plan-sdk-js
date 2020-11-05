@@ -28,6 +28,6 @@
   },
   "dependencies": {
     "@types/googlemaps": "^3.40.3",
-    "sketch-thru-plan-sdk": "file:../../../stp-js"
+    "sketch-thru-plan-sdk": "^0.1.5"
   }
 }
