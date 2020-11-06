@@ -90,11 +90,7 @@ async function initMap() {
         log(msg, StpMessageLevel.Error, true);
     }
 
-    // Create a speech recognizer instance to handle the local transcription - using Azure Speech
-    const speechreco = new AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-     // Load map
+    // Load map
     const mapDiv = document.getElementById('map');
     if (! mapDiv) {
         throw new Error("Html page must contain a 'map' div");
@@ -124,8 +120,8 @@ async function initMap() {
         // Notify STP that a new stroke is starting
         stpsdk.sendPenDown(new LatLon(e.latLng.lat(), e.latLng.lng()), getIsoTimestamp());
 
-        // Activate speech recognition (asynchronously), passing in the plugin to use
-        recognizeSpeech(speechreco);
+        // Activate speech recognition (asynchronously)
+        recognizeSpeech();
         ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Capture the freehand sketch - pass in the initial coord to support single point clicks
@@ -223,10 +219,12 @@ function enableDragZoom(){
 
 /**
  * Recognize speech
- * @param speechreco - Speech recognizer plugin
  */
-async function recognizeSpeech(speechreco: AzureSpeechRecognizer)  {
+async function recognizeSpeech()  {
     try {
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // We create a fresh instance each time to avoid issues with stale connections to the service
+        const speechreco = new AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
         let recoResult = await speechreco.recognize();
         if (recoResult) {
             // Send recognized speech over to STP
@@ -235,7 +233,8 @@ async function recognizeSpeech(speechreco: AzureSpeechRecognizer)  {
             if (recoResult.results && recoResult.results.length > 0) {
                 log(recoResult.results[0].text);
              }
-        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    }
     } catch (e) {
         // Propagate to the user
         let msg = "Failed to process speech: " + e.message;

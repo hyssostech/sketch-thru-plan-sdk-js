@@ -86,10 +86,6 @@ async function initMap() {
         log(msg, "Error", true);
     }
 
-    // Create a speech recognizer instance to handle the local transcription - using Azure Speech
-    const speechreco = new StpSDK.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
      // Load map
     map = new google.maps.Map(
         document.getElementById('map'), {
@@ -115,8 +111,8 @@ async function initMap() {
         // Notify STP that a new stroke is starting
         stpsdk.sendPenDown({ lat: e.latLng.lat(), lon: e.latLng.lng()}, getIsoTimestamp());
 
-        // Activate speech recognition (asynchronously), passing in the plugin to use
-        recognizeSpeech(speechreco);
+        // Activate speech recognition (asynchronously)
+        recognizeSpeech();
         ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Capture the freehand sketch - pass in the initial coord to support single point clicks
@@ -211,10 +207,12 @@ function enableDragZoom(){
 
 /**
  * Recognize speech
- * @param speechreco - Speech recognizer plugin
  */
-async function recognizeSpeech(speechreco)  {
+async function recognizeSpeech()  {
     try {
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // We create a fresh instance each time to avoid issues with stale connections to the service
+        const speechreco = new StpSDK.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
         let recoResult = await speechreco.recognize();
         if (recoResult) {
             // Send recognized speech over to STP
@@ -224,6 +222,7 @@ async function recognizeSpeech(speechreco)  {
                 log(recoResult.results[0].text);
              }
         }
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
     } catch (e) {
         // Propagate to the user
         let msg = "Failed to process speech: " + e.message;

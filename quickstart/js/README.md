@@ -138,15 +138,6 @@ try {
 }
 ```
 
-**Speech service configuration** - Speech can be collected by the browser by invoking a speech service
-
-This quickstart uses a Microsoft Cognitive Services Speech to Text plugin that is bundled with the STP SDK for convenience. The microphone is activated every time a new stroke is started (on pen down). This is a simple but effective strategy. See the [speech sample](../samples/typescript/azurespeech-plugin) for details and additional discussion of speech collection strategies
-
-```javascript
-// Create a speech recognizer instance to handle the local transcription - using Azure Speech
-const speechreco = new StpSDK.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
-```
-
 ## Providing sketch and speech events to STP
 
 **Sending pen down** - STP requires two events to be raised when the user sketches: a pen down event that signals the start of a sketched gesture, followed by the complete stroke. The pen down latitude and longitude location and the time (UTC in ISO-8601 format) are provided as parameters.
@@ -184,19 +175,26 @@ stpsdk.sendInk(
 );
 ```
 
-**Speech** - There are a few different strategies for handling speech in a client app (see [speech sample](../samples/typescript/azurespeech-plugin) for details). In this quickstart a simple but effective approach is used, of activating the speech recognition whenever a pen down event is detected.
+**Speech** - Speech can be collected by the browser by invoking a speech service
+
+This quickstart uses a Microsoft Cognitive Services Speech to Text plugin that is bundled with the STP SDK for convenience. The microphone is activated every time a new stroke is started (on pen down). This is a simple but effective strategy. See the [speech sample](../samples/typescript/azurespeech-plugin) for details and additional discussion of speech collection strategies
+
+There are a few different strategies for handling speech in a client app (see [speech sample](../samples/typescript/azurespeech-plugin) for details). In this quickstart a simple but effective approach is used, of activating the speech recognition whenever a pen down event is detected.
 
 The `mousedown` event listener starts recognition. The call is *not* waited, and proceeds asynchronously while the sketch is completed:
 
 ```javascript
-// Activate speech recognition (asynchronously), passing in the plugin to use
-recognizeSpeech(speechreco);
+// Activate speech recognition (asynchronously)
+recognizeSpeech();
 ```
 When successfully recognized, speech is sent to STP via the `sendSpeechRecognition` SDK call:
 
 ```javascript
-async function recognizeSpeech(speechreco)  {
+async function recognizeSpeech()  {
     try {
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // We create a fresh instance each time to avoid issues with stale connections to the service
+        const speechreco = new StpSDK.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
         let recoResult = await speechreco.recognize();
         if (recoResult) {
             // Send recognized speech over to STP
@@ -206,6 +204,7 @@ async function recognizeSpeech(speechreco)  {
                 log(recoResult.results[0].text);
              }
         }
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////
     } catch (e) {
         // Propagate to the user
         let msg = "Failed to process speech: " + e.message;
