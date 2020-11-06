@@ -176,9 +176,7 @@ stpsdk.sendInk(
 
 **Speech** - Speech can be collected by the browser by invoking a speech service
 
-This quickstart uses a Microsoft Cognitive Services Speech to Text plugin that is bundled with the STP SDK for convenience. The microphone is activated every time a new stroke is started (on pen down). This is a simple but effective strategy. See the [speech sample](../samples/typescript/azurespeech-plugin) for details and additional discussion of speech collection strategies
-
-There are a few different strategies for handling speech in a client app (see [speech sample](../samples/typescript/azurespeech-plugin) for details). In this quickstart a simple but effective approach is used, of activating the speech recognition whenever a pen down event is detected.
+This quickstart uses a Microsoft Cognitive Services Speech to Text plugin that is bundled with the STP SDK for convenience. The microphone is activated every time a new stroke is started (on pen down). This is a simple but effective strategy. See the [speech sample](../samples/typescript/azurespeech-plugin) for details and additional discussion of alternative speech collection strategies
 
 The `mousedown` event listener starts recognition. The call is *not* waited, and proceeds asynchronously while the sketch is completed:
 
