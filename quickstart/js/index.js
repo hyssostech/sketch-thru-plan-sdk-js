@@ -345,16 +345,22 @@ function displaySymbol(symbol) {
             strokeWeight: 1,
         };
         if (symbol.affiliation === "friend") {
-        // Generic blue rectangle for friendly forces - 0,0 is at the center of the icon to match the symbol's location
-        icon.path = "M -21,-15 -21,15 21,15 21,-15 z";
-                icon.fillColor = "#1077aa";
-                icon.strokeColor = "#1077aa";
+            // Generic blue rectangle for friendly forces - 0,0 is at the center of the icon to match the symbol's location
+            icon.path = "M -21,-15 -21,15 21,15 21,-15 z";
+            icon.fillColor = "#1077aa";
+            icon.strokeColor = "#1077aa";
         }
         else if (symbol.affiliation === "hostile") {
-        // Generic red lozenge for friendly forces - 0,0 is at the center of the icon to match the symbol's location
-        icon .path = "M -18,0 0,18 18,0 0,-18 z";
+            // Generic red lozenge for friendly forces - 0,0 is at the center of the icon to match the symbol's location
+            icon .path = "M -18,0 0,18 18,0 0,-18 z";
             icon.fillColor = "red";
             icon.strokeColor = "red";
+        }
+        else {
+            // Generic yellow circle for all other affiliations
+            icon.path = "M 0, 0 m -18, 0 a 18,18 0 1,0 36,0 a 18,18 0 1,0 -36,0";
+            icon.fillColor = "yellow";
+            icon.strokeColor = "yellow";
         }
         const marker = new google.maps.Marker({
             position: centroid,
