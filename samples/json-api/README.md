@@ -1,6 +1,6 @@
 # Sketch-thru-Plan JSON API
 
-Sketch-thru-Plan (STP) provides a high-level JSON API based on [OpenRPC](https://github.com/open-rpc) that can be used to access services using languages for which an SDK may not be available.
+Sketch-thru-Plan (STP) provides a high-level [JSON-RPC](https://www.jsonrpc.org/specification) API that can be used to access services using languages for which an SDK may not be available.
 
 ## API access to/from STP
 
@@ -19,6 +19,7 @@ The JSON API mirrors the SDKs very closely. In fact, the SDKs offer a thin layer
 
 ```javascript
 {
+    "jsonrpc": "2.0",
     "method":"SendPenDown",
     "params":{
         "location": {
@@ -29,12 +30,57 @@ The JSON API mirrors the SDKs very closely. In fact, the SDKs offer a thin layer
 }
 ```
 
-## Incoming message format
+## Returns
 
-Incoming messages follow the same format as the outgoing ones, with a `method` property indicating the type, and `params` providing event-specific parameters. In the SDK, these corresponds to events the client subscribes to, prefixed with "on", for example `onSymbolAdded`. See the [javascript quickstart](../../quickstart/js/README.md) for examples.
+Most messages are `Informs`, and do not have any explicit return types. They update the state of the system, which may (or may not) result in some other component generating additional messages. For example, sketch and speech (separate) Informs may result in a new symbol being created or modified, which will be propagated via messages. If the sketch and speech could not be matched with high enough confidence though, no recognition messages are issued. Client's should therefore not rely on the generation of a response when Informs are used.
+
+Queries are dealt with via `Requests`. These messages always produce a response, and are in this sense equivalent to a remote procedure call, even if the mechanism remains asynchronous. Results are provided in an array of objects. 
 
 ```javascript
 {
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": [
+    {
+      "fsTYPE": "coa",
+      "poid": "id7J5ZJ1GVNQUNE"
+      "name": "R1",
+      "type": "hostile",
+      "creator_role": "s2",
+    }
+    {
+      "fsTYPE": "coa",
+      "poid": "idADPSPP8Q29CGF"
+      "name": "B1",
+      "type": "friend",
+      "creator_role": "s3",
+    }
+  ]
+}
+```
+
+In case of an unsuccessful request, an error response is returned:
+
+```javascript
+{
+    "jsonrpc": "2.0", 
+    "id": "5",
+    "error": {
+        "code": -32601, 
+        "message": "Invalid argument: expected a numeric id"
+    }
+}
+```
+
+## Incoming message format
+
+STP components operate as both consumers and producers of events/messages. When connecting to STP, a component declares the events it is able to handle. STPs publish/subscribe mechanism then notifies components that are subscribed whenever relevant events occur. In the SDK, subscription is done automatically, based on the handlers the component instantiated before connecting to STP (see the [connector plugin discussion](../typescript/connector-plugin))
+
+Incoming messages follow the same format as the outgoing ones, with a `method` property indicating the type, and `params` providing event-specific parameters. In the SDK, these corresponds to events the client subscribes to, prefixed with "on", for example `onSymbolAdded`. See the [javascript quickstarts](../../quickstart) for examples.
+
+```javascript
+{
+    "jsonrpc": "2.0",
     "method":"SymbolAdded",
     "params":{
         "symbol":{
@@ -82,4 +128,4 @@ Incoming messages follow the same format as the outgoing ones, with a `method` p
 
 ## Schema
 
-**UNDER CONSTRUCTION** The [OpenRPC](https://github.com/open-rpc) definition of the api can be found in [sketch-thru-plan-api.json](sketch-thru-plan-api.json)
+**UNDER CONSTRUCTION** An [OpenRPC](https://github.com/open-rpc) definition of the api can be found in [sketch-thru-plan-api.json](sketch-thru-plan-api.json)

@@ -2,7 +2,7 @@
     "openrpc": "2.0.0",
     "info": {
       "title": "Sketch-thru-Plan API",
-      "version": "0.0.0"
+      "version": "0.1.0"
     },
     "methods": [
       {
@@ -13,7 +13,7 @@
             "name": "location",
             "description": "Location of the initial sketched point",
             "schema": {
-                "$ref": "#/components/schemas/location"
+                "$ref": "#/components/schemas/Location"
             }
           },
           {
@@ -25,6 +25,24 @@
           }
         ]
       }
-    ]
+    ],
+    "components": {
+      "schemas": {
+        "Location": {
+          "required": [
+            "lat",
+            "lon"
+          ],
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lon": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
   }
   

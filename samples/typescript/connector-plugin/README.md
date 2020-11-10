@@ -1,6 +1,8 @@
 # STP Plugin: Websockets connector
 
-The Sketch-thru-Plan (STP) recognizer requires a connector configuration during initialization. This connection is used by the recognizer to send and receive messages/events to/from STP (see the [quicktstarts](../../quickstart) ).
+The Sketch-thru-Plan (STP) recognizer requires a connector configuration during initialization. This connection is used by the recognizer to send and receive messages/events to/from STP (see the [quicktstarts](../../quickstart)).
+
+The services of the connector are mostly used by the SDK code itself, with the functionality described here mostly hidden from client applications. These details are important for developers that are creating their own connectors, for example to some message queuing mechanism their system uses, behind which STP operates.
 
 The STP recognizer expects connection services to comply with the `IStpConnector` interface:
 
@@ -62,11 +64,23 @@ export interface IStpConnector {
      */
     onRequest: (message: string) => string;
     /**
-     * Event handler invoked when a connection error occurrs
-     * @param error - Error discription
+     * Event handler invoked when a connection error occurs
+     * @param error - Error description
      */
     onError: (error: string) => void;
 }
 ```
 
-The [`stpconnector.ts`](stpconnector.ts) sample implements this interface via calls to the Microsoft Cognitive Services Speech SDK. This plugin is used in the [quicktstarts](../../quickstart) 
+The mechanism is fairly generic, requiring means for emitting asynchronous messages/event notifications - `inform` - which do not produce any return data, as well as RPC-style `request` query messages that return results.
+
+STP components generate messages/events, as well as consume them, so in this sense they operate both as clients and as servers. On connection, a list of `solvables` provides the names of the messages/events that the component is able to handle, or is interested in being notified of:
+
+```javascript
+let solvables = ["SpeechRecognized", "PenDown", "InkProcessed","SymbolAdded", "SymbolModified","SymbolDeleted", "StpMessage"];
+```
+
+A system handling the STP component connections is required to route to the component those messages/events listed as solvables, invoking `onInform` or `onRequest` depending on the whether the message being routed was posted via an `inform` or a `request` respectively. Informs do generate any return types, whereas Requests do, to support queries.  
+
+The [`stpconnector.ts`](stpconnector.ts) sample implements this interface via Websockets. The STP server provides a native publish/subscribe mechanism, based on the Open Agent Architecture (OAA) framework, but other Websockets based mechanisms could be used on the server side as well.
+
+This plugin is used in the [quicktstarts](../../quickstart) to provide the main SDK object the means to communicate with STP.  
