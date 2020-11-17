@@ -12,7 +12,7 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle && npm run bundle:min && npm run copyhtml",
-    "bundle": "rollup ./dist/index.js --file ./dist/index.js --format iife  --external sketch-thru-plan-sdk --globals sketch-thru-plan-sdk:StpSDK",
+    "bundle": "rollup ./dist/index.js --file ./dist/index.js --format iife  --external sketch-thru-plan-sdk --globals sketch-thru-plan-sdk:StpSDK --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs",
     "bundle:min": "terser --ecma 6 --compress --mangle --module -o ./dist/index.min.js -- ./dist/index.js && gzip -9 -c ./dist/index.min.js > ./dist/index.min.js.gz",
     "copyhtml": "copyfiles --flat ./src/*.css ./src/*.html ./dist"
   },
@@ -20,6 +20,8 @@
   "author": "Hyssos Tech",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
     "copyfiles": "^2.4.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.32.1",
@@ -28,6 +30,7 @@
   },
   "dependencies": {
     "@types/googlemaps": "^3.40.3",
+    "milsymbol": "^2.0.0",
     "sketch-thru-plan-sdk": "^0.1.5"
   }
 }
