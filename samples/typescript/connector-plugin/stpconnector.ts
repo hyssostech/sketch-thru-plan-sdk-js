@@ -1,7 +1,7 @@
 import { IStpConnector } from "./interfaces/IStpConnector";
 
 /**
- * Implements a connector to STP's native OAA pub/sub service via WebSockets
+ * Implements a connector to pub/sub service via WebSockets
  * @implements IStpConnector - {@link IStpConnector}
  */
 export class StpWebSocketsConnector implements IStpConnector {
