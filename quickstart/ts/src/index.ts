@@ -3,6 +3,7 @@
 // Adapted from https://stackoverflow.com/a/22808047 
 
 import { AzureSpeechRecognizer, LatLon, Size, StpMessageLevel, StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-plan-sdk";
+import  ms from 'milsymbol';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 const webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://echo.websocket.org";
@@ -349,41 +350,38 @@ function displaySymbol(symbol: StpSymbol) {
     }
     else {
         // Unit, Mootw, Equipment symbol - point location
-        // Draw icon
-        let iconPath: string;
-        let iconFillColor: string;
-        let iconStrokeColor: string;
-        if (symbol.affiliation === "friend") {
-            // Generic blue rectangle for friendly forces - 0,0 is at the center of the icon to match the symbol's location
-            iconPath = "M -21,-15 -21,15 21,15 21,-15 z";
-            iconFillColor = "#1077aa";
-            iconStrokeColor = "#1077aa";
+        // Load renderer options
+        let renderOptions: ms.SymbolOptions = {};
+        if (symbol.parent) {
+            renderOptions.higherFormation = symbol.parent;
         }
-        else if (symbol.affiliation === "hostile") {
-            // Generic red lozenge for friendly forces - 0,0 is at the center of the icon to match the symbol's location
-            iconPath = "M -18,0 0,18 18,0 0,-18 z";
-            iconFillColor = "red";
-            iconStrokeColor = "red";
+        if (symbol.fsTYPE === 'equipment' && symbol.affiliation === 'hostile') {
+            renderOptions.hostile = 'ENY';
         }
-        else {
-            // Generic yellow circle for all other affiliations
-            iconPath = "M 0, 0 m -18, 0 a 18,18 0 1,0 36,0 a 18,18 0 1,0 -36,0";
-            iconFillColor = "yellow";
-            iconStrokeColor = "yellow";
+        if (symbol.strength) {
+            if (symbol.strength === 'reinforced') {
+            renderOptions.reinforcedReduced = '+';
+            } else if (symbol.strength === 'reduced') {
+                renderOptions.reinforcedReduced = '-';
+            } else if (symbol.strength === 'reduced_reinforced') {
+                renderOptions.reinforcedReduced = '+-';
+            }
         }
-        const icon: google.maps.ReadonlySymbol = {
-            fillOpacity: 0.5,
-            scale: 1,
-            strokeWeight: 1,
-            path: iconPath,
-            fillColor: iconFillColor,
-            strokeColor: iconStrokeColor
-        };
+        if (symbol.designator1) {
+            renderOptions.uniqueDesignation = symbol.designator1;
+        }
+        if (symbol.altitude) {
+            renderOptions.altitudeDepth = symbol.altitude.toString();
+        }
+        renderOptions.size = 30;
+        // Render to svg
+        let symbolSvg = new ms.Symbol(symbol.sidc.legacy, renderOptions).asSVG();
+        // Draw svg icon as a marker
         const marker = new google.maps.Marker({
             position: centroid,
             map,
             title: symbol.description,
-            icon: icon,
+            icon: { url: 'data:image/svg+xml;charset=UTF-8;base64,' + btoa(symbolSvg), origin: new google.maps.Point(0, 0)},
         });
         // Display symbol info on click
         marker.addListener("click", () => {

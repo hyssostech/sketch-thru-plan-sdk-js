@@ -212,9 +212,9 @@ async function recognizeSpeech()  {
 
 ## Symbol rendering
 
-This quickstart makes use of simple Google Maps capabilities to display symbols as rectangles, lozenges and line markers, associated with InfoWindows showing their properties when the markers are selected with a mouse. 
+This quickstart demonstrates the use of the makes use of the [milsymbol](https://github.com/spatialillusions/milsymbol) military symbol rendering library to create the symbol icons that are then inserted as Goole Maps (svg) placemarkers. These markers are associated with InfoWindows, showing additional properties when the markers are selected with a mouse. Tactical Graphics are displayed just as lines, but could be rendered using a library such as [mil-sym-js](https://github.com/missioncommand/mil-sym-js) 
 
-STP symbols provide detailed information in their properties that can be used to drive a military symbol renderer such as [milsymbol](https://github.com/spatialillusions/milsymbol), or [mil-sym-js](https://github.com/missioncommand/mil-sym-js) 
+The following properties are provided by STP by default (but additional ones can be defined). For a list of matching `milsymbol` properties, see https://www.spatialillusions.com/milsymbol/documentation.html
 
 | Property          | Description                                                                   |
 | ---------------   | ----------------------------------------------------------------------------- |
