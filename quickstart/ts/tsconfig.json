@@ -7,10 +7,20 @@
     "declaration": true,
     "removeComments": true,
     "sourceMap": true,
-    "strict": true,
+    "strict": false,
     "outDir": "./dist",
+    "lib": [
+      "es2019", 
+      "DOM"
+    ],
     "skipLibCheck": true  // To avoid TS2611 on azure speech compilation
   },
+  "typeRoots": [
+    "./node_modules/@types",
+  ],
+  "types": [
+      "googlemaps",
+  ],
   "include": [
     "./src/**/*.ts"
   ],

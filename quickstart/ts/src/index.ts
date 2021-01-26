@@ -1,58 +1,41 @@
-/// <reference types="@types/googlemaps" />
-// Collect freehand drawings over the map, sending strokes to STP
-// Adapted from https://stackoverflow.com/a/22808047 
-
 import { AzureSpeechRecognizer, LatLon, Size, StpMessageLevel, StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-plan-sdk";
-import  ms from 'milsymbol';
+import { GoogleMap } from "./googlemap";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-const webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://echo.websocket.org";
-
-const googleMapsKey = "<Enter your Google Maps API key here>";
-const googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + googleMapsKey;
-const mapCenter = {lat: 58.967774948, lng: 11.196062412};  
-const zoomLevel = 13; 
-
 const azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
 const azureServiceRegion = "<Enter Azure's subscription region>"; 
 const azureLanguage = "en-US"; 
+const azureEndPoint = null;
+
+const googleMapsKey = "<Enter your Google Maps API key here>";
+const defaultMapCenter: LatLon = new LatLon(58.967774948, 11.196062412);
+const defaultZoomLevel = 13; 
+
+const defaultWebSocketUrl  = "ws://<STP server>:<STP port>";//"wss://echo.websocket.org";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
+window.onload = () => start();
+
+//#region STP functions
 /**
  * Script-wide map object that gets updated as user sketches and stp responds with symbols
  */
-let map: google.maps.Map;
-let strokeStart: string;
-let strokeEnd: string;
-let strokePoly: google.maps.Polyline;
 let stpsdk: StpRecognizer;
+let map: GoogleMap;
 
-/**
- * Insert the google maps script to the html, linking to our initialization callback
- */
-(function addMapsScript() {
-  if (!document.querySelectorAll('[src="' + googleMapsUrl + '"]').length) { 
-    document.body.appendChild(Object.assign(
-      document.createElement('script'), {
-        type: 'text/javascript',
-        src: googleMapsUrl,
-        onload: () => initMap()
-      }));
-  } else {
-    initMap();
-  }
-})();
+async function start(){
+    // Retrieve (optional) querystring parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const latParm = urlParams.get('lat');
+    const lonParm = urlParams.get('lon');
+    const mapCenter = (latParm && lonParm) ? new LatLon(parseFloat(latParm), parseFloat(lonParm)) : defaultMapCenter;
+    const zoomParm = urlParams.get('zoom');
+    const zoomLevel = zoomParm ? parseInt(zoomParm) : defaultZoomLevel;
+    
+    const stpParm = urlParams.get('stpurl');
+    const webSocketUrl  = stpParm ? stpParm : defaultWebSocketUrl;
+    const role = urlParams.get('role');
 
-/**
- * Initialize google maps and the STP SDK, setting up the stroke capture events
- * THe standard mode is drawing/sketching - users need to hold the Ctrl key to be able to use the mouse
- * in a conventional (drag) way
- */
-async function initMap() {
-
-    let mapCenter = {lat: 58.967774948, lng: 11.196062412};  //{lat: -25.363, lng: 131.044};
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpWebSocketsConnector(webSocketUrl);
 
@@ -61,17 +44,27 @@ async function initMap() {
 
     // Hook up to the events _before_ connecting, so that the correct message subscriptions can be identified
     // A new symbol has been recognized and added
-    stpsdk.onSymbolAdded = (symbol, isUndo) => {
-        displaySymbol(symbol);
+    stpsdk.onSymbolAdded = (alternates: StpSymbol[], isUndo: boolean) => {
+        // Add the best recognition to the map - better if alternates were displayed, could be chosen
+        map.addFeature(alternates[0]);
+    };
+    // The properties of a symbol were modified
+    stpsdk.onSymbolModified = (poid: string, symbol: StpSymbol, isUndo: boolean) => {
+        map.removeFeature(poid);
+        map.addFeature(symbol);
+    };
+    // A symbol was removed
+    stpsdk.onSymbolDeleted = (poid: string, isUndo: boolean) => {
+        map.removeFeature(poid);
     };
     // The collected ink has been processed and resulted in a symbol, or was rejected because it could not be matched to speech
     stpsdk.onInkProcessed = () => {
         // Remove last stroke from the map if one exists
-        if (strokePoly)
-            strokePoly.setMap(null);
+        map.clearInk();
     };
     // Display the top/best speech recognition result
-    stpsdk.onSpeechRecognized = (phrases) => {
+    stpsdk.onSpeechRecognized = (phrases: string[]) => {
+        // Display just the best reco - the one that is actually selected by STP may not be this one
         let speech = "";
         if (phrases && phrases.length > 0) {
             speech = phrases[0];
@@ -79,153 +72,87 @@ async function initMap() {
         log(speech); 
     }
     // STP event to be communicated to user
-    stpsdk.onStpMessage = (msg, level) => {
+    stpsdk.onStpMessage = (msg: string, level: StpMessageLevel) => {
         log(msg, level, true);
     }
 
     // Attempt to connect to STP
     try {
-        await stpsdk.connect("GoogleMapsSample", 0);
+        await stpsdk.connect("GoogleMapsSample", 10);
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
         log(msg, StpMessageLevel.Error, true);
+        // Nothing else we can do
+        return;
     }
 
-    // Load map
-    const mapDiv = document.getElementById('map');
-    if (! mapDiv) {
-        throw new Error("Html page must contain a 'map' div");
-    }
-    map = new google.maps.Map(
-        mapDiv, 
-        {
-            zoom: 13, 
-            center: mapCenter, 
-            gestureHandling: 'cooperative',
-            draggable: false,
-            draggableCursor: 'crosshair'
-        });
+    // Create map instance and subscribe to sketching events
+    map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
 
-   // Set events to start sketch capture on mouse down
-    map.addListener('mousedown', function(e){
-        // Skip if ctrl key is pressed - let user pan on drag 
-        let domEvent = e.vb;
-        if (domEvent.ctrlKey) {
-            return false;
-        }
-        // Set drawing friendly event handling
-        domEvent.preventDefault();
-        enableDrawing();
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Notify STP of the start of a stroke and activate speech recognition
+    map.onStrokeStart = (location: LatLon, timestamp: string) => {
         // Notify STP that a new stroke is starting
-        stpsdk.sendPenDown(new LatLon(e.latLng.lat(), e.latLng.lng()), getIsoTimestamp());
+        stpsdk.sendPenDown(location, timestamp);
 
         // Activate speech recognition (asynchronously)
         recognizeSpeech();
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    }
 
-        // Capture the freehand sketch - pass in the initial coord to support single point clicks
-        drawFreeHand(e.latLng);
-    });
-}
-
-/**
- * Set drawing mode and collect the freehand coordinates until a pen up
- * @param {*} latLng Coordinate of the initial (pendown) point
- */
-function drawFreeHand(latLng: google.maps.LatLng){
-    // Capture start time
-    strokeStart = getIsoTimestamp();
-
-    // Clear last stroke, if any
-    if (strokePoly)
-        strokePoly.setMap(null);
-
-    // Create a new stroke object and load the initial coords
-    strokePoly=new google.maps.Polyline({
-        map:map,
-        clickable:false,
-        strokeColor: '#8B0000',
-        strokeWeight: 2,
-    });
-    strokePoly.getPath().push(latLng);
-    
-    // Add segments as the mouse is moved
-    var move=google.maps.event.addListener(map,'mousemove', (e) => {
-        strokePoly.getPath().push(e.latLng);
-    });
-    
-    // End the stroke on mouse up
-    google.maps.event.addListenerOnce(map,'mouseup', (e) => {
-        // Capture end time
-        strokeEnd = getIsoTimestamp();
-
-        // Clear the drawing events
-        google.maps.event.removeListener(move);
-        enableDragZoom();
-
-        // Get the path, adding the initial point twice if there is just a single point (a click)
-        // so we have a valid zero-lenght segment that will show as a dot 
-        let path=strokePoly.getPath();
-        if (path.getLength() == 1)
-            path.push(path.getAt(0));
-
-        // Convert to array
-        let strokeLatLng = path.getArray().map(item => { let o = new LatLon(item.lat(), item.lng()); return o; });
- 
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Notify STP of a full stroke
+    map.onStrokeCompleted = (
+        pixelBoundsWindow:Size,
+        topLeftGeoMap: LatLon,
+        bottomRightGeoMap:LatLon,
+        strokePoints: LatLon[],
+        timeStrokeStart: string,
+        timeStrokeEnd: string,
+        intersectedPoids:string[]
+    ) => {
         // Notify STP of the new ink stroke
-        let sizePixels = { width: document.getElementById('map')!.clientWidth, height: document.getElementById('map')!.clientHeight };
-        let mapBounds = map.getBounds();
-        if (! mapBounds) {
-            throw new Error("Failed to retrieve the map bounds - unable to send ink to STP");
-        }
         stpsdk.sendInk(
-            new Size(sizePixels.width, sizePixels.height), // pixelBoundsWindow
-            new LatLon(mapBounds.getNorthEast().lat(), mapBounds.getSouthWest().lng()), //topLeftGeoMap
-            new LatLon(mapBounds.getSouthWest().lat(), mapBounds.getNorthEast().lng()), //bottomRightGeoMap
-            strokeLatLng, //strokePoints
-            strokeStart, //timeStrokeStart
-            strokeEnd, // timeStrokeEnd
-            [] // intersectedPoids
+            pixelBoundsWindow,
+            topLeftGeoMap,
+            bottomRightGeoMap,
+            strokePoints,
+            timeStrokeStart,
+            timeStrokeEnd,
+            intersectedPoids
         );
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-    });
+    }
+
+    // Handle feature selection
+    map.onSelection = (symbol: StpSymbol) => {
+        // Build the content to display
+        let contentString = buildInfo(symbol);
+
+        // Get the map to show it, hooking the 'delete' button to a feature removal function
+        if (contentString && symbol && symbol.poid && symbol.location && symbol.location.centroid) {
+            map.displayInfo(contentString, symbol.location.centroid, 
+                [ 
+                    { selector: '#delButton', 
+                      handler: (event) => {
+                        // Advise STP that this symbol was removed - actual removal is done when STP propagates this to 
+                        // all clients, including this one
+                        stpsdk.deleteSymbol(symbol.poid!);
+                      },
+                      closeInfo: true
+                    }
+                ]
+            );
+        }
+    }
+
+    // Load the map
+    map.load();
 }
 
 /**
- * Set map controls so that the mouse can be used to freehand draw
- */
-function enableDrawing(){
-    map.setOptions({
-        draggable: false, 
-        zoomControl: false, 
-        scrollwheel: false, 
-        disableDoubleClickZoom: false
-    });
-}
-
-/**
- * Restore the standard drag/zomm capabilities
- */
-function enableDragZoom(){
-    map.setOptions({
-        draggable: true, 
-        zoomControl: true, 
-        scrollwheel: true, 
-        disableDoubleClickZoom: true
-    });
-} 
-
-/**
- * Recognize speech
+ * Recognize speech and notify STP
  */
 async function recognizeSpeech()  {
     try {
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
         // We create a fresh instance each time to avoid issues with stale connections to the service
-        const speechreco = new AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
+        const speechreco = new AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
         let recoResult = await speechreco.recognize();
         if (recoResult) {
             // Send recognized speech over to STP
@@ -234,7 +161,6 @@ async function recognizeSpeech()  {
             if (recoResult.results && recoResult.results.length > 0) {
                 log(recoResult.results[0].text);
              }
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
     } catch (e) {
         // Propagate to the user
@@ -244,161 +170,83 @@ async function recognizeSpeech()  {
 }
 
 /**
- * Displays symbol on the map, using a blue rectangle if friendly, red lozenge if hostile, black tactical graphics
- * @param symbol - Military symbol to render 
+ * Format symbol properties for display
+ * @param symbol Symbol properties to display
  */
-function displaySymbol(symbol: StpSymbol) {
-    // Build symbol description
-    const contentString =
-        '<div id="content">' +
-        '<div id="siteNotice">' +
-        "</div>" +
-        '<h3 id="firstHeading" class="firstHeading">' + symbol.fullDescription + '</h3>' +
-        '<table>' +
-            '<tr>' +
-                '<td>2525D PartA</td><td>' + symbol.sidc.partA + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>2525D PartB</td><td>' + symbol.sidc.partB + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Symbol Set</td><td>' + symbol.sidc.symbolSet + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>2525C SIDC</td><td>' + symbol.sidc.legacy + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Affiliation</td><td>' + symbol.affiliation + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Echelon</td><td>' + symbol.echelon + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Parent Unit</td><td>' + symbol.parent + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Designator 1</td><td>' + symbol.designator1 + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Designator 2</td><td>' + symbol.designator2 + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Status</td><td>' + symbol.status + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Modifier</td><td>' + symbol.modifier + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Strength</td><td>' + symbol.strength + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Time From</td><td>' + symbol.timeFrom + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Time To</td><td>' + symbol.timeTo + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Altitude</td><td>' + symbol.altitude + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Min Altitude</td><td>' + symbol.minAltitude + '</td>' +
-            '</tr>' +
-            '<tr>' +
-                '<td>Max Altitude</td><td>' + symbol.maxAltitude + '</td>' +
-            '</tr>' +
-        '</table>' +
-        '<div id="bodyContent">' +
-        "</div>" +
-        "</div>";
-    // Set the symbol info to be displayed at teh symbol's centroid
-    let centroid = { lat: symbol.location.centroid.lat, lng: symbol.location.centroid.lon };
-    let infoWindow = new google.maps.InfoWindow({
-        content: contentString,
-        position: centroid,
-        });
-    // Tactical graphics may be lines or areas
-    if (symbol.fsTYPE === "tg") {
-        // Convert TG coords to google map's
-        let tgLatLng = symbol.location.coords.map(item => { let o = {lat: item.lat, lng: item.lon}; return o; });
-        let options = {
-            path: tgLatLng,
-            geodesic: true,
-            strokeColor: "black",
-            strokeOpacity: 1.0,
-            strokeWeight: 3,
-        };
-        // Closed polygonal area 
-        if (symbol.location.fsTYPE === "area") {
-            const tgPoly = new google.maps.Polygon(options);
-            tgPoly.setMap(map);
-            tgPoly.addListener("click", () => {
-                infoWindow.open(map);
-            });
-        }
-        else {
-            // Line TG
-            // Remove the "barb"/width point that is part of the 2525 drawing rules, but messes up gmaps rendering
-            if (symbol.location.shape == "arrowfat")
-                tgLatLng.length--;
-            const tgPoly = new google.maps.Polyline(options);
-            tgPoly.setMap(map);
-            // Display tg info on click
-            tgPoly.addListener("click", () => {
-                infoWindow.open(map);
-            });
-        }
+function buildInfo(symbol: StpSymbol): string | null {
+    if (! symbol || ! symbol!.location || ! symbol!.location.centroid) {
+        return null;
     }
-    else {
-        // Unit, Mootw, Equipment symbol - point location
-        // Load renderer options
-        let renderOptions: ms.SymbolOptions = {};
-        if (symbol.parent) {
-            renderOptions.higherFormation = symbol.parent;
-        }
-        if (symbol.fsTYPE === 'equipment' && symbol.affiliation === 'hostile') {
-            renderOptions.hostile = 'ENY';
-        }
-        if (symbol.strength) {
-            if (symbol.strength === 'reinforced') {
-            renderOptions.reinforcedReduced = '+';
-            } else if (symbol.strength === 'reduced') {
-                renderOptions.reinforcedReduced = '-';
-            } else if (symbol.strength === 'reduced_reinforced') {
-                renderOptions.reinforcedReduced = '+-';
-            }
-        }
-        if (symbol.designator1) {
-            renderOptions.uniqueDesignation = symbol.designator1;
-        }
-        if (symbol.altitude) {
-            renderOptions.altitudeDepth = symbol.altitude.toString();
-        }
-        renderOptions.size = 30;
-        // Render to svg
-        let symbolSvg = new ms.Symbol(symbol.sidc.legacy, renderOptions).asSVG();
-        // Draw svg icon as a marker
-        const marker = new google.maps.Marker({
-            position: centroid,
-            map,
-            title: symbol.description,
-            icon: { url: 'data:image/svg+xml;charset=UTF-8;base64,' + btoa(symbolSvg), origin: new google.maps.Point(0, 0)},
-        });
-        // Display symbol info on click
-        marker.addListener("click", () => {
-            infoWindow.open(map, marker);
-        });
+    let contentString =
+    '<h3 id="firstHeading" class="firstHeading">' + symbol.fullDescription + '</h3>' +
+    '<table>'+
+        '<tr>' +
+            '<td>2525D PartA</td><td>' + symbol.sidc?.partA + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>2525D PartB</td><td>' + symbol.sidc?.partB + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Symbol Set</td><td>' + symbol.sidc?.symbolSet + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>2525C SIDC</td><td>' + symbol.sidc?.legacy + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Affiliation</td><td>' + symbol.affiliation + '</td>' +
+        '</tr>';
+    if (symbol!.fsTYPE == "unit") {
+        contentString +=
+        '<tr>' +
+            '<td>Echelon</td><td>' + symbol.echelon + '</td>' +
+        '</tr>';
     }
+    contentString +=
+        '<tr>' +
+            '<td>Parent Unit</td><td>' + symbol.parent + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Designator 1</td><td>' + symbol.designator1 + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Designator 2</td><td>' + symbol.designator2 + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Status</td><td>' + symbol.status + '</td>' +
+        '</tr>';
+    if (symbol!.fsTYPE == "unit") {
+        contentString +=
+        '<tr>' +
+            '<td>Modifier</td><td>' + symbol.modifier + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Strength</td><td>' + symbol.strength + '</td>' +
+        '</tr>';
+    }
+    contentString +=
+        '<tr>' +
+            '<td>Time From</td><td>' + symbol.timeFrom + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Time To</td><td>' + symbol.timeTo + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Altitude</td><td>' + symbol.altitude + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Min Altitude</td><td>' + symbol.minAltitude + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Max Altitude</td><td>' + symbol.maxAltitude + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td><button id="delButton">Delete</button></td>' +
+        '</tr>' +
+    '</table>';
+    return contentString;
 }
 
-/**
- * Current time in ISO 8601 format
- * @return ISO-8601 string
- */
-function getIsoTimestamp() {
-    let timestamp = new Date();
-    return timestamp.toISOString();
-}
-
+//#region Utility functions
 /**
  * 
  * @param msg - Message to display
@@ -417,3 +265,4 @@ function log(msg: string, level?: StpMessageLevel, showAlert?: boolean) {
     control.innerHTML=msg;
     control.style.color =  level === "Error" ? "red" : "black";
 }
+//#endregion
