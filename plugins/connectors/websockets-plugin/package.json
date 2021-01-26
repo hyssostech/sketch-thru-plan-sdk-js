@@ -1,0 +1,39 @@
+{
+    "config":{
+        "rootjs": "stpconnector",
+        "path": "websockets-plugin"
+    },
+    "name": "@hyssostech/websockets-plugin",
+    "version": "0.1.0",
+    "description": "Websockets connector to Sketch-thru-Plan services",
+    "main": "dist/stpconnector-bundle-min.js",
+    "types": "dist/stpconnector-bundle.d.ts",
+    "scripts": {
+        "clean": "rimraf dist build",
+        "clean:docs": "rimraf docs",
+        "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
+        "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
+        "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts && npm run bundle:min",
+        "bundle:umd": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.js --format umd --name StpWS",
+        "bundle:esm": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.esm.js --format esm",
+        "bundle:dts": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.d.ts --file dist/$npm_package_config_rootjs-bundle.d.ts --format es --plugin rollup-plugin-dts",
+        "bundle:min": "terser --ecma 6 --compress --mangle --module -o $npm_package_main -- dist/$npm_package_config_rootjs-bundle.js && gzip -9 -c dist/$npm_package_config_rootjs-bundle-min.js > dist/$npm_package_config_rootjs-bundle-min.js.gz",
+        "fix:format": "prettier --config ../../.prettierrc src --write"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-resources/plugins/connectors/websockets-plugin"
+    },
+    "author": "Hyssos Tech",
+    "license": "MIT",
+    "devDependencies": {
+        "copyfiles": "^2.4.0",
+        "rimraf": "^3.0.2",
+        "rollup": "^2.32.1",
+        "rollup-plugin-dts": "^1.4.13",
+        "terser": "^5.3.8",
+        "typescript": "^4.0.5",
+        "prettier": "^2.1.2",
+        "typedoc": "^0.19.2"
+    }
+}

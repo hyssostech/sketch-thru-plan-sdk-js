@@ -1,0 +1,22 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDirs": ["src", "../../interfaces"],
+        "outDir": "build",
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "dist",
+      "build",
+      "test"
+    ],
+    "typedocOptions": {    
+        "out": "docs",
+        "readme": "README.md",
+        "name": "Sketch-thru-Plan Websockets Connector"
+    }
+  }
+  
