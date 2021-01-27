@@ -8,7 +8,7 @@ Language-specific Google Maps samples are included:
 
 Both versions have similar code structures. We overview the code here using the typescript version as a reference. The javascript version is similar, except of course for the type annotations and other details that can be examined in the respective README docs linked to above.
 
-These examples have bare bones, placeholder rendering capabilities, meant to be replaced by production quality rendering in a real application. The [Samples](../samples) include in these resources demonstrate the use of actual military symbol rendering.
+These examples have bare bones, placeholder rendering capabilities, meant to be replaced by production quality rendering in a real application. The [samples](../samples) include in these resources demonstrate the use of actual military symbol rendering.
 
 
 # Adding military symbols to Google Maps via Speech and Sketch
@@ -153,7 +153,7 @@ try {
 }
 ```
 
-## Providing sketch events to STP
+### Providing sketch events to STP
 
 STP is map agnostic - any solution can be used as the underlying surface for sketching, provided that the latitude and longitude coordinates (in decimal degrees) of the sketches can be obtained.
 
@@ -282,14 +282,14 @@ async function recognizeSpeech()  {
 }
 ```
 
-## Symbol rendering
+### Symbol rendering
 
 The quickstarts use a bare bones placeholder renderer which display single point symbols as geometric shapes indicating affiliation:
 
-. Friendly - blue rectangles
-. Hostile - red lozenges
-. Neutral - green squares
-. Unknown - yellow circles
+* Friendly - blue rectangles
+* Hostile - red lozenges
+* Neutral - green squares
+* Unknown - yellow circles
 
 Multipoint Tactical Graphics are displayed by simple lines represented by GeoJSON geometries.
 

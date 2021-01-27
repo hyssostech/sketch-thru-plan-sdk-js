@@ -9,11 +9,19 @@ This project hosts developer resources related to Hyssos Tech Sketh-Thru-Plan Na
 
 ## Getting started
 
-The [quickstart](quickstart) folder contains introductory examples.
+The [quickstart](quickstart) folder contains introductory examples
 
 ## Samples
 
-The [samples](samples) folder contains examples covering particular aspects of the SDK and its related [API](samples/json-api)
+The [samples](samples) folder contains examples covering particular aspects of the SDK 
+
+## JSON API
+
+Describes the [JSON API](json-api) that is wrapped by the SDK
+
+## Plugins and reusable components
+
+Components that can be swapped and/or reused are described in [plugins](plugins)
 
 ## Reference
 
