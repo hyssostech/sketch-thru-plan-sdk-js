@@ -1,4 +1,4 @@
 # Sketch-thru-Plan Samples
 
-UNDER CONSTRUCTION
+A sample that extends the [quickstarts](../quickstart) code with actual military symbol rendering is available under [gmaps]
 

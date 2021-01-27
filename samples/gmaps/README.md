@@ -3,7 +3,7 @@
 This sample extends the [quickstart](../../qs/js) demonstration os Sketch-Thru-Plan sketch and speech creation of military plans, replacing the generic placeholder rendering with standard 2525 symbology.
 
 ## Prerequisites
-* Sketch-thru-Plan (STP) Engine (v5.1.2+) running on an accessible server
+* Sketch-thru-Plan (STP) Engine (v5.1.3+) running on an accessible server
 * A Google Maps [API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
 * Optional: a subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
@@ -68,13 +68,13 @@ See the [quickstart](../../qs/js) for details on most of the code. Changes intro
 
 The general strategy used is to enhance the basic GeoJSON representation of each symbol (returned by `symbol.asGeoJSON()`) with renderings produced by two renderers
 
-. [milsymbol](https://github.com/spatialillusions/milsymbol) is used to generate SVG icons representing single point symbols (units, equipment, mootw and single point tactical graphics)
-. [mil-sym-js](https://github.com/missioncommand/mil-sym-js) is used to generate GeoJSON representations of multipoint tactical graphics
+* [milsymbol](https://github.com/spatialillusions/milsymbol) is used to generate SVG icons representing single point symbols (units, equipment, mootw and single point tactical graphics)
+* [mil-sym-js](https://github.com/missioncommand/mil-sym-js) is used to generate GeoJSON representations of multipoint tactical graphics
 
 
-This quickstart demonstrates the use of the makes use of the [milsymbol](https://github.com/spatialillusions/milsymbol) military symbol rendering library to create the symbol icons that are then inserted as Goole Maps (svg) placemarkers. These markers are associated with InfoWindows, showing additional properties when the markers are selected with a mouse. Tactical Graphics are displayed just as lines, but could be rendered using a library such as [mil-sym-js](https://github.com/missioncommand/mil-sym-js) 
+The references to these renderers are included in [index.html]
 
-The following properties are provided by STP by default (but additional ones can be defined). For a list of matching `milsymbol` properties, see https://www.spatialillusions.com/milsymbol/documentation.html
+If using a different renderer, STP makes the following properties available by default by default (but additional ones can be defined). These need to be mapped to specific parameters of the chosen renderer.
 
 | Property          | Description                                                                   |
 | ---------------   | ----------------------------------------------------------------------------- |
