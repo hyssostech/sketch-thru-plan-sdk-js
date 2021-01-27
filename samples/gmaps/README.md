@@ -72,7 +72,7 @@ The general strategy used is to enhance the basic GeoJSON representation of each
 * [mil-sym-js](https://github.com/missioncommand/mil-sym-js) is used to generate GeoJSON representations of multipoint tactical graphics
 
 
-The references to these renderers are included in [index.html]
+The references to these renderers are included in [index.html](index.html)
 
 If using a different renderer, STP makes the following properties available by default by default (but additional ones can be defined). These need to be mapped to specific parameters of the chosen renderer.
 
