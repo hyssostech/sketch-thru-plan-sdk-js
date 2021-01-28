@@ -355,9 +355,10 @@
 	            disableDoubleClickZoom: true
 	        });
 	    }
-	    addFeature(symbol) {
-	        let gj = new BasicRenderer(symbol).asGeoJSON();
-	        this.map.data.addGeoJson(gj);
+	    addFeature(symbolGeoJSON) {
+	        if (symbolGeoJSON) {
+	            this.map.data.addGeoJson(symbolGeoJSON);
+	        }
 	    }
 	    removeFeature(poid) {
 	        let feature = this.map.data.getFeatureById(poid);
@@ -398,6 +399,9 @@
 	        var _a;
 	        (_a = this.strokePoly) === null || _a === void 0 ? void 0 : _a.setMap(null);
 	    }
+	    getBounds() {
+	        return this.map.getBounds();
+	    }
 	    getIsoTimestamp() {
 	        let timestamp = new Date();
 	        return timestamp.toISOString();
@@ -433,15 +437,16 @@
 	        const zoomLevel = zoomParm ? parseInt(zoomParm) : defaultZoomLevel;
 	        const stpParm = urlParams.get('stpurl');
 	        const webSocketUrl = stpParm ? stpParm : defaultWebSocketUrl;
-	        urlParams.get('role');
 	        const stpconn = new sketchThruPlanSdkBundleMin.StpWebSocketsConnector(webSocketUrl);
 	        stpsdk = new sketchThruPlanSdkBundleMin.StpRecognizer(stpconn);
 	        stpsdk.onSymbolAdded = (alternates, isUndo) => {
-	            map.addFeature(alternates[0]);
+	            let gj = new BasicRenderer(alternates[0]).asGeoJSON();
+	            map.addFeature(gj);
 	        };
 	        stpsdk.onSymbolModified = (poid, symbol, isUndo) => {
 	            map.removeFeature(poid);
-	            map.addFeature(symbol);
+	            let gj = new BasicRenderer(symbol).asGeoJSON();
+	            map.addFeature(gj);
 	        };
 	        stpsdk.onSymbolDeleted = (poid, isUndo) => {
 	            map.removeFeature(poid);

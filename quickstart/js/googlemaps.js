@@ -242,15 +242,19 @@ class GoogleMap  {
 
     //#region Feature handling
     /**
-         * Add feature to the map
-         * @param symbol - Military symbol to add as a feature
-         */
-    addFeature(symbol) {
-        // Get GeoJSON representation and add to map
-        let gj = new BasicRenderer(symbol).asGeoJSON();
-        this.map.data.addGeoJson(gj);
+     * Add feature to the map
+     * @param symbol - Symbol GeoJSON to add as a feature
+     */
+    addFeature(symbolGeoJSON) {
+        if (symbolGeoJSON) {
+            this.map.data.addGeoJson(symbolGeoJSON);
+        }
     }
 
+    /**
+     * Remove a feature from the map
+     * @param poid Unique identifier of the feature to remove
+     */
     removeFeature(poid) {
         let feature = this.map.data.getFeatureById(poid);
         if (feature) {
@@ -264,7 +268,15 @@ class GoogleMap  {
             this.map.data.remove(feature);
         }
     }
+    //#endregion
 
+    //#region Display related functions
+   /**
+     * Display an information window/popup on the map
+     * @param content HTML content to display
+     * @param location Coordinates of the location where the content is to be displayed
+     * @param handlers Optional array of CSS selectors and corresponding functions to activate if the element is selected (button/link clicked)
+     */
     displayInfo(content, location, handlers) {
         let node = document.createElement('div');
         node.innerHTML = content;
@@ -299,7 +311,15 @@ class GoogleMap  {
     clearInk() {
         this.strokePoly?.setMap(null);
     }
+
+    /**
+     * Get the current map bound coordinates
+     */
+    getBounds() {
+        return this.map.getBounds();
+    }
     //#endregion
+
     //#region Utility
     /**
      * Current time in ISO 8601 format
@@ -309,4 +329,5 @@ class GoogleMap  {
         let timestamp = new Date();
         return timestamp.toISOString();
     }
+    //#endregion
 }

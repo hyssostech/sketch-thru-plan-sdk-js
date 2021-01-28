@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { LatLon, Size } from "sketch-thru-plan-sdk";
-import { BasicRenderer } from "./basicrenderer";
 export class GoogleMap {
     constructor(apiKey, mapDivId, mapCenter, zoomLevel) {
         this.apiKey = apiKey;
@@ -147,9 +146,10 @@ export class GoogleMap {
             disableDoubleClickZoom: true
         });
     }
-    addFeature(symbol) {
-        let gj = new BasicRenderer(symbol).asGeoJSON();
-        this.map.data.addGeoJson(gj);
+    addFeature(symbolGeoJSON) {
+        if (symbolGeoJSON) {
+            this.map.data.addGeoJson(symbolGeoJSON);
+        }
     }
     removeFeature(poid) {
         let feature = this.map.data.getFeatureById(poid);
@@ -190,6 +190,9 @@ export class GoogleMap {
     clearInk() {
         var _a;
         (_a = this.strokePoly) === null || _a === void 0 ? void 0 : _a.setMap(null);
+    }
+    getBounds() {
+        return this.map.getBounds();
     }
     getIsoTimestamp() {
         let timestamp = new Date();

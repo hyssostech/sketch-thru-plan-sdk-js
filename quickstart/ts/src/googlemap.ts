@@ -9,9 +9,9 @@ type InfoHandlers = { selector: string, handler: (event: Event) => void, closeIn
 interface IStpMap {
     /**
      * Add feature representing a symbol to the map
-     * @param symbol Symbol to add
+     * @param symbol Symbol GeoJSON to add
      */
-    addFeature(symbol: StpSymbol): void;
+    addFeature(symbolGeoJSON: GeoJSON.Feature): void;
     /**
      * Remove a feature from the map
      * @param poid Unique identifier of the feature to remove
@@ -21,6 +21,10 @@ interface IStpMap {
      * Remove gesture ink from the map, if any
      */
     clearInk(): void;
+    /**
+     * Get current map bounds
+     */
+    getBounds(): google.maps.LatLngBounds;
     /**
      * Display an information window/popup on the map
      * @param content HTML content to display
@@ -214,7 +218,7 @@ export class GoogleMap implements IStpMap {
      * Set drawing mode and collect the freehand coordinates until a pen up
      * @param {*} latLng Coordinate of the initial (pendown) point
      */
-    drawFreeHand(latLng: google.maps.LatLng) {
+    private drawFreeHand(latLng: google.maps.LatLng) {
         // Capture start time
         this.strokeStart = this.getIsoTimestamp();
 
@@ -278,7 +282,7 @@ export class GoogleMap implements IStpMap {
     /**
      * Set map controls so that the mouse can be used to freehand draw
      */
-    enableDrawing() {
+    private enableDrawing() {
         this.map!.setOptions({
             draggable: false,
             zoomControl: false,
@@ -290,7 +294,7 @@ export class GoogleMap implements IStpMap {
     /**
      * Restore the standard drag/zomm capabilities
      */
-    enableDragZoom() {
+    private enableDragZoom() {
         this.map!.setOptions({
             draggable: true,
             zoomControl: true,
@@ -302,15 +306,19 @@ export class GoogleMap implements IStpMap {
 
     //#region Feature handling
     /**
-         * Add feature to the map
-         * @param symbol - Military symbol to add as a feature
-         */
-    addFeature(symbol: StpSymbol) {
-        // Get GeoJSON representation and add to map
-        let gj: GeoJSON.Feature = new BasicRenderer(symbol).asGeoJSON();
-        this.map!.data.addGeoJson(gj);
+     * Add feature to the map
+     * @param symbol - Military symbol to add as a feature
+     */
+    addFeature(symbolGeoJSON: GeoJSON.Feature) {
+        if (symbolGeoJSON) {
+            this.map!.data.addGeoJson(symbolGeoJSON);
+        }
     }
 
+    /**
+     * Remove a feature from the map
+     * @param poid Unique identifier of the feature to remove
+     */
     removeFeature(poid: string) {
         let feature = this.map!.data.getFeatureById(poid);
         if (feature) {
@@ -324,7 +332,15 @@ export class GoogleMap implements IStpMap {
             this.map!.data.remove(feature);
         }
     }
+    //#endregion
 
+    //#region Display related functions
+    /**
+     * Display an information window/popup on the map
+     * @param content HTML content to display
+     * @param location Coordinates of the location where the content is to be displayed
+     * @param handlers Optional array of CSS selectors and corresponding functions to activate if the element is selected (button/link clicked)
+     */
     displayInfo(content: string, location: LatLon, handlers: { selector: string; handler: (event: Event) => void, closeInfo:boolean}[]): void {
         let node = document.createElement('div');
         node.innerHTML = content;
@@ -359,7 +375,15 @@ export class GoogleMap implements IStpMap {
     clearInk(): void {
         this.strokePoly?.setMap(null);
     }
+
+    /**
+     * Get the current map bound coordinates
+     */
+    getBounds(): google.maps.LatLngBounds {
+        return this.map.getBounds();
+    }
     //#endregion
+
     //#region Utility
     /**
      * Current time in ISO 8601 format
@@ -369,4 +393,5 @@ export class GoogleMap implements IStpMap {
         let timestamp = new Date();
         return timestamp.toISOString();
     }
+    //#endregion
 }

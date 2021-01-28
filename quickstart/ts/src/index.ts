@@ -1,4 +1,5 @@
 import { AzureSpeechRecognizer, LatLon, Size, StpMessageLevel, StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-plan-sdk";
+import { BasicRenderer } from "./basicrenderer";
 import { GoogleMap } from "./googlemap";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -11,7 +12,7 @@ const googleMapsKey = "<Enter your Google Maps API key here>";
 const defaultMapCenter: LatLon = new LatLon(58.967774948, 11.196062412);
 const defaultZoomLevel = 13; 
 
-const defaultWebSocketUrl  = "ws://<STP server>:<STP port>";//"wss://echo.websocket.org";
+const defaultWebSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
 window.onload = () => start();
@@ -34,7 +35,6 @@ async function start(){
     
     const stpParm = urlParams.get('stpurl');
     const webSocketUrl  = stpParm ? stpParm : defaultWebSocketUrl;
-    const role = urlParams.get('role');
 
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpWebSocketsConnector(webSocketUrl);
@@ -46,12 +46,16 @@ async function start(){
     // A new symbol has been recognized and added
     stpsdk.onSymbolAdded = (alternates: StpSymbol[], isUndo: boolean) => {
         // Add the best recognition to the map - better if alternates were displayed, could be chosen
-        map.addFeature(alternates[0]);
+        let gj = new BasicRenderer(alternates[0]).asGeoJSON();
+        map.addFeature(gj);
     };
     // The properties of a symbol were modified
     stpsdk.onSymbolModified = (poid: string, symbol: StpSymbol, isUndo: boolean) => {
+        // Remove current verion
         map.removeFeature(poid);
-        map.addFeature(symbol);
+        // Add the modified symbol
+        let gj = new BasicRenderer(symbol).asGeoJSON();
+        map.addFeature(gj);
     };
     // A symbol was removed
     stpsdk.onSymbolDeleted = (poid: string, isUndo: boolean) => {

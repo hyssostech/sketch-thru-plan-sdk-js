@@ -6,9 +6,10 @@ declare type InfoHandlers = {
     closeInfo: boolean;
 };
 interface IStpMap {
-    addFeature(symbol: StpSymbol): void;
+    addFeature(symbolGeoJSON: GeoJSON.Feature): void;
     removeFeature(poid: string): void;
     clearInk(): void;
+    getBounds(): google.maps.LatLngBounds;
     displayInfo(content: string, location: LatLon, handlers: InfoHandlers[]): void;
     onStrokeStart: ((location: LatLon, timestamp: string) => void) | undefined;
     onStrokeCompleted: ((pixelBoundsWindow: Size, topLeftGeoMap: LatLon, bottomRightGeoMap: LatLon, strokePoints: LatLon[], timeStrokeStart: string, timeStrokeEnd: string, intersectedPoids: string[]) => void) | undefined;
@@ -31,10 +32,10 @@ export declare class GoogleMap implements IStpMap {
     constructor(apiKey: string, mapDivId: string, mapCenter: LatLon, zoomLevel: number);
     load(): Promise<void>;
     initMap(): Promise<void>;
-    drawFreeHand(latLng: google.maps.LatLng): void;
-    enableDrawing(): void;
-    enableDragZoom(): void;
-    addFeature(symbol: StpSymbol): void;
+    private drawFreeHand;
+    private enableDrawing;
+    private enableDragZoom;
+    addFeature(symbolGeoJSON: GeoJSON.Feature): void;
     removeFeature(poid: string): void;
     displayInfo(content: string, location: LatLon, handlers: {
         selector: string;
@@ -42,6 +43,7 @@ export declare class GoogleMap implements IStpMap {
         closeInfo: boolean;
     }[]): void;
     clearInk(): void;
+    getBounds(): google.maps.LatLngBounds;
     getIsoTimestamp(): string;
 }
 export {};
