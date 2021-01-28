@@ -18,7 +18,7 @@ The SDK is included via a `jdelivr` reference on the main html page. Here we sho
 
 ## Configuration
 
-Enter servers and keys by editing `index.js`:
+Enter servers and keys by editing `index.js`. NOTE: these parameters can be provided as querystring parameters as well (see description further down in this doc).
 
 * Enter the server address and port where the STP websockets service is running. Make sure the port is *not* blocked by a firewall
 
@@ -60,6 +60,17 @@ const zoomLevel = 13;
     * Firefox provides a checkbox to avoid the need for repeated authorization, so authorization needs to be provided a single time
 * Successful recognition of the symbol results in generic blue rectangles (for friendly) or red lozenges (enemy) to be displayed, with Tactical Graphics displayed in black
 * To pan and zoom, hold the `Ctrl` key while dragging the mouse
+
+Optional querystring parameters:
+
+* `mapkey` - Google Maps API key
+* `lat`, `lon` - coordinates of the center of the map (decimal degrees)
+* `zoom` - initial map zoom level
+* `azkey` - MS Cognitive Services Speech API key
+* `azregion` - MS Cognitive Services Speech instance region
+* `azlang` - MS Cognitive Services Speech language (default is en-US)
+* `azendp` - Optional MS Cognitive Services Speech custom language model endpoint
+* `stpurl` - STP Websockets URL
 
 
 ## Code walkthrough
