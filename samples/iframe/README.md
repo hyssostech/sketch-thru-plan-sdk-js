@@ -13,7 +13,7 @@ A sample of an iframe that is cross-origin, with a working microphone can be fou
 https://hyssostech.github.io/stp-docs/live/index.html
  
  
-Full html for that page for convenience:
+The `iframe` in that page points to an installed version of the STP sample app. Follow the [link](../gmaps) for details on capabilities, implementation and parameters.   
 
 ```html
 <!DOCTYPE html>
@@ -41,7 +41,7 @@ Full html for that page for convenience:
    2) You can select a different map extent as the default by using "lat", "lon" and "zomm" querystring parameters
    (coordinates in decimal degrees; zoom around 13-15)
    -->
-   <iframe src="https://stp.hyssos.com/gmaps/index.html?stpurl=wss%3A%2F%2Fstp.hyssos.com%2Fww&lat=31.2732167&lon=-97.5714156&zoom=16"  allow="microphone" scrolling="no" width="100%" height="800"></iframe>
+   <iframe src="https://stp.hyssos.com/gmaps/index.html?lat=31.2732167&lon=-97.5714156&zoom=16"  allow="microphone" scrolling="no" width="100%" height="800"></iframe>
   </body>
 </html>
 ```

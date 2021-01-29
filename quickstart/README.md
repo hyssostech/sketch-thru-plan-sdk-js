@@ -20,7 +20,6 @@ The connection to STP and the speech recognizer that is used are configurable vi
 * Websockets connector that communicates with STP's  Publish Subscribe system
 * Speech recognition based on Microsoft Cognitive Services Speech to Text service
 
-The speech recognition plugin is optional, and can be replaced for example by a separate component running on the client machine. Details are outside the scope of this guide.
 
 ## Prerequisites
 * Sketch-thru-Plan (STP) Engine (v5.1.3+) running on an accessible server

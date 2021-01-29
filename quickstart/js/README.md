@@ -7,7 +7,7 @@ For a general description and code walkthrough, see the top level [README](../RE
 Two cdn libraries are referenced in [`index.html`](index.html):
 
 1. Microsoft's Cognitive Services Speech SDK - used by the speech plugin
-1. STP SDK itself
+1. STP SDK itself - available on `jsdelivr`: [https://www.jsdelivr.com/package/npm/sketch-thru-plan-sdk]
 
 ```html
     <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
