@@ -18,7 +18,7 @@ The SDK is included via a `jdelivr` reference on the main html page. Here we sho
 
 ## Configuration
 
-Enter servers and keys by editing `index.js`. NOTE: these parameters can be provided as querystring parameters as well (see description further down in this doc).
+Enter servers and keys by editing `index.js`. 
 
 * Enter the server address and port where the STP websockets service is running. Make sure the port is *not* blocked by a firewall
 
@@ -48,20 +48,12 @@ const mapCenter = {lat: 58.967774948, lng: 11.196062412};
 const zoomLevel = 13;  
 ```
 
-## Run the `index.html` sample
-* Load the page on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions
-* A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
-* Enter symbols by sketching and speaking, for example:
-    * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
-    * Sketch a line and speak "Phase Line Blue", or "Company Boundary", or "Main Attack Boston"
-    * Sketch an area and speak "Objective Bravo" or "Assembly Area"
-* **NOTE**: Authorization for access to the microphone is displayed when speech recognition is activated
-    * In Chrome, the authorization popup is shown repeatedly unless the page is served as SSL-enabled `https`. For quick testing, complete the sketching, approve access and speak. Notice as well that Chrome crashes if run from Visual Studio Code in debug mode when the speech recognition is activated
-    * Firefox provides a checkbox to avoid the need for repeated authorization, so authorization needs to be provided a single time
-* Successful recognition of the symbol results in generic blue rectangles (for friendly) or red lozenges (enemy) to be displayed, with Tactical Graphics displayed in black
-* To pan and zoom, hold the `Ctrl` key while dragging the mouse
+**NOTE**: these parameters can be provided as querystring parameters as well, as described next.
 
-Optional querystring parameters:
+## Run the `index.html` sample
+1. Load the page on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions
+
+Optional querystring parameters - can be used in addition/instead of default editing as describe in the previous section:
 
 * `mapkey` - Google Maps API key
 * `lat`, `lon` - coordinates of the center of the map (decimal degrees)
@@ -71,6 +63,18 @@ Optional querystring parameters:
 * `azlang` - MS Cognitive Services Speech language (default is en-US)
 * `azendp` - Optional MS Cognitive Services Speech custom language model endpoint
 * `stpurl` - STP Websockets URL
+
+
+1. A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
+1. Enter symbols by sketching and speaking, for example:
+    * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
+    * Sketch a line and speak "Phase Line Blue", or "Company Boundary", or "Main Attack Boston"
+    * Sketch an area and speak "Objective Bravo" or "Assembly Area"
+1. **NOTE**: Authorization for access to the microphone is displayed when speech recognition is activated
+    * In Chrome, the authorization popup is shown repeatedly unless the page is served as SSL-enabled `https`. For quick testing, complete the sketching, approve access and speak. Notice as well that Chrome crashes if run from Visual Studio Code in debug mode when the speech recognition is activated
+    * Firefox provides a checkbox to avoid the need for repeated authorization, so authorization needs to be provided a single time
+1. Successful recognition of the symbol results in generic blue rectangles (for friendly) or red lozenges (enemy) to be displayed, with Tactical Graphics displayed in black
+1. To pan and zoom, hold the `Ctrl` key while dragging the mouse
 
 
 ## Code walkthrough
