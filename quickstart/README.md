@@ -63,7 +63,7 @@ const zoomLevel = 13;
 
 ## Run the  sample
 
-* Load the `quicktstart/ts/dist/index.html` or `uickstart/js/index.js` on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions
+* Load the `quicktstart/ts/dist/index.html` or `quickstart/js/index.js` on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions
 * A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 * Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
@@ -106,14 +106,19 @@ STP triggers events asynchronously as user actions are interpreted as military s
 
 ```javascript
 // Hook up to the events _before_ connecting, so that the correct message subscriptions can be identified
+// A new symbol has been recognized and added
 stpsdk.onSymbolAdded = (alternates: StpSymbol[], isUndo: boolean) => {
     // Add the best recognition to the map - better if alternates were displayed, could be chosen
-    map.addFeature(alternates[0]);
+    let gj = new BasicRenderer(alternates[0]).asGeoJSON();
+    map.addFeature(gj);
 };
 // The properties of a symbol were modified
 stpsdk.onSymbolModified = (poid: string, symbol: StpSymbol, isUndo: boolean) => {
+    // Remove current verion
     map.removeFeature(poid);
-    map.addFeature(symbol);
+    // Add the modified symbol
+    let gj = new BasicRenderer(symbol).asGeoJSON();
+    map.addFeature(gj);
 };
 // A symbol was removed
 stpsdk.onSymbolDeleted = (poid: string, isUndo: boolean) => {
