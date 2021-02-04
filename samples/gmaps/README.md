@@ -5,7 +5,7 @@ This sample extends the [quickstart](../../qs/js) demonstration os Sketch-Thru-P
 ## Prerequisites
 * Sketch-thru-Plan (STP) Engine (v5.1.3+) running on an accessible server
 * A Google Maps [API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
-* Optional: a subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
+* A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
 
 ## References to the STP SDK
@@ -26,14 +26,13 @@ Enter servers and keys by editing `index.js`.
 const webSocketUrl  = "ws://<STP server>:<STP port>";
 ```
 
-* Replace the Google Maps API placeholders with your own keys
+* Replace the Google Maps API placeholders with your own key
 
 ```javascript
 const googleMapsKey = "<Enter your Google Maps API key here>";
-const googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + googleMapsKey;
 ```
 
-* If using browser-based speech, replace the Azure Speech placeholders with your own 
+* Replace the Azure Speech placeholders with your own 
 
 ```javascript
 const azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
