@@ -7,7 +7,20 @@ To allow access to the microphone is situations in which the domain serving the 
 ```html
 <iframe src="https://server.com/stpapp"  allow="microphone" scrolling="no" width="100%" height="800"></iframe>
  ```
- 
+
+**NOTE:** The speech services require secure access via `HTTPS`, otherwise most browsers will either block access or request authorization to access the microphone repeatedly, which is not a viable user experience. Make sure that the pages are properly configured to use valid certificates.
+
+## Troubleshooting microphone access
+
+If a message indicating an error recognizing speech is displayed once a stroke is placed on the map, even if `allow="microphone"` is properly set on the iframe, verify the following:
+
+1. A microphone needs to be connected and operational, otherwise there is a failure at the moment audio stream initialization is attempted
+1. If the page embedding the `iframe` is accessed via `HTTP` (not SSL enabled), while the page pointed to (`src` parameter) is SSL enabled, the connection to the speech services may be blocked 
+1. If the browser showing the page is running on a virtual machine being accessed via a remote desktop applicaiton, rather than on a local box, additional configuration steps may be needed to have the remote desktop app redirect local audio to the VM
+1. The Microsoft Cognitive Services Speech API key entered in the target page the iframe points to (`src` parameter) may be incorrect or expired
+
+## Live sample
+
 A sample of an iframe that is cross-origin, with a working microphone can be found here:
  
 https://hyssostech.github.io/stp-docs/live/index.html
