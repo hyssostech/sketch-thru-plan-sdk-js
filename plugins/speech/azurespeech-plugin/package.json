@@ -4,7 +4,7 @@
     "path": "azurespeech-plugin"
   },
   "name": "@hyssostech/azurespeech-plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Microsoft Cognitive Services Speech plugin for Sketch-thru-Plan",
   "main": "dist/stpazurespeech-bundle-min.js",
   "types": "dist/stpazurespeech-bundle.d.ts",
@@ -19,7 +19,7 @@
     "bundle:dts": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.d.ts --file dist/$npm_package_config_rootjs-bundle.d.ts --format es --plugin rollup-plugin-dts",
     "bundle:min": "terser --ecma 6 --compress --mangle --module -o $npm_package_main -- dist/$npm_package_config_rootjs-bundle.js && gzip -9 -c dist/$npm_package_config_rootjs-bundle-min.js > dist/$npm_package_config_rootjs-bundle-min.js.gz",
     "fix:format": "prettier --config ../../.prettierrc src --write"
-},
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-resources/plugins/speech/azurespeech-plugin"

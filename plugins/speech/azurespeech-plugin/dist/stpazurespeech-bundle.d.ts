@@ -1,7 +1,12 @@
-import { AudioConfig, SpeechRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
+import { SpeechConfig, AudioConfig, SpeechRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
 
 interface ISpeechRecognizer {
-    recognize(): Promise<ISpeechRecoResult | null>;
+    recognizeOnce(maxRetries?: number): Promise<ISpeechRecoResult | null>;
+    startRecognizing(): void;
+    stopRecognizing(wait?: number): void;
+    onRecognized: ((result: ISpeechRecoResult | null) => void) | undefined;
+    onRecognizing: ((snippet: string) => void) | undefined;
+    onError: ((error: Error) => void) | undefined;
 }
 interface ISpeechRecoResult {
     results: ISpeechRecoItem[];
@@ -16,11 +21,19 @@ interface ISpeechRecoItem {
 declare class AzureSpeechRecognizer implements ISpeechRecognizer {
     speechSubscriptionKey: string;
     serviceRegion: string;
+    speechConfig: SpeechConfig;
     audioConfig: AudioConfig;
-    recognizer: SpeechRecognizer;
+    recognizer: SpeechRecognizer | undefined;
+    recoStart: Date;
     constructor(speechSubscriptionKey: string, serviceRegion: string, endPoint?: string, audioConfig?: AudioConfig);
-    recognize(maxRetries?: number): Promise<ISpeechRecoResult | null>;
-    private recoOnce;
+    onRecognized: ((result: ISpeechRecoResult | null) => void) | undefined;
+    onRecognizing: ((snippet: string) => void) | undefined;
+    onError: ((error: Error) => void) | undefined;
+    recognizeOnce(maxRetries?: number): Promise<ISpeechRecoResult | null>;
+    private tryReco;
+    startRecognizing(): void;
+    stopRecognizing(wait?: number): void;
+    private convertResults;
     private addTicksToDate;
 }
 

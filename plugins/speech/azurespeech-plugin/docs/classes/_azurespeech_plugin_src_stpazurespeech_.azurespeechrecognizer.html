@@ -109,8 +109,13 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#audioconfig" class="tsd-kind-icon">audio<wbr>Config</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#onerror" class="tsd-kind-icon">on<wbr>Error</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#onrecognized" class="tsd-kind-icon">on<wbr>Recognized</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#onrecognizing" class="tsd-kind-icon">on<wbr>Recognizing</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recostart" class="tsd-kind-icon">reco<wbr>Start</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recognizer" class="tsd-kind-icon">recognizer</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#serviceregion" class="tsd-kind-icon">service<wbr>Region</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#speechconfig" class="tsd-kind-icon">speech<wbr>Config</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#speechsubscriptionkey" class="tsd-kind-icon">speech<wbr>Subscription<wbr>Key</a></li>
 							</ul>
 						</section>
@@ -118,8 +123,11 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#addtickstodate" class="tsd-kind-icon">add<wbr>Ticks<wbr>ToDate</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recoonce" class="tsd-kind-icon">reco<wbr>Once</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recognize" class="tsd-kind-icon">recognize</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#convertresults" class="tsd-kind-icon">convert<wbr>Results</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recognizeonce" class="tsd-kind-icon">recognize<wbr>Once</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#startrecognizing" class="tsd-kind-icon">start<wbr>Recognizing</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#stoprecognizing" class="tsd-kind-icon">stop<wbr>Recognizing</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#tryreco" class="tsd-kind-icon">try<wbr>Reco</a></li>
 							</ul>
 						</section>
 					</div>
@@ -131,13 +139,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Azure<wbr>Speech<wbr>Recognizer<span class="tsd-signature-symbol">(</span>speechSubscriptionKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, serviceRegion<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, audioConfig<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">sdk.AudioConfig</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html" class="tsd-signature-type">AzureSpeechRecognizer</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Azure<wbr>Speech<wbr>Recognizer<span class="tsd-signature-symbol">(</span>speechSubscriptionKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, serviceRegion<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, endPoint<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, audioConfig<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">SpeechSDK.AudioConfig</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html" class="tsd-signature-type">AzureSpeechRecognizer</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:18</li>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L18">azurespeech-plugin/src/stpazurespeech.ts:18</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -164,7 +172,15 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> audioConfig: <span class="tsd-signature-type">sdk.AudioConfig</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> endPoint: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>Custom model endpoint, if any</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> audioConfig: <span class="tsd-signature-type">SpeechSDK.AudioConfig</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>Optional audio config. Set to default mike input if not provided</p>
@@ -185,17 +201,75 @@
 					<div class="tsd-signature tsd-kind-icon">audio<wbr>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">AudioConfig</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:17</li>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L16">azurespeech-plugin/src/stpazurespeech.ts:16</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="onerror" class="tsd-anchor"></a>
+					<h3>on<wbr>Error</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>error<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Error</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html">ISpeechRecognizer</a>.<a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onerror">onError</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L72">azurespeech-plugin/src/stpazurespeech.ts:72</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Optional event handler invoked when there is a recognition error</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="onrecognized" class="tsd-anchor"></a>
+					<h3>on<wbr>Recognized</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Recognized<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html">ISpeechRecognizer</a>.<a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onrecognized">onRecognized</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L62">azurespeech-plugin/src/stpazurespeech.ts:62</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Event handler invoked whenever the recognizer has a complete phrase to return</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="onrecognizing" class="tsd-anchor"></a>
+					<h3>on<wbr>Recognizing</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Recognizing<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>snippet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html">ISpeechRecognizer</a>.<a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onrecognizing">onRecognizing</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L67">azurespeech-plugin/src/stpazurespeech.ts:67</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Optional event handler invoked whenever the recognizer has a partial recognition available</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="recostart" class="tsd-anchor"></a>
+					<h3>reco<wbr>Start</h3>
+					<div class="tsd-signature tsd-kind-icon">reco<wbr>Start<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Date</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L18">azurespeech-plugin/src/stpazurespeech.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="recognizer" class="tsd-anchor"></a>
 					<h3>recognizer</h3>
-					<div class="tsd-signature tsd-kind-icon">recognizer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">SpeechRecognizer</span></div>
+					<div class="tsd-signature tsd-kind-icon">recognizer<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">SpeechRecognizer</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:18</li>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L17">azurespeech-plugin/src/stpazurespeech.ts:17</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -205,7 +279,17 @@
 					<div class="tsd-signature tsd-kind-icon">service<wbr>Region<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:16</li>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L14">azurespeech-plugin/src/stpazurespeech.ts:14</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="speechconfig" class="tsd-anchor"></a>
+					<h3>speech<wbr>Config</h3>
+					<div class="tsd-signature tsd-kind-icon">speech<wbr>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">SpeechConfig</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L15">azurespeech-plugin/src/stpazurespeech.ts:15</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -215,7 +299,7 @@
 					<div class="tsd-signature tsd-kind-icon">speech<wbr>Subscription<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:15</li>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L13">azurespeech-plugin/src/stpazurespeech.ts:13</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -232,7 +316,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:156</li>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L302">azurespeech-plugin/src/stpazurespeech.ts:302</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -261,16 +345,134 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<a name="recoonce" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> reco<wbr>Once</h3>
+					<a name="convertresults" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> convert<wbr>Results</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">reco<wbr>Once<span class="tsd-signature-symbol">(</span>recoStart<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Date</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_azurespeech_plugin_src_stpazurespeech_.speechrecoresult.html" class="tsd-signature-type">SpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">convert<wbr>Results<span class="tsd-signature-symbol">(</span>recoStart<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Date</span>, result<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SpeechRecognitionResult</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_azurespeech_plugin_src_stpazurespeech_.speechrecoresult.html" class="tsd-signature-type">SpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:88</li>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L234">azurespeech-plugin/src/stpazurespeech.ts:234</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>recoStart: <span class="tsd-signature-type">Date</span></h5>
+								</li>
+								<li>
+									<h5>result: <span class="tsd-signature-type">SpeechRecognitionResult</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="_azurespeech_plugin_src_stpazurespeech_.speechrecoresult.html" class="tsd-signature-type">SpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="recognizeonce" class="tsd-anchor"></a>
+					<h3>recognize<wbr>Once</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">recognize<wbr>Once<span class="tsd-signature-symbol">(</span>maxRetries<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html">ISpeechRecognizer</a>.<a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html#recognizeonce">recognizeOnce</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L82">azurespeech-plugin/src/stpazurespeech.ts:82</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Activate the microphone and attempt to recognize speech in the next few seconds
+									Ideally, the recognition would include 2s of audio <em>before</em> the call, drawing from some buffer</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> maxRetries: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Number of time to retry before returning an error</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>Recognized items/hypotheses, or null if nothing was recognized</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="startrecognizing" class="tsd-anchor"></a>
+					<h3>start<wbr>Recognizing</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">start<wbr>Recognizing<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html">ISpeechRecognizer</a>.<a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html#startrecognizing">startRecognizing</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L168">azurespeech-plugin/src/stpazurespeech.ts:168</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Start the recognition process. Intermediate results are returned via the onRecognizing event;
+										final results (phrase) are returned via the onRecognized event
+										The expectation is that speech recognition is started at the beginning of a sketch, and stopped
+									sometime after the end of the sketch</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="stoprecognizing" class="tsd-anchor"></a>
+					<h3>stop<wbr>Recognizing</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">stop<wbr>Recognizing<span class="tsd-signature-symbol">(</span>wait<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html">ISpeechRecognizer</a>.<a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html#stoprecognizing">stopRecognizing</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L220">azurespeech-plugin/src/stpazurespeech.ts:220</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Stop the recognition process. Is normally called at the end of a sketch action</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> wait: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Time in milliseconds to wait before stopping recognition</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="tryreco" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> try<wbr>Reco</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">try<wbr>Reco<span class="tsd-signature-symbol">(</span>recoStart<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Date</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_azurespeech_plugin_src_stpazurespeech_.speechrecoresult.html" class="tsd-signature-type">SpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/azurespeech-plugin/src/stpazurespeech.ts#L122">azurespeech-plugin/src/stpazurespeech.ts:122</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -285,41 +487,6 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_azurespeech_plugin_src_stpazurespeech_.speechrecoresult.html" class="tsd-signature-type">SpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<ul>
-								<li>Recognition results, or null if nothing was recognized</li>
-							</ul>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="recognize" class="tsd-anchor"></a>
-					<h3>recognize</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">recognize<span class="tsd-signature-symbol">(</span>maxRetries<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Implementation of <a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html">ISpeechRecognizer</a>.<a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecognizer.html#recognize">recognize</a></p>
-								<ul>
-									<li>Defined in azurespeech-plugin/src/stpazurespeech.ts:55</li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Attempts to get a recognition, retrying if there are errors</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> maxRetries: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>Number of time to retry before returning an error</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<ul>
 								<li>Recognition results, or null if nothing was recognized</li>
 							</ul>
@@ -368,10 +535,25 @@
 								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#audioconfig" class="tsd-kind-icon">audio<wbr>Config</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#onerror" class="tsd-kind-icon">on<wbr>Error</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#onrecognized" class="tsd-kind-icon">on<wbr>Recognized</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#onrecognizing" class="tsd-kind-icon">on<wbr>Recognizing</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recostart" class="tsd-kind-icon">reco<wbr>Start</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recognizer" class="tsd-kind-icon">recognizer</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#serviceregion" class="tsd-kind-icon">service<wbr>Region</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#speechconfig" class="tsd-kind-icon">speech<wbr>Config</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#speechsubscriptionkey" class="tsd-kind-icon">speech<wbr>Subscription<wbr>Key</a>
@@ -380,10 +562,19 @@
 								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#addtickstodate" class="tsd-kind-icon">add<wbr>Ticks<wbr>ToDate</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
-								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recoonce" class="tsd-kind-icon">reco<wbr>Once</a>
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#convertresults" class="tsd-kind-icon">convert<wbr>Results</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recognize" class="tsd-kind-icon">recognize</a>
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#recognizeonce" class="tsd-kind-icon">recognize<wbr>Once</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#startrecognizing" class="tsd-kind-icon">start<wbr>Recognizing</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#stoprecognizing" class="tsd-kind-icon">stop<wbr>Recognizing</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="_azurespeech_plugin_src_stpazurespeech_.azurespeechrecognizer.html#tryreco" class="tsd-kind-icon">try<wbr>Reco</a>
 							</li>
 						</ul>
 					</li>

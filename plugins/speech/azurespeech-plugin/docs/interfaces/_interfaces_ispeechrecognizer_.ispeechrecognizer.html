@@ -99,34 +99,91 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section tsd-is-external">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onerror" class="tsd-kind-icon">on<wbr>Error</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onrecognized" class="tsd-kind-icon">on<wbr>Recognized</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onrecognizing" class="tsd-kind-icon">on<wbr>Recognizing</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-external">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#recognize" class="tsd-kind-icon">recognize</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#recognizeonce" class="tsd-kind-icon">recognize<wbr>Once</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#startrecognizing" class="tsd-kind-icon">start<wbr>Recognizing</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-external"><a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#stoprecognizing" class="tsd-kind-icon">stop<wbr>Recognizing</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group tsd-is-external">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+					<a name="onerror" class="tsd-anchor"></a>
+					<h3>on<wbr>Error</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Error<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>error<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Error</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/interfaces/ISpeechRecognizer.ts#L41">interfaces/ISpeechRecognizer.ts:41</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Optional event handler invoked when there is a recognition error</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+					<a name="onrecognized" class="tsd-anchor"></a>
+					<h3>on<wbr>Recognized</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Recognized<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>result<span class="tsd-signature-symbol">: </span><a href="_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/interfaces/ISpeechRecognizer.ts#L31">interfaces/ISpeechRecognizer.ts:31</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Event handler invoked whenever the recognizer has a complete phrase to return</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+					<a name="onrecognizing" class="tsd-anchor"></a>
+					<h3>on<wbr>Recognizing</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Recognizing<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>snippet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/interfaces/ISpeechRecognizer.ts#L36">interfaces/ISpeechRecognizer.ts:36</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Optional event handler invoked whenever the recognizer has a partial recognition available</p>
+						</div>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-external">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
-					<a name="recognize" class="tsd-anchor"></a>
-					<h3>recognize</h3>
+					<a name="recognizeonce" class="tsd-anchor"></a>
+					<h3>recognize<wbr>Once</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
-						<li class="tsd-signature tsd-kind-icon">recognize<span class="tsd-signature-symbol">(</span>maxRetries<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">recognize<wbr>Once<span class="tsd-signature-symbol">(</span>maxRetries<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in interfaces/ISpeechRecognizer.ts:13</li>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/interfaces/ISpeechRecognizer.ts#L12">interfaces/ISpeechRecognizer.ts:12</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Start recognizing speech
-										At a minimum the speech in the next few seconds should be interpreted. Ideally, the recognition
-									would include 2s of audio <em>before</em> the call, drawing from some buffer</p>
+									<p>Activate the microphone and attempt to recognize speech in the next few seconds
+									Ideally, the recognition would include 2s of audio <em>before</em> the call, drawing from some buffer</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -134,12 +191,68 @@
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> maxRetries: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Optional number of times to retry the operation</p>
+										<p>Number of time to retry before returning an error</p>
 									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="_interfaces_ispeechrecognizer_.ispeechrecoresult.html" class="tsd-signature-type">ISpeechRecoResult</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>Recognized items/hypotheses or null if nothing was recognized (no speech during the time the mike remains active)</p>
+							<p>Recognized items/hypotheses, or null if nothing was recognized</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="startrecognizing" class="tsd-anchor"></a>
+					<h3>start<wbr>Recognizing</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">start<wbr>Recognizing<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/interfaces/ISpeechRecognizer.ts#L20">interfaces/ISpeechRecognizer.ts:20</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Start the recognition process. Intermediate results are returned via the onRecognizing event;
+										final results (phrase) are returned via the onRecognized event
+										The expectation is that speech recognition is started at the beginning of a sketch, and stopped
+									sometime after the end of the sketch</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+					<a name="stoprecognizing" class="tsd-anchor"></a>
+					<h3>stop<wbr>Recognizing</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+						<li class="tsd-signature tsd-kind-icon">stop<wbr>Recognizing<span class="tsd-signature-symbol">(</span>wait<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hyssostech/sketch-thru-plan-sdk-resources/blob/b908f6b/plugins/speech/interfaces/ISpeechRecognizer.ts#L26">interfaces/ISpeechRecognizer.ts:26</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Stop the recognition process. Is normally called at the end of a sketch action</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> wait: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Time in seconds to wait before stopping recognition</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -178,8 +291,23 @@
 					<li class="current tsd-kind-interface tsd-parent-kind-module tsd-is-external">
 						<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html" class="tsd-kind-icon">ISpeech<wbr>Recognizer</a>
 						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+								<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onerror" class="tsd-kind-icon">on<wbr>Error</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+								<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onrecognized" class="tsd-kind-icon">on<wbr>Recognized</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-external">
+								<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#onrecognizing" class="tsd-kind-icon">on<wbr>Recognizing</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
-								<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#recognize" class="tsd-kind-icon">recognize</a>
+								<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#recognizeonce" class="tsd-kind-icon">recognize<wbr>Once</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#startrecognizing" class="tsd-kind-icon">start<wbr>Recognizing</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-external">
+								<a href="_interfaces_ispeechrecognizer_.ispeechrecognizer.html#stoprecognizing" class="tsd-kind-icon">stop<wbr>Recognizing</a>
 							</li>
 						</ul>
 					</li>

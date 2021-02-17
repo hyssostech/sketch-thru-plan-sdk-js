@@ -17,26 +17,27 @@
         constructor(speechSubscriptionKey, serviceRegion, endPoint, audioConfig) {
             this.speechSubscriptionKey = speechSubscriptionKey;
             this.serviceRegion = serviceRegion;
-            const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(this.speechSubscriptionKey, this.serviceRegion);
-            speechConfig.outputFormat = SpeechSDK.OutputFormat.Detailed;
+            this.speechConfig = SpeechSDK.SpeechConfig.fromSubscription(this.speechSubscriptionKey, this.serviceRegion);
+            this.speechConfig.outputFormat = SpeechSDK.OutputFormat.Detailed;
             if (endPoint) {
-                speechConfig.endpointId = endPoint;
+                this.speechConfig.endpointId = endPoint;
             }
             this.audioConfig = audioConfig
                 ? audioConfig
                 : SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-            this.recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, this.audioConfig);
         }
-        recognize(maxRetries) {
+        recognizeOnce(maxRetries) {
             const delay = 250;
             if (!maxRetries) {
                 maxRetries = 2000 / delay;
             }
+            this.recognizer = new SpeechSDK.SpeechRecognizer(this.speechConfig, this.audioConfig);
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                var _a;
                 for (let i = 0; i < maxRetries; i++) {
-                    const recoStart = new Date();
+                    this.recoStart = new Date();
                     try {
-                        const recoResult = yield this.recoOnce(recoStart);
+                        const recoResult = yield this.tryReco(this.recoStart);
                         resolve(recoResult);
                         return;
                     }
@@ -46,43 +47,93 @@
                         yield new Promise((resolve) => setTimeout(resolve, delay));
                     }
                 }
-                reject(new Error('Failed to recognize speech'));
+                let err = new Error('Failed to recognize speech');
+                (_a = this.onError) === null || _a === void 0 ? void 0 : _a.call(this, err);
+                reject(err);
             }));
         }
-        recoOnce(recoStart) {
+        tryReco(recoStart) {
             return new Promise((resolve, reject) => {
-                this.recognizer.recognizeOnceAsync((result) => {
-                    switch (result.reason) {
-                        case SpeechSDK.ResultReason.RecognizedSpeech:
-                            let recoResult = new SpeechRecoResult();
-                            recoResult.startTime = this.addTicksToDate(recoStart, result.offset);
-                            recoResult.endTime = this.addTicksToDate(recoResult.startTime, result.duration);
-                            let jsonDetails = result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult);
-                            let detailedProperties = Object.assign(new AzureSpeechDetailedResults(), JSON.parse(jsonDetails));
-                            const basicConversion = detailedProperties.NBest.map((item) => new SpeechRecoItem(item.Lexical, item.Confidence));
-                            recoResult.results = Array.from(basicConversion);
-                            for (let i = 0; i < basicConversion.length; i++) {
-                                const item = basicConversion[i];
-                                if (item.text.search(/^([a-zA-Z]\s)+[a-zA-Z]$/) >= 0) {
-                                    const acronym = item.text.replace(/\s/g, '');
-                                    const conf = item.confidence * 0.9;
-                                    recoResult.results.push(new SpeechRecoItem(acronym, conf));
-                                }
-                            }
-                            resolve(recoResult);
-                            break;
-                        case SpeechSDK.ResultReason.NoMatch:
-                            resolve(null);
-                            break;
-                        case SpeechSDK.ResultReason.Canceled:
-                            var cancellation = SpeechSDK.CancellationDetails.fromResult(result);
-                            reject(new Error(SpeechSDK.CancellationReason[cancellation.reason]));
-                            break;
-                    }
-                }, (error) => {
-                    reject(new Error(error));
-                });
+                var _a;
+                this.recognizer.recognizing = (s, e) => {
+                    var _a;
+                    (_a = this.onRecognizing) === null || _a === void 0 ? void 0 : _a.call(this, e.result.text);
+                };
+                this.recognizer.recognized = (s, e) => {
+                    var _a;
+                    let recoResult = this.convertResults(recoStart, e.result);
+                    (_a = this.onRecognized) === null || _a === void 0 ? void 0 : _a.call(this, recoResult);
+                    resolve(recoResult);
+                };
+                this.recognizer.canceled = (s, e) => {
+                    reject(new Error(SpeechSDK.CancellationReason[e.reason]));
+                };
+                (_a = this.recognizer) === null || _a === void 0 ? void 0 : _a.recognizeOnceAsync();
             });
+        }
+        startRecognizing() {
+            this.recognizer = new SpeechSDK.SpeechRecognizer(this.speechConfig, this.audioConfig);
+            this.recoStart = new Date();
+            this.recognizer.recognizing = (s, e) => {
+                var _a;
+                (_a = this.onRecognizing) === null || _a === void 0 ? void 0 : _a.call(this, e.result.text);
+            };
+            this.recognizer.recognized = (s, e) => {
+                var _a;
+                let recoResult = this.convertResults(this.recoStart, e.result);
+                (_a = this.onRecognized) === null || _a === void 0 ? void 0 : _a.call(this, recoResult);
+            };
+            this.recognizer.canceled = (s, e) => {
+                var _a;
+                let err = new Error(SpeechSDK.CancellationReason[e.reason]);
+                if (this.onError) {
+                    this.onError.call(this, err);
+                }
+                else {
+                    (_a = this.onRecognized) === null || _a === void 0 ? void 0 : _a.call(this, null);
+                }
+            };
+            this.recognizer.startContinuousRecognitionAsync();
+        }
+        stopRecognizing(wait) {
+            if (this.recognizer) {
+                setTimeout(() => {
+                    var _a;
+                    (_a = this.recognizer) === null || _a === void 0 ? void 0 : _a.close();
+                    this.recognizer = undefined;
+                }, wait ? wait : 0);
+            }
+        }
+        convertResults(recoStart, result) {
+            if (result.reason === SpeechSDK.ResultReason.NoMatch) {
+                return null;
+            }
+            let recoResult = new SpeechRecoResult();
+            recoResult.startTime = this.addTicksToDate(recoStart, result.offset);
+            recoResult.endTime = this.addTicksToDate(recoResult.startTime, result.duration);
+            let jsonDetails = result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult);
+            let detailedProperties = Object.assign(new AzureSpeechDetailedResults(), JSON.parse(jsonDetails));
+            const basicConversion = detailedProperties.NBest.map((item) => new SpeechRecoItem(item.Lexical, item.Confidence));
+            let resultsArray = Array.from(basicConversion);
+            for (let i = 0; i < basicConversion.length; i++) {
+                const item = basicConversion[i];
+                if (item.text.search(/^([a-zA-Z]\s)+[a-zA-Z]$/) >= 0) {
+                    const acronym = item.text.replace(/\s/g, '');
+                    const conf = item.confidence * 0.9;
+                    resultsArray.push(new SpeechRecoItem(acronym, conf));
+                }
+                else if (item.text.search(/^([a-zA-Z]\s)+[a-zA-Z]+$/) >= 0) {
+                    let parts = item.text.match(/^(([a-zA-Z]\s)+)([a-zA-Z]+)$/);
+                    if (parts && parts.length == 4) {
+                        const acronym = parts[1].replace(/\s/g, '');
+                        const designator = parts[3];
+                        const conf = item.confidence * 0.7;
+                        resultsArray.push(new SpeechRecoItem(acronym + ' ' + designator, conf));
+                    }
+                }
+            }
+            recoResult.results = resultsArray.sort((a, b) => b.confidence - a.confidence);
+            return recoResult;
         }
         addTicksToDate(date, ticksToAdd) {
             let dateTicks = date.getTime() * 10000 + 621355968000000000;

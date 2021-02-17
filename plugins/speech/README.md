@@ -61,12 +61,14 @@ STP operates by combining multiple types of user input (or *modalities*) such as
 
 Taking advantage of this natural style, STP uses sketch start events as anchors points around which speech produced within a window of a few seconds is considered for combined interpretation. A few strategies for handling speech interpretation are therefore possible:
 
-* Activate recognition at the start of each stroke - this is a simple, but effective strategy. Users need to be mindful in this case that whatever they speak before the stroke is started will not be captured by the system. This is the strategy used in the [quickstarts](../../quickstart/)
+1. Activate recognition at the start of each stroke - this is a simple, but effective strategy. Users need to be mindful in this case that whatever they speak before the stroke is started will not be captured by the system. This is the strategy used in the [quickstarts](../../quickstart/)
 
-* Capture 2 seconds of audio before the start of each stroke - ideally, audio buffers would be accessed to extract a limited amount of audio just before the start of a stroke, so that no part of the speech is lost, even if users start to talk a bit before sketching. This depends on specific audio techniques that are out of scope of the present discussion
+1. Recognize speech while the user is sketching, activating it at the moment the sketch starts, and ending a few seconds after the sketching ends. This is the strategy used in the [samples](../../samples/)
 
-* Continuous recognition - speech can also be transcribed/recognized continuously, and sent over to STP for consideration. STP has mechanisms to just consider speech that might be relevant. This is approach maximizes the capture of users' speech, but comes at additional computational costs because of the constant transcription of an open microphone
+1. Continuous recognition - speech can also be transcribed/recognized continuously, and sent over to STP for consideration. STP has mechanisms to just consider speech that might be relevant. This is approach maximizes the capture of users' speech, but comes at additional computational costs because of the constant transcription of an open microphone
+
+1. Capture 2 seconds of audio before the start of each stroke - ideally, audio buffers would be accessed to extract a limited amount of audio just before the start of a stroke, so that no part of the speech is lost, even if users start to talk a bit before sketching. This depends on specific audio techniques that are out of scope of the present discussion
 
 ## Implemented Speech plugins
 
-The [`azurespeech-plugin`](azurespeech-plugin) plugin implements is an implementation using the Microsoft Cognitive Services Speech to Text. It implements the simpler strategy of performing recognition once at a time. The expectation is that the `recognize` method is invoked by the client app whenever a pen down is detected (see [quicktstart](../../quickstart/js) for an example)
+The [`azurespeech-plugin`](azurespeech-plugin) plugin implements is an implementation using the Microsoft Cognitive Services Speech to Text. It implements the strategies 1 and 2 and 3, supporting recognition once at a time, as well as over a period of time that can be restricted to the duration of the sketching (strategy 2), or some other period of time determined by the client app (strategy 3). 
