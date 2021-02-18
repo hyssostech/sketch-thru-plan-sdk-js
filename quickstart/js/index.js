@@ -1,14 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-const azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
-const azureServiceRegion = "<Enter Azure's subscription region>"; 
-const azureLanguage = "en-US"; 
-const azureEndPoint = null;
+azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
+azureServiceRegion = "<Enter Azure's subscription region>"; 
+azureLanguage = "en-US"; 
+azureEndPoint = null;
 
-const googleMapsKey = "<Enter your Google Maps API key here>";
-const defaultMapCenter = {lat: 58.967774948, lon: 11.196062412};
-const defaultZoomLevel = 13; 
+googleMapsKey = "<Enter your Google Maps API key here>";
+mapCenter = { lat: 58.967774948, lon: 11.196062412 };
+zoomLevel = 13; 
 
-const defaultWebSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
 window.onload = () => start();
@@ -22,15 +22,34 @@ let map;
 
 async function start(){
     // Retrieve (optional) querystring parameters
+    // 'mapkey' - Google Maps API key
+    // 'lat', 'lon' - coordinates of the center of the map (decimal degrees)
+    // 'zoom' - initial map zoom level
+    // 'azkey' - MS Cognitive Services Speech API key
+    // 'azregion' - MS Cognitive Services Speech instance region
+    // 'azlang' - MS Cognitive Services Speech language (default is en-US)
+    // 'azendp' - Optional MS Cognitive Services Speech custom language model endpoint
+    // 'stpurl' - STP Websockets URL
     const urlParams = new URLSearchParams(window.location.search);
+    const mapKey = urlParams.get('mapkey');
+    if (mapKey) googleMapsKey = mapKey;
     const latParm = urlParams.get('lat');
     const lonParm = urlParams.get('lon');
-    const mapCenter = (latParm && lonParm) ? { lat: parseFloat(latParm), lon: parseFloat(lonParm) } : defaultMapCenter;
+    if (latParm && lonParm) mapCenter = { lat: parseFloat(latParm), lon: parseFloat(lonParm) };
     const zoomParm = urlParams.get('zoom');
-    const zoomLevel = zoomParm ? parseInt(zoomParm) : defaultZoomLevel;
+    if (zoomParm) zoomLevel = parseInt(zoomParm);
+
+    const azKey = urlParams.get('azkey');
+    if (azKey) azureSubscriptionKey = azKey;
+    const azRegion = urlParams.get('azregion');
+    if (azRegion) azureServiceRegion = azRegion;
+    const azLang = urlParams.get('azlang');
+    if (azLang) azureLanguage = azLang;
+    const azEndp = urlParams.get('azendp');
+    if (azEndp) azureEndPoint = azEndp;
     
     const stpParm = urlParams.get('stpurl');
-    const webSocketUrl  = stpParm ? stpParm : defaultWebSocketUrl;
+    if (stpParm) webSocketUrl =  stpParm;
 
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
@@ -152,8 +171,8 @@ async function start(){
 async function recognizeSpeech()  {
     try {
         // We create a fresh instance each time to avoid issues with stale connections to the service
-        const speechreco = new StpSDK.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
-        let recoResult = await speechreco.recognize();
+        const speechreco = new StpAS.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
+        let recoResult = await speechreco.recognizeOnce();
         if (recoResult) {
             // Send recognized speech over to STP
             stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);

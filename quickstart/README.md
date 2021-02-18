@@ -24,9 +24,9 @@ The connection to STP and the speech recognizer that is used are configurable vi
 ## Prerequisites
 * Sketch-thru-Plan (STP) Engine (v5.1.3+) running on an accessible server
 * A Google Maps [API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
-* Optional: a subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
+* A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
-* Means to serve a page over http
+* Means to serve a page over https
 
 ## Configuration
 
@@ -59,10 +59,21 @@ const azureLanguage = "en-US";
 const mapCenter = {lat: 58.967774948, lng: 11.196062412};
 const zoomLevel = 13;  
 ```
+**NOTE**: these parameters can be provided as querystring parameters as well/instead, as described next.
 
 ## Run the  sample
 
-* Load the `quicktstart/ts/dist/index.html` or `quickstart/js/index.js` on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions
+* Load the `quicktstart/ts/dist/index.html` or `quickstart/js/index.html` on a browser. You may need to serve the page from a proper https location (rather than file:) to avoid browser restrictions
+Optional querystring parameters can be used in addition/instead of default editing as describe in the previous section:
+    * `mapkey` - Map API key
+    * `lat`, `lon` - coordinates of the center of the map (decimal degrees)
+    * `zoom` - initial map zoom level
+    * `azkey` - MS Cognitive Services Speech API key
+    * `azregion` - MS Cognitive Services Speech instance region
+    * `azlang` - MS Cognitive Services Speech language (default is en-US)
+    * `azendp` - Optional MS Cognitive Services Speech custom language model endpoint
+    * `stpurl` - STP Websockets URL
+
 * A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 * Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
@@ -99,6 +110,8 @@ stpsdk = StpSDK.StpRecognizer(stpconn);
 STP triggers events asynchronously as user actions are interpreted as military symbols (and other types of entities, not covered here). This quickstart subscribes to:
 
 * onSymbolAdded - invoked whenever a new symbol is created as a result of successful combination of user speech and sketch
+* onSymbolModified - invoked whenever the properties of a symbol are modified
+* onSymbolDeleted - invoked whenever the a symbol is deleted/removed
 * onInkProcessed - invoked when strokes have been processed by STP. This event is useful for removing ink that either resulted in a successful symbol interpretation, or was dropped from consideration, to keep the interface clean
 * onSpeechRecognized - provides feedback on the speech to text interpretation. This even is optional, but provides meaningful feedback to users. 
 * onStpMessage - is triggered by STP when a message needs to be brought to the user's attention, for example notices of disconnection, communication failures.
@@ -252,7 +265,7 @@ After the handlers have been configured, the map is loaded.
 
 **Speech** - Speech can be collected by the browser by invoking a speech service
 
-This quickstart uses a Microsoft Cognitive Services Speech to Text plugin that is bundled with the STP SDK for convenience. The microphone is activated every time a new stroke is started (on pen down). This is a simple but effective strategy. See the [speech plugin](../plugins/speech/azurespeech-plugin) for details and additional discussion of alternative speech collection strategies
+This quickstart uses a Microsoft Cognitive Services Speech to Text plugin, but the same principles apply if using other services. The microphone is activated every time a new stroke is started (on pen down). This is a simple but effective strategy. See the [speech plugin](../plugins/speech/azurespeech-plugin) for details and additional discussion of alternative speech collection strategies
 
 As previously seen, recognition in the sample is initiated by the `onStrokeStart` handler. The call is *not* waited, and proceeds asynchronously while the sketch is completed.
 
@@ -268,7 +281,7 @@ async function recognizeSpeech()  {
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         // We create a fresh instance each time to avoid issues with stale connections to the service
         const speechreco = new StpSDK.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion);
-        let recoResult = await speechreco.recognize();
+        let recoResult = await speechreco.recognizeOnce();
         if (recoResult) {
             // Send recognized speech over to STP
             stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);

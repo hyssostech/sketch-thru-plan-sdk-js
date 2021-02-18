@@ -1,18 +1,19 @@
-import { AzureSpeechRecognizer, LatLon, Size, StpMessageLevel, StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-plan-sdk";
+import { LatLon, Size, StpMessageLevel, StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-plan-sdk";
+import { AzureSpeechRecognizer} from "@hyssostech/azurespeech-plugin";
 import { BasicRenderer } from "./basicrenderer";
 import { GoogleMap } from "./googlemap";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-const azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
-const azureServiceRegion = "<Enter Azure's subscription region>"; 
-const azureLanguage = "en-US"; 
-const azureEndPoint = null;
+let azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
+let azureServiceRegion = "<Enter Azure's subscription region>"; 
+let azureLanguage = "en-US"; 
+let azureEndPoint = null;
 
-const googleMapsKey = "<Enter your Google Maps API key here>";
-const defaultMapCenter: LatLon = new LatLon(58.967774948, 11.196062412);
-const defaultZoomLevel = 13; 
+let googleMapsKey = "<Enter your Google Maps API key here>";
+let mapCenter: LatLon = new LatLon(58.967774948, 11.196062412);
+let zoomLevel = 13; 
 
-const defaultWebSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+let webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
 window.onload = () => start();
@@ -26,15 +27,34 @@ let map: GoogleMap;
 
 async function start(){
     // Retrieve (optional) querystring parameters
+    // 'mapkey' - Google Maps API key
+    // 'lat', 'lon' - coordinates of the center of the map (decimal degrees)
+    // 'zoom' - initial map zoom level
+    // 'azkey' - MS Cognitive Services Speech API key
+    // 'azregion' - MS Cognitive Services Speech instance region
+    // 'azlang' - MS Cognitive Services Speech language (default is en-US)
+    // 'azendp' - Optional MS Cognitive Services Speech custom language model endpoint
+    // 'stpurl' - STP Websockets URL
     const urlParams = new URLSearchParams(window.location.search);
+    const mapKey = urlParams.get('mapkey');
+    if (mapKey) googleMapsKey = mapKey;
     const latParm = urlParams.get('lat');
     const lonParm = urlParams.get('lon');
-    const mapCenter = (latParm && lonParm) ? new LatLon(parseFloat(latParm), parseFloat(lonParm)) : defaultMapCenter;
+    if (latParm && lonParm) mapCenter = new LatLon(parseFloat(latParm), parseFloat(lonParm));
     const zoomParm = urlParams.get('zoom');
-    const zoomLevel = zoomParm ? parseInt(zoomParm) : defaultZoomLevel;
+    if (zoomParm) zoomLevel = parseInt(zoomParm);
+
+    const azKey = urlParams.get('azkey');
+    if (azKey) azureSubscriptionKey = azKey;
+    const azRegion = urlParams.get('azregion');
+    if (azRegion) azureServiceRegion = azRegion;
+    const azLang = urlParams.get('azlang');
+    if (azLang) azureLanguage = azLang;
+    const azEndp = urlParams.get('azendp');
+    if (azEndp) azureEndPoint = azEndp;
     
     const stpParm = urlParams.get('stpurl');
-    const webSocketUrl  = stpParm ? stpParm : defaultWebSocketUrl;
+    if (stpParm) webSocketUrl =  stpParm;
 
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpWebSocketsConnector(webSocketUrl);
@@ -157,7 +177,7 @@ async function recognizeSpeech()  {
     try {
         // We create a fresh instance each time to avoid issues with stale connections to the service
         const speechreco = new AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
-        let recoResult = await speechreco.recognize();
+        let recoResult = await speechreco.recognizeOnce();
         if (recoResult) {
             // Send recognized speech over to STP
             stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
