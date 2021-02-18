@@ -4,11 +4,15 @@
     <title>Sketch-thru-Plan Browser App</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">  
+    <!-- Renderers -->
     <script src="https://cdn.jsdelivr.net/npm/milsymbol@2.0.0/dist/milsymbol.min.js"></script>
     <script type="application/javascript" src="mil-sym-js.js"></script>
+    <!-- Speech recognition -->
     <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
-    <!-- The STP SDK needs to be added *after* the references to speech and communication services it may use -->
-    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.3.1/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <!-- STP SDK and plugins - needs to be added *after* the references to speech and communication services it may use -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.4.0/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@0.2.0/dist/stpazurespeech-bundle-min.js"></script>    
+    
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>

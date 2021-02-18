@@ -3,17 +3,25 @@
 This sample extends the [quickstart](../../qs/js) demonstration os Sketch-Thru-Plan sketch and speech creation of military plans, replacing the generic placeholder rendering with standard 2525 symbology.
 
 ## Prerequisites
-* Sketch-thru-Plan (STP) Engine (v5.1.3+) running on an accessible server
+* Sketch-thru-Plan (STP) Engine (v5.2.0+) running on an accessible server
 * A Google Maps [API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
 * A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
 
-## References to the STP SDK
+## Script external references
 
-The SDK is included via a `jdelivr` reference on the main html page. Here we show a reference to `@latest`, but as usual, the use of specific version is recommended to prevent breaking changes from affecting existing code
+Three cdn libraries are referenced in [`index.html`](index.html):
+
+1. Microsoft's Cognitive Services Speech SDK - used by the speech plugin
+1. STP SDK itself - available on `jsdelivr`: [https://www.jsdelivr.com/package/npm/sketch-thru-plan-sdk]
+1. The speech plugin
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <!-- Speech recognition -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <!-- STP SDK and plugins - needs to be added *after* the references to speech and communication services it may use -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.3.1/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@0.2.0/dist/stpazurespeech-bundle-min.js"></script>
 ```
 
 ## Configuration
@@ -51,17 +59,14 @@ const zoomLevel = 13;
 
 ## Run the `index.html` sample
 1. Load the page on a browser. You may need to serve the page from a proper http location (rather than file:) to avoid browser restrictions. Optional querystring parameters - can be used in addition/instead of default editing as describe in the previous section:
-
-* `mapkey` - Google Maps API key
-* `lat`, `lon` - coordinates of the center of the map (decimal degrees)
-* `zoom` - initial map zoom level
-* `azkey` - MS Cognitive Services Speech API key
-* `azregion` - MS Cognitive Services Speech instance region
-* `azlang` - MS Cognitive Services Speech language (default is en-US)
-* `azendp` - Optional MS Cognitive Services Speech custom language model endpoint
-* `stpurl` - STP Websockets URL
-
-
+    * `mapkey` - Google Maps API key
+    * `lat`, `lon` - coordinates of the center of the map (decimal degrees)
+    * `zoom` - initial map zoom level
+    * `azkey` - MS Cognitive Services Speech API key
+    * `azregion` - MS Cognitive Services Speech instance region
+    * `azlang` - MS Cognitive Services Speech language (default is en-US)
+    * `azendp` - Optional MS Cognitive Services Speech custom language model endpoint
+    * `stpurl` - STP Websockets URL
 1. A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 1. Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
@@ -76,9 +81,76 @@ const zoomLevel = 13;
 
 ## Code walkthrough
 
-See the [quickstart](../../quickstart) for details on most of the code. Changes introduced in this sample are concentrated on the rendering within [`jmsrenderer.js`](jmsrenderer.js).
+See the [quickstart](../../quickstart) for details on most of the code. Changes introduced in this sample are concentrated on 1) the speech strategy and 2) rendering 
 
-The general strategy used is to enhance the basic GeoJSON representation of each symbol (returned by `symbol.asGeoJSON()`) with renderings produced by two renderers
+### Speech
+
+This sample utilizes a "while sketching" speech approach. Recognition is enabled at the beginning of a user sketch, is kept active throughout sketching, and is deactivated 5 seconds after the sketch ends. That allows for the user to speak at any point from the start until a bit after the end of the sketching action. This approach makes it possible for long/detailed sketches, for example a long route along complex terrain to be entered and still give the user the opportunity to speak what the sketch represents (e.g. a "Main Supply Route").
+
+To use the speech recognition plugin, start by creating a recognizer object, passing in the required keys. 
+
+```javascript
+// Create speech recognizer and subscribe to recognition events
+const speechreco = new StpAS.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
+```
+Once the object is available, subscribe to the events through which the plugin communicates results/status:
+
+* `onRecognized` - invoked when a full phrase has been recognized, or nothing was spoken (in which case null is returned)
+* `onRecognizing` - optional event that returns partial interpretation results. Useful to provide feedback on longer phrases
+* `onError` - recognition failure
+
+```javascript
+speechreco.onRecognized = (recoResult) => {
+    if (recoResult && recoResult.results && recoResult.results.length > 0) {
+        // Stop further recognition now that we have candidates
+        speechreco.stopRecognizing();
+        // Send recognized speech over to STP
+        stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
+        // Display the hypotheses to the user
+        let concat = recoResult.results.map((item) => item.text).join(' | ');
+        log(concat);
+    }
+}
+// Display the recognition as it evolves
+speechreco.onRecognizing = (snippet) => {
+    log(snippet);
+}
+// Error recognizing
+speechreco.onError = (e) => {
+    log("Failed to process speech: " + e.message);
+}
+```
+
+To activate speech recognition, `startRecognizing()` needs to be called. This is done inside the handler invoked on a map pen/mouse down:
+
+```javascript
+// Notify STP of the start of a stroke and activate speech recognition
+map.onStrokeStart = (location, timestamp) => {
+    // Notify STP that a new stroke is starting
+    stpsdk.sendPenDown(location, timestamp);
+
+    // Activate speech recognition (asynchronously)
+    speechreco.startRecognizing();
+}
+```
+
+Speech recognition is then deactivated when the stroke is completed (map pen/mouse up). Notice the timeout parameter, set to 5000. That lets the user speak for 5 more seconds after the completion of the sketch.
+
+Note as well that in the sample `stopRecognizing()` is also called inside the `speechreco.onRecognized` handler shown previously. That avoids the interpretation of multiple phrases for the same sketch. STP only integrates single pairs of sketch and speech. 
+
+```javascript
+// Notify STP of a full stroke
+map.onStrokeCompleted = (pixelBoundsWindow,topLeftGeoMap,bottomRightGeoMap,strokePoints,timeStrokeStart,timeStrokeEnd,intersectedPoids) => {
+    // Notify STP of the new ink stroke
+    stpsdk.sendInk(pixelBoundsWindow,topLeftGeoMap,bottomRightGeoMap,strokePoints,timeStrokeStart,timeStrokeEnd,intersectedPoids);
+    // Stop speech recognition after 5 seconds
+    speechreco.stopRecognizing(5000);
+}
+```
+
+### Rendering
+
+The general strategy used  within [`jmsrenderer.js`](jmsrenderer.js) is to enhance the basic GeoJSON representation of each symbol (returned by `symbol.asGeoJSON()`) with renderings produced by two renderers
 
 * [milsymbol](https://github.com/spatialillusions/milsymbol) is used to generate SVG icons representing single point symbols (units, equipment, mootw and single point tactical graphics)
 * [mil-sym-js](https://github.com/missioncommand/mil-sym-js) is used to generate GeoJSON representations of multipoint tactical graphics

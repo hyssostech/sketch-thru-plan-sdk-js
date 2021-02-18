@@ -102,6 +102,28 @@ async function start(){
         return;
     }
 
+    // Create speech recognizer and subscribe to recognition events
+    const speechreco = new StpAS.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
+    speechreco.onRecognized = (recoResult) => {
+        if (recoResult && recoResult.results && recoResult.results.length > 0) {
+            // Stop further recognition now that we have cnadidates
+            speechreco.stopRecognizing();
+            // Send recognized speech over to STP
+            stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
+            // Display the hypotheses to the user
+            let concat = recoResult.results.map((item) => item.text).join(' | ');
+            log(concat);
+        }
+    }
+    // Display the recognition as it evolves
+    speechreco.onRecognizing = (snippet) => {
+        log(snippet);
+    }
+    // Error recognizing
+    speechreco.onError = (e) => {
+        log("Failed to process speech: " + e.message);
+    }
+
     // Create map instance and subscribe to sketching events
     map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
 
@@ -111,7 +133,7 @@ async function start(){
         stpsdk.sendPenDown(location, timestamp);
 
         // Activate speech recognition (asynchronously)
-        recognizeSpeech();
+        speechreco.startRecognizing();
     }
 
     // Notify STP of a full stroke
@@ -134,6 +156,8 @@ async function start(){
             timeStrokeEnd,
             intersectedPoids
         );
+        // Stop speech recognition after 5 seconds
+        speechreco.stopRecognizing(5000);
     }
 
     // Handle feature selection
@@ -160,29 +184,6 @@ async function start(){
 
     // Load the map
     map.load();
-}
-
-/**
- * Recognize speech and notify STP
- */
-async function recognizeSpeech()  {
-    try {
-        // We create a fresh instance each time to avoid issues with stale connections to the service
-        const speechreco = new StpSDK.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
-        let recoResult = await speechreco.recognize();
-        if (recoResult) {
-            // Send recognized speech over to STP
-            stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
-            // Display the best hypothesis
-            if (recoResult.results && recoResult.results.length > 0) {
-                log(recoResult.results[0].text);
-             }
-    }
-    } catch (e) {
-        // Propagate to the user
-        let msg = "Failed to process speech: " + e.message;
-        log(msg), "Error", true;
-    }
 }
 
 /**
