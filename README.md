@@ -1,6 +1,6 @@
 # Sketch-thru-Plan SDK Resources
 
-This project hosts developer resources related to Hyssos Tech Sketh-Thru-Plan Natural Language Planning Engine SDK.
+This project hosts developer resources related to Hyssos Tech Sketch-Thru-Plan Natural Language Planning Engine SDK.
 
 ## Prerequisites
 
