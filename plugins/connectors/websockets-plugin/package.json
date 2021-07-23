@@ -17,7 +17,7 @@
         "bundle:umd": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.js --format umd --name StpWS",
         "bundle:esm": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.esm.js --format esm",
         "bundle:dts": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.d.ts --file dist/$npm_package_config_rootjs-bundle.d.ts --format es --plugin rollup-plugin-dts",
-        "bundle:min": "terser --ecma 6 --compress --mangle --module -o $npm_package_main -- dist/$npm_package_config_rootjs-bundle.js && gzip -9 -c dist/$npm_package_config_rootjs-bundle-min.js > dist/$npm_package_config_rootjs-bundle-min.js.gz",
+        "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/$npm_package_config_rootjs-bundle-min.js -- dist/$npm_package_config_rootjs-bundle.js && gzip -9 -c dist/$npm_package_config_rootjs-bundle-min.js > dist/$npm_package_config_rootjs-bundle-min.js.gz",
         "fix:format": "prettier --config ../../.prettierrc src --write"
     },
     "repository": {
