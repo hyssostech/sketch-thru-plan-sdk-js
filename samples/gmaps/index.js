@@ -156,7 +156,7 @@ async function start(){
         stpsdk.sendPenDown(location, timestamp);
 
         // Activate speech recognition (asynchronously)
-        speechreco.startRecognizing();
+        speechreco?.startRecognizing();
     }
 
     // Notify STP of a full stroke
@@ -180,7 +180,7 @@ async function start(){
             intersectedPoids
         );
         // Stop speech recognition after 5 seconds
-        speechreco.stopRecognizing(5000);
+        speechreco?.stopRecognizing(5000);
     }
 
     // Handle feature selection
