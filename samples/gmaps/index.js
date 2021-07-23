@@ -8,7 +8,7 @@ googleMapsKey = "<Enter your Google Maps API key here>";
 mapCenter = { lat: 58.967774948, lon: 11.196062412 };
 zoomLevel = 13; 
 
-webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+webSocketUrl  = "wss://stp.hyssos.com/ws"; // ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
 window.onload = () => start();
@@ -19,14 +19,19 @@ let map;
 
 async function start(){
     // Retrieve (optional) querystring parameters
+    // 'stpurl' - STP Websockets URL
+    //
     // 'mapkey' - Google Maps API key
     // 'lat', 'lon' - coordinates of the center of the map (decimal degrees)
     // 'zoom' - initial map zoom level
+    //
     // 'azkey' - MS Cognitive Services Speech API key
     // 'azregion' - MS Cognitive Services Speech instance region
     // 'azlang' - MS Cognitive Services Speech language (default is en-US)
     // 'azendp' - Optional MS Cognitive Services Speech custom language model endpoint
-    // 'stpurl' - STP Websockets URL
+    //
+    // 'inkonly' - Speech is collected by another component running on the same box
+    // 'machineid' - Identifier used in the ink messages Used to match the identifier of a matched speech recognizer the ink should be combined with (both need to have the same Id to be paired)
     const urlParams = new URLSearchParams(window.location.search);
     const mapKey = urlParams.get('mapkey');
     if (mapKey) googleMapsKey = mapKey;
@@ -44,6 +49,9 @@ async function start(){
     if (azLang) azureLanguage = azLang;
     const azEndp = urlParams.get('azendp');
     if (azEndp) azureEndPoint = azEndp;
+
+    const inkOnly = urlParams.get('inkonly');
+    const machineId = urlParams.get('machineid');
     
     const stpParm = urlParams.get('stpurl');
     if (stpParm) webSocketUrl =  stpParm;
@@ -83,7 +91,14 @@ async function start(){
         // Display just the best reco - the one that is actually selected by STP may not be this one
         let speech = "";
         if (phrases && phrases.length > 0) {
-            speech = phrases[0];
+            if (inkOnly != null && /[a-z]/.test(phrases[0].charAt(0))) {
+                // Display all alternates produced by the external recognizer
+                speech = phrases.slice(0,5).join(' | ');
+            }
+            else {
+                // Display the best hypothesis used to define the current symbol
+                speech = phrases[0];
+            }
         }
         log(speech); 
     }
@@ -94,7 +109,7 @@ async function start(){
 
     // Attempt to connect to STP
     try {
-        await stpsdk.connect("GoogleMapsSample", 10);
+        await stpsdk.connect("GoogleMapsSample", 10, machineId);
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
@@ -102,26 +117,34 @@ async function start(){
         return;
     }
 
-    // Create speech recognizer and subscribe to recognition events
-    const speechreco = new StpAS.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
-    speechreco.onRecognized = (recoResult) => {
-        if (recoResult && recoResult.results && recoResult.results.length > 0) {
-            // Stop further recognition now that we have cnadidates
-            speechreco.stopRecognizing();
-            // Send recognized speech over to STP
-            stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
-            // Display the hypotheses to the user
-            let concat = recoResult.results.map((item) => item.text).join(' | ');
-            log(concat);
+    // Setup the networked MS recognizer unless disabled via configuraiton
+    let speechreco;
+    if (inkOnly != null) {
+        // Likely using a local recognizer SxS
+        speechreco = null;
+    }
+    else {
+        // Create speech recognizer and subscribe to recognition events
+        speechreco = new StpAS.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint, null, azureLanguage);
+        speechreco.onRecognized = (recoResult) => {
+            if (recoResult && recoResult.results && recoResult.results.length > 0) {
+                // Stop further recognition now that we have cnadidates
+                speechreco.stopRecognizing();
+                // Send recognized speech over to STP
+                stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
+                // Display the hypotheses to the user
+                let concat = recoResult.results.map((item) => item.text).join(' | ');
+                log(concat);
+            }
         }
-    }
-    // Display the recognition as it evolves
-    speechreco.onRecognizing = (snippet) => {
-        log(snippet);
-    }
-    // Error recognizing
-    speechreco.onError = (e) => {
-        log("Failed to process speech: " + e.message);
+        // Display the recognition as it evolves
+        speechreco.onRecognizing = (snippet) => {
+            log(snippet);
+        }
+        // Error recognizing
+        speechreco.onError = (e) => {
+            log("Failed to process speech: " + e.message);
+        }
     }
 
     // Create map instance and subscribe to sketching events

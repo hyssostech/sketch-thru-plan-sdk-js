@@ -67,6 +67,12 @@ const zoomLevel = 13;
     * `azlang` - MS Cognitive Services Speech language (default is en-US)
     * `azendp` - Optional MS Cognitive Services Speech custom language model endpoint
     * `stpurl` - STP Websockets URL
+
+The following optional parameters can be used to configure the sample to operate alongside with a local (potentially offline) speech recognizer, usually running on the same machine as the browser
+    * `inkonly` - Prevents browser speech recognition - just the ink strokes are sent by the browser app to STP
+    * `machineid` - Must be set to the same machine id (computer name) as the local speech recognizer - STP only fuses sketches to speech originated at the same computer, to avoid mix ups between actions performed by different users collaborating from different machines. Each browser tab usually has a unique Id that is used to tag both the ink and the speech that is collected. This parameter makes it possible to change that so it matches the id of a local speech recognizer, which typically employs the computer name as the tag.    
+
+
 1. A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 1. Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"

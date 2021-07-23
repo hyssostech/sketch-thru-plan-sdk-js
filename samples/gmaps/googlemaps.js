@@ -81,7 +81,45 @@ class GoogleMap  {
                 draggable: true,
                 draggableCursor: 'crosshair'
             });
-
+        const mapStyles /*google.maps.MapTypeStyle*/ = 
+        [
+            {
+                "featureType": "administrative",
+                "elementType": "geometry",
+                "stylers": [
+                {
+                    "visibility": "off"
+                }
+                ]
+            },
+            {
+                "featureType": "poi",
+                "stylers": [
+                {
+                    "visibility": "off"
+                }
+                ]
+            },
+            {
+                "featureType": "road",
+                "elementType": "labels.icon",
+                "stylers": [
+                {
+                    "visibility": "off"
+                }
+                ]
+            },
+            {
+                "featureType": "transit",
+                "stylers": [
+                {
+                    "visibility": "off"
+                }
+                ]
+            }
+            ];
+        this.map.setOptions({ styles: mapStyles });
+        
         // Set the styling of the geojson data layer, processing features with associated additional svg rendering
         this.map.data.setStyle((feature) => {
             let rend = feature.getProperty('rendering');
