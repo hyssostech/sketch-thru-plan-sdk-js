@@ -1,10 +1,10 @@
 # Sketch-thru-Plan SDK Resources
 
-This project hosts developer resources related to Hyssos Tech Sketh-Thru-Plan Natural Language Planning Engine SDK.
+This project hosts developer resources related to Hyssos Tech Sketch-Thru-Plan Natural Language Planning Engine SDK.
 
 ## Prerequisites
 
-* Sketch-thru-Plan (STP) Engine (v5.1.0+) running on an accessible server
+* Sketch-Thru-Plan (STP) Engine (v5.1.0+) running on an accessible server
 * Most samples will require a PC or Mac with a working microphone, mouse or stylus
 
 ## Getting started
@@ -25,6 +25,6 @@ Components that can be swapped and/or reused are described in [plugins](plugins)
 
 ## Reference
 
-[Sketch-thru-Plan SDK Reference](https://hyssostech.github.io/stp-docs/sdk/index.html)
+[Sketch-Thru-Plan SDK Reference](https://hyssostech.github.io/stp-docs/sdk/index.html)
 
 [MIL-STD-2525D Joint Military Symbology](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf)
