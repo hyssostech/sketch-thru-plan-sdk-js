@@ -4,21 +4,30 @@
     "path": "azurespeech-plugin"
   },
   "name": "@hyssostech/azurespeech-plugin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Microsoft Cognitive Services Speech plugin for Sketch-thru-Plan",
   "main": "dist/stpazurespeech-bundle-min.js",
   "types": "dist/stpazurespeech-bundle.d.ts",
+  "module": "dist/stpazurespeech-bundle.esm.js",
   "scripts": {
     "clean": "rimraf dist build",
     "clean:docs": "rimraf docs",
-    "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
-    "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
+    "build": "npm run separator && npm run clean && tsc --project tsconfig.json && npm run bundle",
     "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts && npm run bundle:min",
-    "bundle:umd": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.js --format umd --name StpAS --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
-    "bundle:esm": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.esm.js --format esm --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:umd": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:umd:y": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.js --format umd --name StpAS  --plugin '@rollup/plugin-node-resolve={mainFields:[`browser`,`main`,`module`]}' --plugin @rollup/plugin-commonjs ",
+    "bundle:umd:x": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.js --format umd --name StpAS --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:esm": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.esm.js --format esm  --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:esm:x": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.esm.js --format esm   --plugin '@rollup/plugin-node-resolve={preferBuiltins: true}' --plugin @rollup/plugin-commonjs --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
     "bundle:dts": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.d.ts --file dist/$npm_package_config_rootjs-bundle.d.ts --format es --plugin rollup-plugin-dts",
-    "bundle:min": "terser --ecma 6 --compress --mangle --module -o $npm_package_main -- dist/$npm_package_config_rootjs-bundle.js && gzip -9 -c dist/$npm_package_config_rootjs-bundle-min.js > dist/$npm_package_config_rootjs-bundle-min.js.gz",
-    "fix:format": "prettier --config ../../.prettierrc src --write"
+    "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/$npm_package_config_rootjs-bundle-min.js -- dist/$npm_package_config_rootjs-bundle.js && gzip -9 -c dist/$npm_package_config_rootjs-bundle-min.js > dist/$npm_package_config_rootjs-bundle-min.js.gz",
+    "copy:dts": "copyfiles --flat ./src/*.d.ts ./build/$npm_package_config_path/src/",
+    "fix:format": "prettier --config ../../.prettierrc src --write",
+    "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
+    "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
+    "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
+    "bundle:umd:dev": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle-min.js --format umd --name StpAS --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs",
+    "separator": "printf '=%.0s' {1..100} && echo"
   },
   "repository": {
     "type": "git",
@@ -34,11 +43,24 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.32.1",
     "rollup-plugin-dts": "^1.4.13",
+    "rollup-plugin-node-polyfills": "^0.2.1",
     "terser": "^5.3.8",
-    "typedoc": "^0.19.2",
+    "typedoc": "^0.20.28",
     "typescript": "^4.0.5"
   },
   "dependencies": {
-    "microsoft-cognitiveservices-speech-sdk": "^1.14.1"
+    "agent-base": "^6.0.1",
+    "asn1.js-rfc2560": "^5.0.1",
+    "asn1.js-rfc5280": "^3.0.0",
+    "async-disk-cache": "^2.1.0",
+    "bufferutil": "^4.0.3",
+    "https-proxy-agent": "^4.0.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.15.1",
+    "simple-lru-cache": "0.0.2",
+    "url-parse": "^1.4.7",
+    "utf-8-validate": "^5.0.4",
+    "uuid": "^3.3.3",
+    "ws": "^7.3.1",
+    "xmlhttprequest-ts": "^1.0.1"
   }
 }
