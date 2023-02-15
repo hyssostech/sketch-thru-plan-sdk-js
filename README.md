@@ -7,6 +7,17 @@ This project hosts developer resources related to Hyssos Tech Sketch-Thru-Plan N
 * Sketch-Thru-Plan (STP) Engine (v5.1.0+) running on an accessible server
 * Most samples will require a PC or Mac with a working microphone, mouse or stylus
 
+## Npm packages
+
+The SDK and plugins illustrating its extensibility are available as npm packages: 
+
+Sketch-thru-Plan Javascript SDK - <https://www.npmjs.com/package/sketch-thru-plan-sdk>
+
+a. Speech recognition using the Microsoft Cognitive Services Speech recognizer - @hyssostech/azurespeech-plugin  - <https://www.npmjs.com/package/@hyssostech/azurespeech-plugin>
+
+b. Connection to STP via WebSockets - @hyssostech/azurespeech-plugin - <https://www.npmjs.com/package/@hyssostech/azurespeech-plugin> 
+
+
 ## Getting started
 
 The [quickstart](quickstart) folder contains introductory examples
