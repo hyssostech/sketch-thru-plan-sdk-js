@@ -3,7 +3,7 @@
 This sample extends the [quickstart](../../qs/js) demonstration os Sketch-Thru-Plan sketch and speech creation of military plans, replacing the generic placeholder rendering with standard 2525 symbology.
 
 ## Prerequisites
-* Sketch-thru-Plan (STP) Engine (v5.2.0+) running on an accessible server
+* Sketch-thru-Plan (STP) Engine (v5.8.4+) running on an accessible server
 * A Google Maps [API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
 * A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
@@ -68,7 +68,7 @@ const zoomLevel = 13;
     * `azendp` - Optional MS Cognitive Services Speech custom language model endpoint
     * `stpurl` - STP Websockets URL
 
-The following optional parameters can be used to configure the sample to operate alongside with a local (potentially offline) speech recognizer, usually running on the same machine as the browser
+The following optional parameters can be used to configure the sample to operate alongside with a local speech recognizer, usually running on the same machine as the browser
     * `inkonly` - Prevents browser speech recognition - just the ink strokes are sent by the browser app to STP
     * `machineid` - Must be set to the same machine id (computer name) as the local speech recognizer - STP only fuses sketches to speech originated at the same computer, to avoid mix ups between actions performed by different users collaborating from different machines. Each browser tab usually has a unique Id that is used to tag both the ink and the speech that is collected. This parameter makes it possible to change that so it matches the id of a local speech recognizer, which typically employs the computer name as the tag.    
 
@@ -87,7 +87,263 @@ The following optional parameters can be used to configure the sample to operate
 
 ## Code walkthrough
 
-See the [quickstart](../../quickstart) for details on most of the code. Changes introduced in this sample are concentrated on 1) the speech strategy and 2) rendering 
+See the [quickstart](../../quickstart) for details on most of the code. Changes introduced in this sample are concentrated on 1) task even handling, 2) the speech strategy and 3) rendering 
+
+### Task event handling
+
+This sample adds simple task event handlers, that just display a short message to users when tasks are added, modified, or deleted. 
+
+
+```javascript
+    // A new task has been recognized and added
+    stpsdk.onTaskAdded = (poid, alternates, taskPoids, isUndo) => {
+        try {
+            // Display some properties
+            log("Task added: " + alternates[0].description, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+    // The properties of a task were modified
+    stpsdk.onTaskModified = (poid, alternates, taskPoids, isUndo) => {
+        try {
+            // Display some properties
+            log("Task modified: " + poid + " " + alternates[0].description, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+    // A task was removed
+    stpsdk.onTaskDeleted = (poid, isUndo) => {
+        try {
+            // Display some properties
+            log("Task removed: " + poid, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+```
+
+
+| Property          | Description                                                                   |
+| ---------------   | ----------------------------------------------------------------------------- |
+| fsTYPE            | task                                 |
+| poid              | STP unique identifier                                                         |
+| parentCoa         | Unique id of the COA this task belongs to |
+| creatorRole       | Role that created the task: S2, S3, S4, Eng, FSO |
+| interval          | Task creation time interval |
+| confidence        | Confidence score of the recognition (1.0 is 100%) |
+| alt               | Rank of this task interpretation amongst the interpretation hypothesis
+| 
+| description | Task description
+| who | Unique id of the unit executing the task
+| supported |   Unique id of the supported unit, if applicable
+| tgs | Task's Tactical Graphics unique ids
+| name | Task name, such as 'AssaultObjectiveOnAxis'
+| how | Task How enum
+| what | Task What enum
+| why | Task Why enum
+| startTime | Start time slot
+| endTime | End time slot
+| speech | Associated speech, if applicable
+| language | Language describing the task
+| taskStatus | Automatic or manual creation status: `implicit` or `explicit`
+| uiStatus | Confirmation status: `confirming` or `confirmed`
+| prob | Task interpretation likelihood 
+
+`What`, `How`, and `Why` are defined by enums:
+
+```javascript
+/**
+ * Task What
+ */
+export enum TaskWhat {
+  NotSpecified = "not_specified",
+  AdvisePolice = "advise_police",
+  Ambush = "ambush",
+  AssignResponsibility = "assign_responsibility",
+  Block = "block",
+  BombAttack = "bomb_attack",
+  Breach = "breach",
+  Bypass = "bypass",
+  Clear = "clear",
+  CoerciveRecruiting = "coercive_recruiting",
+  CollectCasualties = "collect_casualties",
+  CollectCivilians = "collect_civilians",
+  CollectPrisoners = "collect_prisoners",
+  ConductAmbush = "conduct_ambush",
+  ConductAviatonAmbush = "conduct_aviaton_ambush",
+  ConductBilat = "conduct_bilat",
+  ConductGroupEngagement = "conduct_group_engagement",
+  ConductRaid = "conduct_raid",
+  ConductTcpOperation = "conduct_tcp_operation",
+  ConstituteReserve = "constitute_reserve",
+  Convoy = "convoy",
+  Defeat = "defeat",
+  Delay = "delay",
+  DeliverLeafletPsyop = "deliver_leaflet_psyop",
+  Demonstrate = "demonstrate",
+  Destroy = "destroy",
+  Disrupt = "disrupt",
+  DistributeFood = "distribute_food",
+  Emplace = "emplace",
+  EquipPolice = "equip_police",
+  EscortConvoy = "escort_convoy",
+  EvacuateCasualties = "evacuate_casualties",
+  EvacuateCivilians = "evacuate_civilians",
+  EvacuatePrisoners = "evacuate_prisoners",
+  Fix = "fix",
+  Follow = "follow",
+  FollowAndAssume = "follow_and_assume",
+  FollowAndSupport = "follow_and_support",
+  Halt = "halt",
+  HarrassmentFires = "harrassment_fires",
+  HouseToHousePsyop = "house_to_house_psyop",
+  IedAttack = "ied_attack",
+  Limit = "limit",
+  Looting = "looting",
+  MaintainHide = "maintain_hide",
+  MaintainOutpost = "maintain_outpost",
+  Move = "move",
+  Neutralize = "neutralize",
+  Observe = "observe",
+  Occupy = "occupy",
+  Patrol = "patrol",
+  Penetrate = "penetrate",
+  PositionSniper = "position_sniper",
+  PriorityOfFires = "priority_of_fires",
+  ProvideMedicalServices = "provide_medical_services",
+  ProvideService = "provide_service",
+  Receive = "receive",
+  Reconstruction = "reconstruction",
+  RecruitPolice = "recruit_police",
+  Refuel = "refuel",
+  RegulateTraffic = "regulate_traffic",
+  Reinforce = "reinforce",
+  Release = "release",
+  Resupply = "resupply",
+  Retain = "retain",
+  Rioting = "rioting",
+  Secure = "secure",
+  SeekRefuge = "seek_refuge",
+  Seize = "seize",
+  SniperAttack = "sniper_attack",
+  Supply = "supply",
+  SupplyMunitions = "supply_munitions",
+  TrainPolice = "train_police",
+  TransferMunitions = "transfer_munitions",
+  TrashRemoval = "trash_removal",
+  Turn = "turn",
+  TvRadioPsyop = "tv_radio_psyop",
+  WaterDelivery = "water_delivery",
+  WillfulRecruiting = "willful_recruiting"
+}
+
+/**
+ * Task How
+ */
+export enum TaskHow {
+  NotSpecified = "not_specified",
+  AirAssault = "air_assault",
+  AirReconnaissance = "air_reconnaissance",
+  AreaDefense = "area_defense",
+  Assault = "assault",
+  Attack = "attack",
+  AttackInZone = "attack_in_zone",
+  AttackByFire = "attack_by_fire",
+  CerpFunding = "cerp_funding",
+  Civilian = "civilian",
+  Contracting = "contracting",
+  CordonAndSearch = "cordon_and_search",
+  Counterattack = "counterattack",
+  CounterattackByFire = "counterattack_by_fire",
+  Cover = "cover",
+  Defend = "defend",
+  DeliverServices = "deliver_services",
+  Guard = "guard",
+  InformationOperations = "information_operations",
+  Insurgent = "insurgent",
+  MobileDefense = "mobile_defense",
+  MovingScreen = "moving_screen",
+  NgoOperation = "ngo_operation",
+  PassageOfLines = "passage_of_lines",
+  Screen = "screen",
+  SearchAndAttack = "search_and_attack",
+  Security = "security",
+  SecurityForceAssistance = "security_force_assistance",
+  SupportByFire = "support_by_fire",
+  Withdrawal = "withdrawal"
+}
+
+/**
+ * Task Why
+ */
+export enum TaskWhy {
+  Unknown = "unknown",
+  Allow = "allow",
+  Cause = "cause",
+  Create = "create",
+  Deceive = "deceive",
+  Deny = "deny",
+  Divert = "divert",
+  Enable = "enable",
+  Envelop = "envelop",
+  Influence = "influence",
+  Open = "open",
+  Prevent = "prevent",
+  Protect = "protect",
+  Support = "support",
+  Surprise = "surprise"
+}
+
+```
+
+An actual application would provide users with user interface elements that would let users inspect, modify, delete, and confirm/approve tasks. 
+Approving/confirming a task is similar to selecting a symbol alternate. A specific interpretation is chosen for a task, e.g. `Attack Objective to Fix`. Other alternates (e.g. `to Secure`, `to Destroy`) are removed.
+
+Task edits need to be communicated to STP, so that the internal state is consistent, and  actions performed by a client can be propagated to other clients that may be connected to the same collaboration session.
+
+The following SDK methods are available to communicate client task edits:
+
+```javascript
+  /**
+   * Request that a task be added by STP. The actual addition should only happen when STP responds with TaskAdded
+   * @param task Task to add
+   */
+  addTask(task: StpType.StpTask) {
+    this.informStp('AddTask', {
+      task: arguments[0]
+    });
+  }
+
+  /**
+   * Request that a task be updated by STP. The actual update should only happen when STP responds with TaskModified
+   * @param poid Unique identifier of the task to update
+   * @param alternates Alternates of the task to update - normally only one of the alternates will have been modified 
+   */
+  updateTask(poid: string, alternates: StpType.StpTask[]);
+
+  /**
+   * Request a task deletion from STP. The actual removal should only happen when STP responds with TaskDeleted
+   * @param poid Unique identifier of the task to delete
+   */
+  deleteTask(poid: string);
+
+  /**
+   * Pick an alternate as the confirmedtask. The STP runtime responds with a task update notification
+   * in which uiStatus is set to 'confirmed'
+   * @param poid Unique identifie of the task for which an alternate is being confirmed
+   * @param nBestIndex Index indicating which of the current alternates is selected for confirmation
+   */
+  confirmTask(poid: string, nBestIndex: number);
+```
+
+Upon processing these commands, STP replies with the corresponding events: `onTaskAdded`, `onTaskModified` and `onTaskDeleted` respectivelly.
+`onTaskModified` is issued as a response to `confirmTask`, with the `uiStatus` set to 
+`confirmed`.
+
+It is advisable for clients to update the interface just in response to the events reflecting STP's change of state, so that all clients can remain consistent with the Engine's state.
+In other words, rather than marking a task as confirmed as the user for example selects a checkbox, it is recommended that the task be marked only in response to STP's `onTaskModified` event indicating a `confirmed` `uiStatus`.
 
 ### Speech
 

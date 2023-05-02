@@ -8,10 +8,22 @@ googleMapsKey = "<Enter your Google Maps API key here>";
 mapCenter = { lat: 58.967774948, lon: 11.196062412 };
 zoomLevel = 13; 
 
-webSocketUrl  = "wss://stp.hyssos.com/ws"; // ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
 window.onload = () => start();
+
+window.onerror = (msg, url, line, col, error) => {
+    try {
+        var extra = !col ? '' : '\ncolumn: ' + col;
+        // You can view the information in an alert to see things working like this:
+        log('Unexpected Error: ' + msg + ' url: ' + url + ' line: ' + line + extra, 'Error', true);
+        // Suppress additional error alerts (in some browsers)
+        return true;
+    } catch (error) {
+        // Ignore failures during the attempt to report
+    }
+}
 
 //#region STP functions
 let stpsdk;
@@ -81,6 +93,35 @@ async function start(){
     stpsdk.onSymbolDeleted = (poid, isUndo) => {
         map.removeFeature(poid);
     };
+ 
+     // A new task has been recognized and added
+     stpsdk.onTaskAdded = (poid, alternates, taskPoids, isUndo) => {
+        try {
+            // Display some properties
+            log("Task added: " + alternates[0].description, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+    // The properties of a task were modified
+    stpsdk.onTaskModified = (poid, alternates, taskPoids, isUndo) => {
+        try {
+            // Display some properties
+            log("Task modified: " + poid + " " + alternates[0].description, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+    // A task was removed
+    stpsdk.onTaskDeleted = (poid, isUndo) => {
+        try {
+            // Display some properties
+            log("Task removed: " + poid, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+
     // The collected ink has been processed and resulted in a symbol, or was rejected because it could not be matched to speech
     stpsdk.onInkProcessed = () => {
         // Remove last stroke from the map if one exists
