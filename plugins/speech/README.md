@@ -18,7 +18,7 @@ Taking advantage of this natural style, STP uses sketch start events as anchors 
 
 ## Implemented Speech plugins
 
-The [`azurespeech-plugin`](azurespeech-plugin) plugin implements is an implementation using the Microsoft Cognitive Services Speech to Text. It implements the strategies 1 and 2 and 3, supporting recognition once at a time, as well as over a period of time that can be restricted to the duration of the sketching (strategy 2), or some other period of time determined by the client app (strategy 3). 
+The [`azurespeech-plugin`](azurespeech-plugin) plugin is an implementation using the Microsoft Cognitive Services Speech to Text. It implements the strategies 1, supporting recognition once at a time, as well as over a period of time that can be restricted to the duration of the sketching (strategy 2), or some other period of time determined by the client app (strategy 3). 
 
 ### "One-shot" recognition
 

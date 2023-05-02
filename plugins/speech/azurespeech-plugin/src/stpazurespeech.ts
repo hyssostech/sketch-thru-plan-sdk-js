@@ -16,6 +16,7 @@
     audioConfig: SpeechSDK.AudioConfig;
     recognizer: SpeechSDK.SpeechRecognizer | undefined;
     recoStart: Date;
+    isListening: boolean;
   
     //#region Construction / initialization
     /**
@@ -24,12 +25,14 @@
      * @param serviceRegion - Azure speech service region
      * @param endPoint - Custom model endpoint, if any
      * @param audioConfig - Optional audio config. Set to default mike input if not provided
+     * @param recoLanguage - Optional language to be recognized. Default is 'en-US'
      */
     constructor(
       speechSubscriptionKey: string,
       serviceRegion: string,
       endPoint?: string,
-      audioConfig?: SpeechSDK.AudioConfig
+      audioConfig?: SpeechSDK.AudioConfig,
+      recoLanguage?: string
     ) {
       this.speechSubscriptionKey = speechSubscriptionKey;
       this.serviceRegion = serviceRegion;
@@ -39,6 +42,8 @@
         this.speechSubscriptionKey,
         this.serviceRegion
       );
+      this.speechConfig.speechRecognitionLanguage = recoLanguage ? recoLanguage : 'en-US';
+
       //speechConfig.setServiceProperty("wordLevelConfidence","true", sdk.ServicePropertyChannel.UriQueryParameter);
       //speechConfig.setServiceProperty("format", "detailed", sdk.ServicePropertyChannel.UriQueryParameter);
       this.speechConfig.outputFormat = SpeechSDK.OutputFormat.Detailed;
@@ -52,6 +57,8 @@
       this.audioConfig = audioConfig
         ? audioConfig
         : SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+
+        this.isListening = false;
     }
     //#endregion Construction / initialization
 
@@ -148,12 +155,17 @@
         // 2. No additional audio is available.
         //    Caused by the input stream being closed or reaching the end of an audio file.
         this.recognizer!.canceled = (s, e) => {
+          this.isListening = false;
           reject(
             new Error(SpeechSDK.CancellationReason[e.reason])
           );
         }
-        // Trigger one-time recognition
-        this.recognizer?.recognizeOnceAsync();
+        // Trigger one-time recognition if not listening already
+        if (! this.isListening) {
+          this.isListening = true;
+          this.recognizer?.recognizeOnceAsync();
+          this.isListening = false;
+        }
       });
     }
     //#endregion Single-shot recognition
@@ -166,6 +178,11 @@
      * sometime after the end of the sketch
      */
     startRecognizing(): void {
+      // Bail if already listening - don't want a second listening thread
+      if (this.isListening) {
+        return;
+      }
+      
       // Initialize the recognizer - could do this only once, but this will re-establish a connection if lost
       this.recognizer = new SpeechSDK.SpeechRecognizer(
         this.speechConfig,
@@ -199,6 +216,7 @@
       // 2. No additional audio is available.
       //    Caused by the input stream being closed or reaching the end of an audio file.
       this.recognizer!.canceled = (s, e) => {
+        this.isListening = false;
         let err = new Error(SpeechSDK.CancellationReason[e.reason]);
         if (this.onError) {
           this.onError.call(this, err);
@@ -210,6 +228,7 @@
       }
 
       // Get the recognition started
+      this.isListening = true;
       this.recognizer.startContinuousRecognitionAsync();
     }
 
@@ -227,6 +246,7 @@
           wait ? wait : 0
         );
       }
+      this.isListening = false;
     }
     //#endregion "Continuous" recognition
 
@@ -275,14 +295,14 @@
           const conf: number = item.confidence * 0.9;
           resultsArray.push(new SpeechRecoItem(acronym, conf));
         }
-        else if (item.text.search(/^([a-zA-Z]\s)+[a-zA-Z]+$/) >= 0) {
+        else if (item.text.search(/^([a-zA-Z]\s)+[a-zA-Z][a-zA-Z]+$/) >= 0) {
           // Break space-separated letters from designator
-          let parts: RegExpMatchArray | null = item.text.match(/^(([a-zA-Z]\s)+)([a-zA-Z]+)$/);
+          let parts: RegExpMatchArray | null = item.text.match(/^(([a-zA-Z]\s)+)([a-zA-Z][a-zA-Z]+)$/);
           if (parts && parts.length == 4) {
             // Remove spaces and add hypothesis with even lower confidence
             const acronym: string = parts[1].replace(/\s/g, '');
             const designator: string= parts[3];
-            const conf: number = item.confidence * 0.7;
+            const conf: number = item.confidence * 0.85;
             resultsArray.push(new SpeechRecoItem(acronym + ' ' + designator, conf));
           }
         }
