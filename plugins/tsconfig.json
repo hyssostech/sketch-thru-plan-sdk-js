@@ -10,6 +10,9 @@
       "strict": true,
       "strictPropertyInitialization": false,
     },
+    "exclude": [
+      "node_modules"
+    ],
     "typedocOptions": {    
       "module": "es2015",
       "target": "es6",
