@@ -2,7 +2,38 @@ Do Not Translate or Localize
 
 This project is based on or incorporates material from the projects listed below (Third Party IP). The original copyright notice and the license under which Hyssos received such Third Party IP, are set forth below. Such licenses and notices are provided for informational purposes only. Where permitted, Hyssos licenses the Third Party IP to you under the licensing terms for Hyssos products. Hyssos reserves all other rights not expressly granted under this agreement, whether by implication, estoppel or otherwise.
 
-**a. JSON-RPC**
+**a. Microsoft Cognitive Services Speech SDK**
+
+The Sketch-thru-Plan SDK resources uses code adapted from Microsoft Cognitive Services Speech SDK samples, obtained from https://github.com/Azure-Samples/cognitive-services-speech-sdk. It is licensed under the following license:
+
+```
+MIT License
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+```
+**b. Google Maps API**
+
+Samples make use of Google's Map API. Terms of service can the found at [https://developers.google.com/maps/terms-20180207](https://developers.google.com/maps/terms-20180207)
+
+**c. JSON-RPC**
 
 The JSON API format and schema uses a JSON-RPC format, as defined as part of https://github.com/open-rpc. It is licensed under the following license:
 
@@ -85,22 +116,44 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 ```
 
-**b. Mapbox geojson-rewind**
+**d. Joint Military Symbology Library**
 
-The geojso-rewind tool, as defined as part of https://github.com/mapbox/geojson-rewind, is used as part of symbol GeoJSON generation. It is licensed under the following license:
+Sketch-thru-Plan SDK employ resources provided by the Joint Military Symbology Library (JMS), available at https://github.com/Esri/joint-military-symbology-xml. It is licensed under the following license:
 
-```
-Copyright (c) 2020, Mapbox
+Copyright 2014 Esri
 
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-```
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+A copy of the license is available in the repository's license.txt file.
+
+[](Esri Tags: ArcGIS Defense and Intelligence Joint Military Symbology XML ArcGISSolutions) [](Esri Language: XML)
+
+**e. Spatial Illusions milsymbol military symbol rendering library**
+
+Some samples make use of the `milsymbol` javascript military symbol rendering library, available at https://github.com/spatialillusions/milsymbol
+
+The MIT License (MIT)
+
+Copyright (c) 2017 Måns Beckman - www.spatialillusions.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
