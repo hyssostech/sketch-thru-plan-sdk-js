@@ -1,8 +1,8 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-    typeof define === 'function' && define.amd ? define(['exports'], factory) :
-    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.StpWS = {}));
-}(this, (function (exports) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+    typeof define === 'function' && define.amd ? define(factory) :
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.StpWS = factory());
+}(this, (function () { 'use strict';
 
     var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -17,17 +17,23 @@
         constructor(connstring) {
             this.DEFAULT_TIMEOUT = 30;
             this.connstring = connstring;
+            this.socket = null;
+            this.baseName = '';
+            this.name = '';
+            this.serviceName = '';
+            this.solvables = [];
+            this.timeout = 0;
         }
         get isConnected() {
-            return this.socket && this.socket.readyState === this.socket.OPEN;
+            return this.socket != null && this.socket.readyState === this.socket.OPEN;
         }
         get isConnecting() {
-            return this.socket && this.socket.readyState === this.socket.CONNECTING;
+            return this.socket != null && this.socket.readyState === this.socket.CONNECTING;
         }
         get connState() {
             return this.socket ? this.socket.readyState.toString() : '';
         }
-        connect(serviceName, solvables, timeout) {
+        connect(serviceName, solvables, timeout = this.DEFAULT_TIMEOUT) {
             return __awaiter(this, void 0, void 0, function* () {
                 return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                     if (this.isConnected) {
@@ -35,9 +41,8 @@
                     }
                     this.serviceName = serviceName;
                     this.solvables = solvables;
-                    this.timeout = timeout;
                     try {
-                        this.socket = yield this.promiseWithTimeout(this.tryConnect(this.connstring));
+                        this.socket = yield this.promiseWithTimeout(0, this.tryConnect(this.connstring));
                         yield this.register(this.serviceName, this.solvables, this.timeout);
                     }
                     catch (e) {
@@ -69,13 +74,16 @@
                 }));
             });
         }
-        register(serviceName, solvables, timeout) {
+        register(serviceName, solvables, timeout = this.DEFAULT_TIMEOUT) {
             if (!this.isConnected) {
                 throw new Error('Failed to register: connection is not open (' + this.connState + ')');
             }
-            return this.promiseWithTimeout(new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                if (!this.socket) {
+                    return;
+                }
                 this.baseName = serviceName;
-                this.name = this.baseName + '_' + this.uniqueId(9);
+                this.name = this.baseName + '_' + this.getUniqueId(9);
                 this.socket.send(JSON.stringify({
                     method: 'Register',
                     params: {
@@ -85,28 +93,29 @@
                     }
                 }));
                 resolve();
-            })), timeout);
+            })));
         }
-        disconnect(timeout) {
-            return this.promiseWithTimeout(new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                if (!this.isConnected) {
+        disconnect(timeout = this.DEFAULT_TIMEOUT) {
+            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                if (!this.isConnected && this.socket) {
                     this.socket.close();
                 }
                 resolve();
-            })), timeout);
+            })));
         }
-        inform(message, timeout) {
+        inform(message, timeout = this.DEFAULT_TIMEOUT) {
             if (!this.isConnected) {
-                throw new Error('Failed to send message: connection is not open (' +
-                    this.connState +
-                    ')');
+                throw new Error('Failed to send inform: connection is not open (' + this.connState + ')');
             }
-            return this.promiseWithTimeout(new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                if (!this.socket) {
+                    return;
+                }
                 this.socket.send(message);
                 resolve();
-            })), timeout);
+            })));
         }
-        request(message, timeout) {
+        request(message, timeout = this.DEFAULT_TIMEOUT) {
             throw new Error('Method not implemented');
         }
         tryConnect(connstring) {
@@ -116,9 +125,7 @@
                 socket.onerror = (err) => reject(new Error('Unspecified error communicating with STP'));
             });
         }
-        promiseWithTimeout(promise, timeout) {
-            if (!timeout)
-                timeout = this.DEFAULT_TIMEOUT;
+        promiseWithTimeout(timeout, promise) {
             return Promise.race([
                 promise,
                 new Promise((resolve, reject) => {
@@ -129,16 +136,13 @@
                 })
             ]);
         }
-        uniqueId(numChars) {
+        getUniqueId(numChars) {
             if (!numChars)
                 numChars = 9;
             return Math.random().toString(36).substr(2, numChars);
         }
     }
 
-    exports.StpWebSocketsConnector = StpWebSocketsConnector;
-    exports.default = StpWebSocketsConnector;
-
-    Object.defineProperty(exports, '__esModule', { value: true });
+    return StpWebSocketsConnector;
 
 })));

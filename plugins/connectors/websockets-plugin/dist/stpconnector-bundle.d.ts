@@ -6,19 +6,19 @@ interface IStpConnector {
     disconnect(timeout?: number): Promise<void>;
     inform(message: string, timeout?: number): Promise<void>;
     request(message: string, timeout?: number): Promise<string[]>;
-    onInform: (message: string) => void;
-    onRequest: (message: string) => string;
-    onError: (error: string) => void;
+    onInform: ((message: string) => void) | undefined;
+    onRequest: ((message: string) => string[]) | undefined;
+    onError: ((error: string) => void) | undefined;
 }
 
 declare class StpWebSocketsConnector implements IStpConnector {
     connstring: string;
-    socket: WebSocket;
+    socket: WebSocket | null;
     baseName: string;
     name: string;
     serviceName: string;
     solvables: string[];
-    timeout?: number;
+    timeout: number;
     get isConnected(): boolean;
     get isConnecting(): boolean;
     get connState(): string;
@@ -29,13 +29,12 @@ declare class StpWebSocketsConnector implements IStpConnector {
     disconnect(timeout?: number): Promise<void>;
     inform(message: string, timeout?: number): Promise<void>;
     request(message: string, timeout?: number): Promise<string[]>;
-    onInform: (message: string) => void;
-    onRequest: (message: string) => string;
-    onError: (error: string) => void;
+    onInform: ((message: string) => void) | undefined;
+    onRequest: ((message: string) => string[]) | undefined;
+    onError: ((error: string) => void) | undefined;
     private tryConnect;
     private promiseWithTimeout;
-    private uniqueId;
+    private getUniqueId;
 }
 
 export default StpWebSocketsConnector;
-export { StpWebSocketsConnector };
