@@ -28,6 +28,21 @@ The connection to STP and the speech recognizer that is used are configurable vi
 * A PC or Mac with a working microphone
 * Means to serve a page over https
 
+### Accessing the SDK functionality
+
+Install the npm packeage:
+
+```
+npm install --save sketch-thru-plan-sdk
+```
+
+Or embed it directly as a script using jsdelivr. As always, it is recommended that a specific version be used rather than @latest to prevent breaking changes from affecting existing code
+
+```javascript
+<!-- Include _after_ the external services such as the Microsoft Cognitive Services Speech -->
+<script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+```
+
 ## Configuration
 
 Enter servers and keys by editing [`index.ts`](ts/src/index.ts) (or [`index.js`](js/index.js)):
