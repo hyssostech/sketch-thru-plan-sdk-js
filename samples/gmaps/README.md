@@ -133,13 +133,12 @@ This sample adds simple task event handlers, that just display a short message t
 | creatorRole       | Role that created the task: S2, S3, S4, Eng, FSO |
 | interval          | Task creation time interval |
 | confidence        | Confidence score of the recognition (1.0 is 100%) |
-| alt               | Rank of this task interpretation amongst the interpretation hypothesis
-| 
+| alt               | Rank of this task interpretation amongst the interpretation hypothesis| 
 | description | Task description
 | who | Unique id of the unit executing the task
 | supported |   Unique id of the supported unit, if applicable
 | tgs | Task's Tactical Graphics unique ids
-| name | Task name, such as 'AssaultObjectiveOnAxis'
+| name | Task name, such as `AssaultObjectiveOnAxis`
 | how | Task How enum
 | what | Task What enum
 | why | Task Why enum
