@@ -1,7 +1,11 @@
 # Sketch-thru-Plan Samples
 
-A sample that extends the [quickstarts](../quickstart) code with actual military symbol rendering is available under [gmaps](gmaps)
+Samples illustrate different aspects of STP in an incremental fashin, with each sample building on a previous one, adding capabilities. 
 
-An example of embedding of an STP-enabled app in an iFrame is available under [iframe](iframe)
+* [quickstart](../quickstart) - bare-bones foundational example
+* [Gmaps](gmaps) - enhances the speech recognition strategy and adds a military symbol renderer
+* [Tasks](tasks) - demonstrates how automatically detected Tasks can be handled
+* [TaskOrg](to) - demonstrates handling of Task Org/ORBAT definitions
+ 
 
 
