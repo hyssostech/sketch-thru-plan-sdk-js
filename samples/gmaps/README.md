@@ -222,6 +222,7 @@ If using a different renderer, STP makes the following properties available by d
 | altitude          | Altitude parameter, if applicable |
 | minAltitude       | Symbol minimal altitude if a range is supported |
 | maxAltitude       | Symbol maximal altitude if a range is supported |
+| toUnitPoid        | For symbols created from a Task Org, the unique id of the Task Org Unit that this symbol was created from |
 
 
 ### Location properties:
