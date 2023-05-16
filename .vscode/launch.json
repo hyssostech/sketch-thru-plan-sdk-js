@@ -2,13 +2,25 @@
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.1.0",
+    "version": "0.2.0",
     "configurations": [
-         {
-            "type": "chrome",
+        {
+            "type": "msedge",
             "request": "launch",
-            "name": "Open JS Quickstart",
+            "name": "JS Quickstart",
             "file": "${workspaceFolder}/quickstart/js/index.html",
-         }
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Scenario Sample",
+            "webRoot": "${workspaceFolder}/samples/scenario/",
+            "file": "index.html?inkonly&machineid=DEVBOX&mapkey=AIzaSyBS2RGsHQ3ZDN47NMhwnMxjn4V5CG6a1Jc&lat=20.12519&lon=-155.71221&zoom=13&azregion=westus&azkey=d42dedf4bbb7417ab289be12a3660220&azlang=en-US&stpurl=ws://localhost:9599&port=9555&host=localhost&hostconnection=localhost:9555",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "/./*": "${webRoot}/*",
+                "/*": "*",
+                "/./~/*": "${workspaceFolder}/node_modules/*"
+}        },
     ]
 }
