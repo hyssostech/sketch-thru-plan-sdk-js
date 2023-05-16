@@ -150,7 +150,7 @@ async function start(){
 
     // Attempt to connect to STP
     try {
-        await stpsdk.connect("GoogleMapsSample", 10, machineId);
+        await stpsdk.connect("SdkMapSample", 10, machineId);
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
