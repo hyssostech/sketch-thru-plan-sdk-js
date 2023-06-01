@@ -5,7 +5,7 @@ This sample adds role switching capabilities to the  [Scenario](../scenario) sam
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 
 
-STP supports multiple roles - S2 (Intel), S3 (), S4 (Logisitcs), Eng (Engineering), and FSO (Fires Support Officer). 
+STP supports multiple roles - S2 (Intel), S3 (Operations), S4 (Logisitcs), Eng (Engineering), and FSO (Fires Support Officer). 
 Selecting a role causes the following effects:
 
 * A TO/ORBAT that matches the role's default affiliation (`hostile` for `S2`, `friend` for the rest) is loaded,
