@@ -302,6 +302,9 @@ function buildInfo(symbol) {
         '</tr>' +
         '<tr>' +
             '<td>Strength</td><td>' + symbol.strength + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Branch</td><td>' + symbol.branch + '</td>' +
         '</tr>';
     }
     contentString +=
