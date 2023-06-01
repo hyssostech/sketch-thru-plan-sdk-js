@@ -21,6 +21,33 @@
                 "/./*": "${webRoot}/*",
                 "/*": "*",
                 "/./~/*": "${workspaceFolder}/node_modules/*"
-}        },
+            },
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "TO Sample",
+            "webRoot": "${workspaceFolder}/samples/to/",
+            "file": "index.html?inkonly&machineid=DEVBOX&mapkey=AIzaSyBS2RGsHQ3ZDN47NMhwnMxjn4V5CG6a1Jc&lat=20.12519&lon=-155.71221&zoom=13&azregion=westus&azkey=d42dedf4bbb7417ab289be12a3660220&azlang=en-US&stpurl=ws://localhost:9599&port=9555&host=localhost&hostconnection=localhost:9555",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "/./*": "${webRoot}/*",
+                "/*": "*",
+                "/./~/*": "${workspaceFolder}/node_modules/*"
+            },
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Roles Sample",
+            "webRoot": "${workspaceFolder}/samples/roles/",
+            "file": "index.html?inkonly&machineid=DEVBOX&mapkey=AIzaSyBS2RGsHQ3ZDN47NMhwnMxjn4V5CG6a1Jc&lat=20.12519&lon=-155.71221&zoom=13&azregion=westus&azkey=d42dedf4bbb7417ab289be12a3660220&azlang=en-US&stpurl=ws://localhost:9599&port=9555&host=localhost&hostconnection=localhost:9555",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "/./*": "${webRoot}/*",
+                "/*": "*",
+                "/./~/*": "${workspaceFolder}/node_modules/*"
+            },
+        },
     ]
 }
