@@ -94,64 +94,8 @@ async function start(){
         map.removeFeature(poid);
     };
  
-    // A new Task Org Unit has been recognized and added
-    stpsdk.onTaskOrgUnitAdded = (toUnit, isUndo) => {
-        try {
-            // Display some properties
-            log("Task Org Unit added: " + toUnit.fullDescription, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-    // The properties of a Task Org Unit were modified
-    stpsdk.onTaskOrgUnitModified = (poid, toUnit, isUndo) => {
-        try {
-            // Display some properties
-            log("Task  Org Unit modified: " + poid + " " + toUnit.fullDescription, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-    // A Task Org Unit was removed
-    stpsdk.onTaskOrgUnitDeleted = (poid, isUndo) => {
-        try {
-            // Display some properties
-            log("Task  Org Unit deleted: " + poid, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-
-    // A new Task Org Relationship has been recognized and added
-    stpsdk.onTaskOrgRelationshipAdded = (toRelationship, isUndo) => {
-        try {
-            // Display some properties
-            log("Task Org Relationship added: " + toRelationship.poid, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-    // The properties of a Task Org Relationship were modified
-    stpsdk.onTaskOrgRelationshipModified = (poid, toRelationship, isUndo) => {
-        try {
-            // Display some properties
-            log("Task Org Relationship modified: " + poid, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-    // A Task Org Relationship was removed
-    stpsdk.onTaskOrgRelationshipDeleted = (poid, isUndo) => {
-        try {
-            // Display some properties
-            log("Task Org Relationship deleted: " + poid, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-
-     // A new task has been recognized and added
-     stpsdk.onTaskAdded = (poid, alternates, taskPoids, isUndo) => {
+    // A new task has been recognized and added
+    stpsdk.onTaskAdded = (poid, alternates, taskPoids, isUndo) => {
         try {
             // Display some properties
             log("Task added: " + alternates[0].description, "Info");
@@ -268,7 +212,19 @@ async function start(){
 
     // Attempt to connect to STP
     try {
+        // TODO: display some sort of progress indicator/wait cursor
         await stpsdk.connect("SdkScenarioSample", 10, machineId);
+        // Create new scenario or join ongoing one
+        if (await stpsdk.hasActiveScenario()) {
+            if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
+                await stpsdk.joinScenarioSession();
+                log("Joined scenario");
+            }
+            else {
+                await stpsdk.createNewScenario("SdkScenarioSample");
+                log("New scenario created");
+            }
+        }
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
@@ -420,6 +376,9 @@ function buildInfo(symbol) {
         '</tr>' +
         '<tr>' +
             '<td>Strength</td><td>' + symbol.strength + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Branch</td><td>' + symbol.branch + '</td>' +
         '</tr>';
     }
     contentString +=
