@@ -5,8 +5,7 @@ Samples illustrate different aspects of STP in an incremental fashin, with each 
 * [Quickstart](../quickstart) - bare-bones foundational example
 * [Gmaps](gmaps) - enhances the speech recognition strategy and adds a military symbol renderer
 * [Tasks](tasks) - demonstrates how automatically detected Tasks can be handled
-* [TaskOrg](to) - demonstrates handling of Task Org/ORBAT definitions
 * [Scenario](scenario) - demonstrates management of scenario data
+* [TaskOrg](to) - demonstrates handling of Task Org/ORBAT definitions
+* [Roles](roles) - demonstrates role switching
  
-
-
