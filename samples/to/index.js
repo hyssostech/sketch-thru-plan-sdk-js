@@ -95,6 +95,34 @@ async function start(){
     };
  
     // A new Task Org Unit has been recognized and added
+    stpsdk.onTaskOrgAdded = (taskOrg, isUndo) => {
+        try {
+            // Display some properties
+            log("Task Org added: " + taskOrg.name, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+    // The properties of a Task Org Unit were modified
+    stpsdk.onTaskOrgModified = (poid, taskOrg, isUndo) => {
+        try {
+            // Display some properties
+            log("Task  Org modified: " + poid + " " + taskOrg.name, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+    // A Task Org Unit was removed
+    stpsdk.onTaskOrgDeleted = (poid, isUndo) => {
+        try {
+            // Display some properties
+            log("Task  Org deleted: " + poid, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+
+    // A new Task Org Unit has been recognized and added
     stpsdk.onTaskOrgUnitAdded = (toUnit, isUndo) => {
         try {
             // Display some properties
@@ -204,17 +232,196 @@ async function start(){
         log(msg, level, true);
     }
 
+    // UI element handlers
+    // Scenario actions
+    const buttonNew = document.getElementById('new');
+    buttonNew.onclick = async () => {
+        try {
+            // TODO: display some sort of progress indicator/wait cursor
+            resetApp();
+            await stpsdk.createNewScenario("SdkScenarioSample");
+            log("New scenario created");
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+    const buttonJoin = document.getElementById('join');
+    buttonJoin.onclick = async () => {
+        try {
+            // TODO: display some sort of progress indicator/wait cursor
+            if (await stpsdk.hasActiveScenario()) {
+                resetApp();
+                await stpsdk.joinScenarioSession();
+                log("Joined scenario");
+            }
+            else {
+                log("No Active Scenario");
+            }
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+    // Save and load content
+    // TODO: save/retrieve content to/from file
+    let content = '';
+    const buttonSave = document.getElementById('save');
+    buttonSave.onclick = async () => {
+        try {
+            // TODO: display some sort of progress indicator/wait cursor
+            if (await stpsdk.hasActiveScenario()) {
+                content = await stpsdk.getScenarioContent();
+                // TODO: save content to persistent storage
+                log("Saved scenario");
+            }
+            else {
+                log("No Active Scenario");
+            }
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+    const buttonLoad = document.getElementById('load');
+    buttonLoad.onclick = async () => {
+        try {
+            if (content !== '') {
+                // TODO: retrieve content from persistent storage instead of 'content' variable
+                // TODO: display some sort of progress indicator/wait cursor
+                initApp();
+                await stpsdk.loadNewScenario(content, 90);
+                log("Loaded scenario");
+            }
+            else {
+                log("No scenario data to load - Save first");
+            }
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+
+    // TO/ORBAT actions
+    // Load a friendly Task Org
+    let toFriend = undefined;
+    const buttonFriend = document.getElementById('friend');
+    buttonFriend.onclick = async () => {
+        try {
+            if (toFriend === undefined) {
+                // TODO: retrieve content from persistent storage instead of 'content' variable
+                // TODO: display some sort of progress indicator/wait cursor
+                let content = `object_set([
+                    [fsTYPE: task_org, name: '3-3 short', affiliation: friend, poid: idR47DS5VCGL9ZE, date: '2023-05-22T13:40:00Z'],
+                    [fsTYPE: task_org, name: '3-3 short', affiliation: friend, poid: idR47DS5VCGL9ZE, date: '2023-05-22T13:40:00Z'],
+                    [fsTYPE: task_org_unit, name: 'A/2-69', designator1: 'A', unit_parent: '2-69', sidc: 'SFGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: company, poid: 'uuid7e99345a-f15a-4939-b963-0b83b1ec40f0'],
+                    [fsTYPE: task_org_unit, name: 'PINEAPPLES | [ROYAL] PINEAPPLES', designator1: '1', unit_parent: 'A/2-69', sidc: 'SFGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: platoon, poid: 'uuid5336c5d5-9182-4846-bdd8-5c517869c274'],
+                    [fsTYPE: task_org_relationship, poid: idPNPMCKGE2TPLF, affiliation: friend, parent: poid(uuid7e99345a-f15a-4939-b963-0b83b1ec40f0), relationship: organic, child: poid(uuid5336c5d5-9182-4846-bdd8-5c517869c274), parent_poid: poid(idR47DS5VCGL9ZE)],
+                ])`;
+                toFriend = await stpsdk.importTaskOrgContent(content);
+            }
+            await stpsdk.setDefaultTaskOrg(toFriend);
+            //buttonGetTO.style.backgroundColor = 'lightblue';
+            log("Friendly TO " + toFriend + " set as default");
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+
+    // Load a hostile Task Org
+    let toHostile = undefined;
+    const buttonHostile = document.getElementById('hostile');
+    buttonHostile.onclick = async () => {
+        try {
+            if (toHostile === undefined) {
+                // TODO: retrieve content from persistent storage instead of 'content' variable
+                // TODO: display some sort of progress indicator/wait cursor
+                let hostile = `object_set([
+                    [fsTYPE: task_org, name: 'Hostile 1-1', affiliation: hostile, poid: idR47DS5VCGL8AB, date: '2023-05-22T13:40:00Z'],
+                    [fsTYPE: task_org_unit, name: 'B/1-1', designator1: 'B', unit_parent: '1-1', sidc: 'SHGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: company, poid: uuid7e99345a-f15a-4939-b963-0b83b1ec51a2],
+                    [fsTYPE: task_org_unit, name: '1/B/1-1', designator1: '1', unit_parent: 'B/1-1', sidc: 'SHGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: platoon, poid: uuid5336c5d5-9182-4846-bdd8-5c517869d342],
+                    [fsTYPE: task_org_relationship, poid: idPNPMCKGE5TRTF, affiliation: friend, parent: poid(uuid7e99345a-f15a-4939-b963-0b83b1ec51a2), relationship: organic, child: poid(uuid5336c5d5-9182-4846-bdd8-5c517869d342), parent_poid: poid(idR47DS5VCGL8AB)],
+                    ])`;
+                toHostile = await stpsdk.importTaskOrgContent(hostile);
+            }
+            await stpsdk.setDefaultTaskOrg(toHostile);
+            //buttonGetTO.style.backgroundColor = 'red';
+            log("Hostile TO " + toHostile + " set as default");
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+
+    // Persist active TO
+    let toPoid = undefined;
+    const buttonGetTO = document.getElementById('getto');
+    buttonGetTO.onclick = async () => {
+        // Get TO content back, ready to persist
+        try {
+            if (toPoid) {
+                let toContent = await stpsdk.getTaskOrgContent(toPoid);
+                log("Retrieved content of latest TO (id " + toPoid + ") ready to save");
+            }
+            else {
+                log("Nothing to retrieve. Load a TO first");
+            }
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+
+
+    // A new TO became active
+    stpsdk.onTaskOrgSwitched = (taskOrg) => {
+        try {
+            // Set the current TO id
+            toPoid = taskOrg.poid;
+            // Display new task org on the UI
+            const toName = document.getElementById('toName');
+            toName.innerText = taskOrg?.name ?? 'none';
+            if (taskOrg?.affiliation == 'friend') {
+                toName.style.color = 'blue';
+            }
+            else if (taskOrg?.affiliation == 'hostile') {
+                toName.style.color = 'red';
+            }
+            else {
+                toName.style.color = 'gray';
+            }
+            log("Task Org switched to: " + taskOrg.poid, "Info");
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+
+    // Reset/Initialize local parameters
+    resetApp = () => {
+        toFriend = undefined;
+        toHostile = undefined;
+        toPoid = undefined;
+        toName.innerText = 'none';
+        toName.style.color = 'gray';
+    };
+
     // Attempt to connect to STP
     try {
-        await stpsdk.connect("SdkTOSample", 10, machineId);
+            // TODO: display some sort of progress indicator/wait cursor
+        await stpsdk.connect("SdkTaskOrgSample", 10, machineId);
+        // Create new scenario or join ongoing one
+        if (await stpsdk.hasActiveScenario()) {
+            if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
+                await stpsdk.joinScenarioSession();
+                log("Joined scenario");
+            }
+            else {
+                await stpsdk.createNewScenario("SdkTaskOrgSample");
+                log("New scenario created");
+            }
+        }
     } catch (error) {
-        let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
+        let msg = "Failed to connect to STP at " + webSocketUrl + ". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
         // Nothing else we can do
         return;
     }
 
-    // Setup the networked MS recognizer unless disabled via configuraiton
+    // Setup the networked MS recognizer unless disabled via configuration
     let speechreco;
     if (inkOnly != null) {
         // Likely using a local recognizer SxS
@@ -358,6 +565,9 @@ function buildInfo(symbol) {
         '</tr>' +
         '<tr>' +
             '<td>Strength</td><td>' + symbol.strength + '</td>' +
+        '</tr>' +
+        '<tr>' +
+            '<td>Branch</td><td>' + symbol.branch + '</td>' +
         '</tr>';
     }
     contentString +=
