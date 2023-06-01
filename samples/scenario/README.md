@@ -1,6 +1,6 @@
 # Scenario management sample
 
-This sample adds management of STP scenarios, extending the [Task Org/ORBAT](../to) sample.
+This sample adds management of STP scenarios, extending the [Task ](../task) sample.
 
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 
@@ -26,11 +26,13 @@ illustrating how new scenarios can be created, how an app can retrieve the curre
 Capabilities illustrate by this sample include:
 
 * Creating a new blank scenario
-* Joining a scenario that is already loaded in STP
+* Querying STP for a scenario that is already loaded in the Engine and "joining" it
 * Saving a scenario to persistent/external storage
 * Loading a scenario from persistent/external storage
 
-
+NOTE: client apps should always load a scenario, as the basis for further interaction.
+This scenario can be a freshly created (blank) one, one that is loaded from persistent storage, 
+or one that is loaded from the STP Engine, joining ongoing work.
 
 ## Code walkthrough
 
@@ -90,6 +92,11 @@ a previous run of the application, or loaded by a different client app).
 The app's usual Symbol and Task event handlers (e.g. `stpsdk.OnSymbolAdded`, 
 `stpSdk.OnTaskAdded`) are invoked, as if the symbols had just been 
 received from STP as a result of some user action on the UI.
+
+NOTE: `joinScenarioSession` just affects the local client that is executing the call.
+The replayed events are not broadcast to other clients - these will need to perform
+their own joins, if desired. 
+To load content in a way that all connected clients are updated, use `loadNewScenario`.
 
 ```javascript
 const buttonJoin = document.getElementById('join');
@@ -156,7 +163,8 @@ described in `getScenarioContent()` above and loads it into STP.
 
 As the scenario is being loaded, STP issues the usual entity creation events,
 essentially replaying messages in the order in which users originally placed these symbols. 
-Unlike `joinScenarioSession()`, the events are propagated to all clients of a session,
+
+NOTE: Unlike `joinScenarioSession()`, the events are propagated to all clients of a session,
 loading all with the same shared content.
 
 As is the case with saving, the SDK is also able to import scenarios represented 
@@ -175,7 +183,7 @@ buttonLoad.onclick = async () => {
             // TODO: retrieve content from persistent storage instead of 'content' variable
             // TODO: display some sort of progress indicator/wait cursor
             await stpsdk.loadNewScenario(content);
-        log("Loaded scenario");
+            log("Loaded scenario");
         }
         else {
             log("No scenario data to load - Save first");
@@ -193,3 +201,37 @@ For testing purposes the suggestion is to use the following sequence of steps:
 1. Create a new scenario to remove existing symbols
 1. Load the content (from the in memory cache) to verify that the previous symbols are reloaded
 
+### Ascertaining that a valid scenario is available after connecting
+
+As previously mentioned, client apps should start by establishing a proper context by:
+
+* Loading a scenario from persistent storage
+* Joining an existing scenario already loaded into the STP Engine, or 
+* Creating a new (blank) scenario
+
+The following snippet shows a simple approach, which offers users the option to 
+join a scenario, if one is available, creating a blank one otherwise.
+
+```javascript
+    // Attempt to connect to STP
+    try {
+        // TODO: display some sort of progress indicator/wait cursor
+        await stpsdk.connect("SdkScenarioSample", 10, machineId);
+        // Create new scenario or join ongoing one
+        if (await stpsdk.hasActiveScenario()) {
+            if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
+                await stpsdk.joinScenarioSession();
+                log("Joined scenario");
+            }
+            else {
+                await stpsdk.createNewScenario("SdkScenarioSample");
+                log("New scenario created");
+            }
+        }
+    } catch (error) {
+        let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
+        log(msg, "Error", true);
+        // Nothing else we can do
+        return;
+    }
+```
