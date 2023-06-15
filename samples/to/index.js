@@ -286,7 +286,6 @@ async function start(){
             if (content !== '') {
                 // TODO: retrieve content from persistent storage instead of 'content' variable
                 // TODO: display some sort of progress indicator/wait cursor
-                initApp();
                 await stpsdk.loadNewScenario(content, 90);
                 log("Loaded scenario");
             }
@@ -309,8 +308,8 @@ async function start(){
                 // TODO: display some sort of progress indicator/wait cursor
                 let content = `object_set([
                     [fsTYPE: task_org, name: '3-3 short', affiliation: friend, poid: idR47DS5VCGL9ZE, date: '2023-05-22T13:40:00Z'],
-                    [fsTYPE: task_org_unit, name: 'A/2-69', designator1: 'A', unit_parent: '2-69', sidc: 'SFGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: company, poid: 'uuid7e99345a-f15a-4939-b963-0b83b1ec40f0'],
-                    [fsTYPE: task_org_unit, name: 'PINEAPPLES | [ROYAL] PINEAPPLES', designator1: '1', unit_parent: 'A/2-69', sidc: 'SFGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: platoon, poid: 'uuid5336c5d5-9182-4846-bdd8-5c517869c274'],
+                    [fsTYPE: task_org_unit, name: 'A/2-69', designator1: 'A', unit_parent: '2-69', symbol_id: 'SFGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: company, poid: 'uuid7e99345a-f15a-4939-b963-0b83b1ec40f0'],
+                    [fsTYPE: task_org_unit, name: 'PINEAPPLES | [ROYAL] PINEAPPLES', designator1: '1', unit_parent: 'A/2-69', symbol_id: 'SFGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: platoon, poid: 'uuid5336c5d5-9182-4846-bdd8-5c517869c274'],
                     [fsTYPE: task_org_relationship, poid: idPNPMCKGE2TPLF, affiliation: friend, parent: poid(uuid7e99345a-f15a-4939-b963-0b83b1ec40f0), relationship: organic, child: poid(uuid5336c5d5-9182-4846-bdd8-5c517869c274), parent_poid: poid(idR47DS5VCGL9ZE)],
                 ])`;
                 toFriend = await stpsdk.importTaskOrgContent(content);
@@ -333,8 +332,8 @@ async function start(){
                 // TODO: display some sort of progress indicator/wait cursor
                 let hostile = `object_set([
                     [fsTYPE: task_org, name: 'Hostile 1-1', affiliation: hostile, poid: idR47DS5VCGL8AB, date: '2023-05-22T13:40:00Z'],
-                    [fsTYPE: task_org_unit, name: 'B/1-1', designator1: 'B', unit_parent: '1-1', sidc: 'SHGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: company, poid: uuid7e99345a-f15a-4939-b963-0b83b1ec51a2],
-                    [fsTYPE: task_org_unit, name: '1/B/1-1', designator1: '1', unit_parent: 'B/1-1', sidc: 'SHGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: platoon, poid: uuid5336c5d5-9182-4846-bdd8-5c517869d342],
+                    [fsTYPE: task_org_unit, name: 'B/1-1', designator1: 'B', unit_parent: '1-1', symbol_id: 'SHGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: company, poid: uuid7e99345a-f15a-4939-b963-0b83b1ec51a2],
+                    [fsTYPE: task_org_unit, name: '1/B/1-1', designator1: '1', unit_parent: 'B/1-1', symbol_id: 'SHGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: platoon, poid: uuid5336c5d5-9182-4846-bdd8-5c517869d342],
                     [fsTYPE: task_org_relationship, poid: idPNPMCKGE5TRTF, affiliation: friend, parent: poid(uuid7e99345a-f15a-4939-b963-0b83b1ec51a2), relationship: organic, child: poid(uuid5336c5d5-9182-4846-bdd8-5c517869d342), parent_poid: poid(idR47DS5VCGL8AB)],
                     ])`;
                 toHostile = await stpsdk.importTaskOrgContent(hostile);
@@ -524,16 +523,16 @@ function buildInfo(symbol) {
     '<h3 id="firstHeading" class="firstHeading">' + symbol.fullDescription + '</h3>' +
     '<table>'+
         '<tr>' +
-            '<td>2525D PartA</td><td>' + symbol.sidc?.partA + '</td>' +
+            '<td>2525D PartA</td><td>' + symbol.symbol_id?.partA + '</td>' +
         '</tr>' +
         '<tr>' +
-            '<td>2525D PartB</td><td>' + symbol.sidc?.partB + '</td>' +
+            '<td>2525D PartB</td><td>' + symbol.symbol_id?.partB + '</td>' +
         '</tr>' +
         '<tr>' +
-            '<td>Symbol Set</td><td>' + symbol.sidc?.symbolSet + '</td>' +
+            '<td>Symbol Set</td><td>' + symbol.symbol_id?.symbolSet + '</td>' +
         '</tr>' +
         '<tr>' +
-            '<td>2525C SIDC</td><td>' + symbol.sidc?.legacy + '</td>' +
+            '<td>2525C SIDC</td><td>' + symbol.symbol_id?.legacy + '</td>' +
         '</tr>' +
         '<tr>' +
             '<td>Affiliation</td><td>' + symbol.affiliation + '</td>' +
