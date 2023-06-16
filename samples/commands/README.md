@@ -1,4 +1,4 @@
-#Custom commands sample
+# Custom commands sample
 
 This sample adds custom command handling to the  [Roles](../roles) sample.
 
@@ -26,10 +26,10 @@ Capabilities illustrate by this sample include:
 ## Defining new commands via STP configuration
 
 Custom command definition is achieved by adding entries to STP's configuration tables.
-In specific, these commands are defined in `<STP isntall folder>\MilTables\AuxiliaryTables\Edits.txt`.
+In specific, these commands are defined in `<STP install folder>\MilTables\AuxiliaryTables\Edits.txt`.
 `Edits` is a tab-separated file, and can be modified with a text editor, or by opening it with Excel.
 
-![IMAGE](./edits.png)
+![IMAGE](./Edits.png)
 
 * Column A - SIC Fragment - this is a (non-2525/APP6) symbol id that represents the custom item. 
 Choose an id that starts with "ED", and then uniquely identify the element, following the 9-character "`--- -- --`"
@@ -91,7 +91,7 @@ These events receive two parameters:
 | shape             | Gesture type: point, line or area |
 | radius            | Radius of the area containing the symbol, if applicable (zero for point locations) |
 | coords            | Array of { lat: latitude, lon: longitude } |
-| centroid          | Corrdinates of the location centroid { lat: latitude, lon: longitude } |
+| centroid          | Coordinates of the location centroid { lat: latitude, lon: longitude } |
 | candidatePoids    | Unique Ids of the symbols intersected by "coords". Used for editing operations that use sketches to select objects, for example "move this", "delete this" |
 
 Of main interest for edit operations are the following:
@@ -141,7 +141,7 @@ stpsdk.onMapOperation = (operation: string, location: StpType.Location) => {
 
 **onCommand**
 
-The main difference between this class of events and the previoou sones (`oNSymbolEdited` and `onMapOperation`) is that these events are not restricted to just the client that issues the speech and sketch that results in the event. 
+The main difference between this class of events and the previous ones (`onSymbolEdited` and `onMapOperation`) is that these events are not restricted to just the client that issues the speech and sketch that results in the event. 
 All connected clients are notified. Care must therefore be taken to avoid multiple similar clients from executing system-wide operations that might clash with each other.
 
 ```javascript
