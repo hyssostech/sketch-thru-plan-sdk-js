@@ -22,7 +22,7 @@ The connection to STP and the speech recognizer that is used are configurable vi
 
 
 ## Prerequisites
-* Sketch-thru-Plan (STP) Engine (v5.1.3+) running on an accessible server
+* Sketch-thru-Plan (STP) Engine (v5.8.7+) running on an accessible server
 * A Google Maps [API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
 * A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
@@ -245,7 +245,31 @@ While code in applications embedding the STP SDK will likely use different appro
         );
     }
 ```
-**Handling selection** - In this sample, selection causes the properties of the symbol to be displayed (in an infowindow/popup) that includes a `delete` button. 
+
+NOTE: `intersectedPoids` sends to STP a list of the unique identifiers of the symbols that a sketched gesture crosses/overlaps.
+This information is important for operations that use gestures to identify affected objects. 
+These operations are of two main kinds:
+* Property setting operations, where users may sketch a tick mark over a symbol and change a symbol's properties by speaking tnew values, such as 'designator Alpha', or 'reinforced reduced'
+* Edit operations, such as select, delete, or move, where a sketched mark identifies what should be selected, deleted or moved.
+
+In this series of samples, this information is _not_ being captured. 
+The call to `onStrokeCompleted` in `googlemaps.ts/js` passes an empty array.
+
+```javascript
+    if (this.onStrokeCompleted) {
+        this.onStrokeCompleted(
+            new Size(sizePixels.width, sizePixels.height),
+            new LatLon(mapBounds.getNorthEast().lat(), mapBounds.getSouthWest().lng()),
+            new LatLon(mapBounds.getSouthWest().lat(), mapBounds.getNorthEast().lng()),
+            strokeLatLng,
+            this.strokeStart,
+            this.strokeEnd,
+            [] // intersectedPoids
+        );
+    }
+```
+
+**Handling map symbol clicks** - In this sample, selection causes the properties of the symbol to be displayed (in an infowindow/popup) that includes a `delete` button. 
 
 ```javascript
     // Handle feature selection
