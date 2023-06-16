@@ -8,4 +8,5 @@ Samples illustrate different aspects of STP in an incremental fashin, with each 
 * [Scenario](scenario) - demonstrates management of scenario data
 * [TaskOrg](to) - demonstrates handling of Task Org/ORBAT definitions
 * [Roles](roles) - demonstrates role switching
+* [Custom Commands](commands) - demonstrates the definition of custom commands
  
