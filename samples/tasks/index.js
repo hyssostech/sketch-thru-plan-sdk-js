@@ -16,10 +16,12 @@ window.onload = () => start();
 window.onerror = (msg, url, line, col, error) => {
     try {
         var extra = !col ? '' : '\ncolumn: ' + col;
-        // You can view the information in an alert to see things working like this:
-        log('Unexpected Error: ' + msg + ' url: ' + url + ' line: ' + line + extra, 'Error', true);
-        // Suppress additional error alerts (in some browsers)
-        return true;
+        // Ignore empty messages
+        if (!msg && line === 0) {
+            log('Unexpected Error: ' + msg + ' url: ' + url + ' line: ' + line + extra, 'Error', true);
+            // Suppress additional error alerts (in some browsers)
+            return true;
+        }
     } catch (error) {
         // Ignore failures during the attempt to report
     }
