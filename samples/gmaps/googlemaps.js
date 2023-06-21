@@ -48,17 +48,18 @@ class GoogleMap  {
      * Insert the google maps script to the html, linking to our initialization callback
      */
     async load() {
-        const googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + this.apiKey;
-        if (!document.querySelectorAll('[src="' + googleMapsUrl + '"]').length) {
-            document.body.appendChild(Object.assign(
-                document.createElement('script'), {
-                type: 'text/javascript',
-                src: googleMapsUrl,
-                onload: async () => await this.initMap()
-            }));
-        } else {
-            await this.initMap();
-        }
+        let loader = new google.maps.plugins.loader.Loader({
+            apiKey: this.apiKey,
+            version: "weekly",
+        });
+        loader.loadCallback(e => {
+            if (e) {
+                console.log(e);
+                throw new Error(e);
+            } else {
+                this.initMap();
+            }
+        });
     }
 
     /**
