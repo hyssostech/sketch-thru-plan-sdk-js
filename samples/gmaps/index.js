@@ -22,6 +22,9 @@ window.onerror = (msg, url, line, col, error) => {
             // Suppress additional error alerts (in some browsers)
             return true;
         }
+    } catch (error) {
+        // Ignore failures during the attempt to report
+    }
 }
 
 //#region STP functions

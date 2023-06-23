@@ -109,20 +109,22 @@ export class GoogleMap implements IStpMap {
     }
 
     /**
-     * Insert the google maps script to the html, linking to our initialization callback
+     * Load google maps, linking to our initialization callback
+     * See https://www.npmjs.com/package/@googlemaps/js-api-loader 
      */
-    async load() {
-        const googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + this.apiKey;
-        if (!document.querySelectorAll('[src="' + googleMapsUrl + '"]').length) {
-            document.body.appendChild(Object.assign(
-                document.createElement('script'), {
-                type: 'text/javascript',
-                src: googleMapsUrl,
-                onload: async () => await this.initMap()
-            }));
-        } else {
-            await this.initMap();
-        }
+    load = async () => {
+        let loader = new google.maps.plugins.loader.Loader({
+            apiKey: this.apiKey,
+            version: "weekly",
+        });
+        loader.loadCallback(async e => {
+            if (e) {
+                console.log(e);
+                throw new Error(e);
+            } else {
+                await this.initMap();
+            }
+        });
     }
 
     /**

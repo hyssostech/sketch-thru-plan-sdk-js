@@ -156,7 +156,9 @@ map.onStrokeCompleted = (pixelBoundsWindow,topLeftGeoMap,bottomRightGeoMap,strok
 
 ### Rendering
 
-The general strategy used  within [`jmsrenderer.js`](jmsrenderer.js) is to enhance the basic GeoJSON representation of each symbol (returned by `symbol.asGeoJSON()`) with renderings produced by two renderers
+Rendering code used in the samples can be found under the [renderers plugin folder](..\..\plugins\renderers\).
+
+The general strategy used  within [`jmsrenderer.js`](..\..\plugins\renderers\jmsrenderer.js) is to enhance the basic GeoJSON representation of each symbol (returned by `symbol.asGeoJSON()`) with renderings produced by two open source renderers:
 
 * [milsymbol](https://github.com/spatialillusions/milsymbol) is used to generate SVG icons representing single point symbols (units, equipment, mootw and single point tactical graphics)
 * [mil-sym-js](https://github.com/missioncommand/mil-sym-js) is used to generate GeoJSON representations of multipoint tactical graphics

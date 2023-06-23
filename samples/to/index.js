@@ -403,17 +403,6 @@ async function start(){
     try {
             // TODO: display some sort of progress indicator/wait cursor
         await stpsdk.connect("SdkTaskOrgSample", 10, machineId);
-        // Create new scenario or join ongoing one
-        if (await stpsdk.hasActiveScenario()) {
-            if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
-                await stpsdk.joinScenarioSession();
-                log("Joined scenario");
-            }
-            else {
-                await stpsdk.createNewScenario("SdkTaskOrgSample");
-                log("New scenario created");
-            }
-        }
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl + ". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
@@ -511,6 +500,18 @@ async function start(){
 
     // Load the map
     map.load();
+
+    // Create new scenario or join ongoing one
+    if (await stpsdk.hasActiveScenario()) {
+        if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
+            await stpsdk.joinScenarioSession();
+            log("Joined scenario");
+        }
+        else {
+            await stpsdk.createNewScenario("SdkRoleSample");
+            log("New scenario created");
+        }
+    }
 }
 
 /**

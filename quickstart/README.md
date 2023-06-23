@@ -187,11 +187,6 @@ try {
 
 ### Providing sketch events to STP
 
-STP is map agnostic - any solution can be used as the underlying surface for sketching, provided that the latitude and longitude coordinates (in decimal degrees) of the sketches can be obtained.
-
-In this sample, Google Maps is used as the mapping application, but that could be replaced by solutions based on a variety of alternatives (for example [Leaflet](https://leafletjs.com/), [OpenLayers](https://openlayers.org/), [ESRI ArcGIS](https://developers.arcgis.com/javascript/)).
-
-
 STP requires two events to be raised when the user sketches: 
 
 1. A pen down event that signals the start of a sketched gesture
@@ -199,7 +194,8 @@ STP requires two events to be raised when the user sketches:
 
 For convenience, it is also useful to be able to detect when STP-placed features are selected, so that additional information or actions can be performed as a response.
 
-While code in applications embedding the STP SDK will likely use different approaches, in this sample, Google Maps presentation and sketching are encapsulated in a class that handles the mapping logic, and invokes handlers when the events above take place. 
+While code in applications embedding the STP SDK will likely use different approaches, in this sample, map presentation and sketching are encapsulated in a class that handles the mapping logic, and invokes handlers when the events above take place. 
+These are described in more detail in the [mapping README](..\plugins\maps\gogglemaps\README.md).
 
 **Map initialization** - Each mapping system will require its own particular initialization. In this sample, the constructor takes the API key, the  Id of the HTML div where map is presented, and the initial center and zoom.
 
