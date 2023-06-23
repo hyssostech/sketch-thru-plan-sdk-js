@@ -352,7 +352,6 @@ The above properties are in addition to the `StpSymbol` properties that `StpTask
 | strength          | none, reduced, reinforced, reduced_reinforced |
 | branch            | weapon, ground_unit, civilian_air, special_operations, vstol, equipment, installation, military_air, military_sea, military_submarine |
 
-
 `StpTaskOrgRelationship` objects have the following properties:
 
 | Property          | Description                                                                   |

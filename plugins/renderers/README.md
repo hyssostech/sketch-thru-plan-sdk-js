@@ -46,7 +46,6 @@ If using a different renderer, STP makes the following properties available by d
 | modifier          | HQ and Task Force modifier: none, dummy, hq, dummy_hq, task_force, dummy_task_force, task_force_hq, dummytask_force_hq |
 | strength          | none, reduced, reinforced, reduced_reinforced |
 | branch            | weapon, ground_unit, civilian_air, special_operations, vstol, equipment, installation, military_air, military_sea, military_submarine |
-
 | timeFrom          | Start time, e.g. of a Restricted Operations Zone |
 | timeTo            | End time, e.g. of a Restricted Operations Zone |
 | altitude          | Altitude parameter, if applicable |
