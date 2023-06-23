@@ -157,3 +157,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+**f.  Mission COmmand's mil-sym-js renderer**
+
+The [mil-sym-js](https://github.com/missioncommand/mil-sym-js) rendered is licensed under
+[Apache License 2.0[(https://github.com/missioncommand/mil-sym-js/blob/master/LICENSE)]
