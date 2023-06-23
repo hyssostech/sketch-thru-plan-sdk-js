@@ -99,7 +99,7 @@ Of main interest for edit operations are the following:
     * coords: array of coordinates
     * candidatePoids - for gestures that assume a selection of a target symbol, such as `delete`, this property contains the unique identifiers of the symbols overlapped by the gesture.
 
-NOTE: `candidatePoids` is only available if the client app is properly collecting and sending this information as part of the `sendInk` method -  see the (quickstart)[..\..\quickstart\README.md) for a discussion. 
+NOTE: `candidatePoids` is only available if the client app is properly collecting and sending this information as part of the `sendInk` method -  see the (quickstart)[../../quickstart/README.md) for a discussion. 
 The simple mapping used in this collection of samples does _not_ support that.
 As a consequence, symbol-targeted operations are not supported by the samples.
 

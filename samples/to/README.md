@@ -41,7 +41,7 @@ internal formats, which is similar to JSON, but with some extensions.
 The details of this particular format are outside the scope of the samples and in general
 abstracted away by the SDK.
 
-TOs can also be represented in other formats, for example \the
+TOs can also be represented in other formats, for example the
  [C2SIM interoperability standard](https://github.com/OpenC2SIM/OpenC2SIM.github.io) 
 xml format. That is covered elsewhere in the SDK documentation.
 

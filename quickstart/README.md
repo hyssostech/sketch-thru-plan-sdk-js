@@ -195,7 +195,7 @@ STP requires two events to be raised when the user sketches:
 For convenience, it is also useful to be able to detect when STP-placed features are selected, so that additional information or actions can be performed as a response.
 
 While code in applications embedding the STP SDK will likely use different approaches, in this sample, map presentation and sketching are encapsulated in a class that handles the mapping logic, and invokes handlers when the events above take place. 
-These are described in more detail in the [mapping README](..\plugins\maps\gogglemaps\README.md).
+These are described in more detail in the [mapping README](../plugins/maps/gogglemaps/README.md).
 
 **Map initialization** - Each mapping system will require its own particular initialization. In this sample, the constructor takes the API key, the  Id of the HTML div where map is presented, and the initial center and zoom.
 
