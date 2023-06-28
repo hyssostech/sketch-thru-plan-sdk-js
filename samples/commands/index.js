@@ -253,7 +253,7 @@ async function start(){
     stpsdk.onCommand = (operation, location) => {
         try {
             // Display some properties
-            log("Symbol edit operation: " + operation + " gesture:" + location.shape, "Info");
+            map.addPoly(location.coords);
         } catch (error) {
             log(error.message, "Warning");
         }

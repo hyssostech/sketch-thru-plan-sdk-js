@@ -310,6 +310,32 @@ class GoogleMap  {
     }
 
     /**
+     * Add a polyline to the map
+     * @param coords 
+     * @param color 
+     * @param weight 
+     * @returns 
+     */
+    addPoly = (coords, color = '#66cc00', weight = 2) => {
+        if (!coords || coords.length === 0) {
+            return;
+        }
+        // If single point, add it again to get a zero-length line
+        if (coords.length === 1) {
+            coords.push(coords[0]);
+            weight *= 2;
+        }
+        // Create a new poly object
+        let poly = new google.maps.Polyline({
+            map: this.#map,
+            path: coords.map(c => ({lat: c.lat, lng: c.lon})),
+            clickable: false,
+            strokeColor: color,
+            strokeWeight: weight,
+        });
+    }
+
+    /**
      * Get the current #map bound coordinates
      */
     getBounds = () => {
