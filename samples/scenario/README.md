@@ -71,11 +71,12 @@ with the full details becoming available after the conclusion of the operation.
 
 
 ```javascript
+const appName = "SdkScenarioSample";
 const buttonNew = document.getElementById('new');
 buttonNew.onclick = async () => {
     try {
         // TODO: display some sort of progress indicator/wait cursor
-        await stpsdk.createNewScenario("SdkScenarioSample");
+        await stpsdk.createNewScenario(appName);
         log("New scenario created");
     } catch (error) {
         console.error(error);
@@ -212,26 +213,31 @@ As previously mentioned, client apps should start by establishing a proper conte
 The following snippet shows a simple approach, which offers users the option to 
 join a scenario, if one is available, creating a blank one otherwise.
 
+This snippet assumes that this is the last action performed on start(), after all
+the event handlers have been setup, connection to STP was achieved, and the map
+has been loaded (so symbols from a joined scenario can have a surface in place
+for display).
+
 ```javascript
-    // Attempt to connect to STP
-    try {
-        // TODO: display some sort of progress indicator/wait cursor
-        await stpsdk.connect("SdkScenarioSample", 10, machineId);
-        // Create new scenario or join ongoing one
-        if (await stpsdk.hasActiveScenario()) {
-            if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
-                await stpsdk.joinScenarioSession();
-                log("Joined scenario");
-            }
-            else {
-                await stpsdk.createNewScenario("SdkScenarioSample");
-                log("New scenario created");
-            }
+    // Load the map
+    map.load();
+
+    // Create new scenario or join ongoing one
+    if (await stpsdk.hasActiveScenario()) {
+        if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
+            await stpsdk.joinScenarioSession();
+            log("Joined scenario");
+            return;
         }
-    } catch (error) {
-        let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
-        log(msg, "Error", true);
-        // Nothing else we can do
-        return;
     }
+    // Start a new scenario - named it the same as the sample app - ain absence of a more meaningful name 
+    await stpsdk.createNewScenario(appName);
+    log("New " + appName + " scenario created");
+}
 ```
+NOTE: `hasActiveScenario` looks for a "planning_scenario" object, which is what is added by `createNewScenario`, or loaded in `loadNewScenario()`.
+
+If sn app does not invoke `createNewScenario` - which is the case in the previous samples up to this one, this element will _not_ be available, 
+and `hasActiveScenario` will return _false_, even if objects have been added to STP.
+
+If in doubt about the existence of the "planning_scenario" object, use an alternative (and more resource intensive) approach of attempting to retrieve the content via `getScenarioContent()` and joining if the result is not null/empty.

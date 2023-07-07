@@ -70,6 +70,8 @@ async function start(){
     const stpParm = urlParams.get('stpurl');
     if (stpParm) webSocketUrl = stpParm;
     
+    const appName = "SdkRolesSample";
+
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
 
@@ -261,7 +263,7 @@ async function start(){
     buttonNew.onclick = async () => {
         try {
             // TODO: display some sort of progress indicator/wait cursor
-            await stpsdk.createNewScenario("SdkScenarioSample");
+            await stpsdk.createNewScenario(appName);
             log("New scenario created");
         } catch (error) {
             log(error, 'Error');
@@ -523,12 +525,12 @@ async function start(){
         if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
             await stpsdk.joinScenarioSession();
             log("Joined scenario");
-        }
-        else {
-            await stpsdk.createNewScenario("SdkRoleSample");
-            log("New scenario created");
+            return;
         }
     }
+    // Start a new scenario
+    await stpsdk.createNewScenario(appName);
+    log("New scenario created");
 }
 
 /**

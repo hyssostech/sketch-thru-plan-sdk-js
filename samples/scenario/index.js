@@ -69,6 +69,8 @@ async function start(){
     
     const stpParm = urlParams.get('stpurl');
     if (stpParm) webSocketUrl = stpParm;
+
+    const appName = "SdkScenarioSample";
     
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
@@ -155,7 +157,7 @@ async function start(){
     buttonNew.onclick = async () => {
         try {
             // TODO: display some sort of progress indicator/wait cursor
-            await stpsdk.createNewScenario("SdkScenarioSample");
+            await stpsdk.createNewScenario(appName);
             log("New scenario created");
         } catch (error) {
             log(error, 'Error');
@@ -215,7 +217,7 @@ async function start(){
     // Attempt to connect to STP
     try {
         // TODO: display some sort of progress indicator/wait cursor
-        await stpsdk.connect("SdkScenarioSample", 10, machineId);
+        await stpsdk.connect(appName, 10, machineId);
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
@@ -319,12 +321,12 @@ async function start(){
         if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
             await stpsdk.joinScenarioSession();
             log("Joined scenario");
-        }
-        else {
-            await stpsdk.createNewScenario("SdkRoleSample");
-            log("New scenario created");
+            return;
         }
     }
+    // Start a new scenario - named it the same as the sample app - ain absence of a more meaningful name 
+    await stpsdk.createNewScenario(appName);
+    log("New " + appName + " scenario created");
 }
 
 /**
