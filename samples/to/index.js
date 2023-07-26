@@ -369,7 +369,7 @@ async function start(){
     };
 
 
-    // A new TO became active
+    // A new TO became active or was reset
     stpsdk.onTaskOrgSwitched = (taskOrg) => {
         try {
             // Set the current TO id
@@ -386,7 +386,7 @@ async function start(){
             else {
                 toName.style.color = 'gray';
             }
-            log("Task Org switched to: " + taskOrg.poid, "Info");
+            log("Task Org switched to: " + taskOrg?.poid, "Info");
         } catch (error) {
             log(error.message, "Warning");
         }
