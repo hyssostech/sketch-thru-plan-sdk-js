@@ -17,7 +17,7 @@ New plans may be created or loaded during a session, replacing the previous stat
 set of symbols and tasks. Clients that are joined to the same session receive notifications of the edits 
 performed by other clients, including plan/scenario creation and loads.
  
-In addition, in v5.9 Roles can be set on an individual app instance basis. Apps, even if sharing the same 
+In addition, (in STP v5.9 +) Roles can be set on an individual app instance basis. Apps, even if sharing the same 
 session, can select their own individual roles, without interfering with other instances. Two browser tabs 
 can for example share edits on a common session, but one of the tabs may be set for S2, and the other for S3. 
 Default affiliations in each tab will be different.
