@@ -14,8 +14,44 @@ A TO is defined in STP by three elements:
 1. `Task Org Units` define units that are part of the TO
 1. `Task Org Relationships` that specify a hierarchy amongst the Units. 
 
+TO definitions are persisted in `.org` files by convention.
 
-Capabilities illustrate by this sample include:
+### Activation rules
+
+Multiple TOs can be loaded, and one of them is selected as _active_, meaning that
+the unit language of that TO is what is recognized.
+ 
+The active TO is selected automatically based on a few simple rules, with no extra UI required to make explicit selections:
+ 
+- If role-less, the last one loaded is what is active:
+	- Load a friendly TO – it becomes active, and the default affiliation remains friendly
+	- Then  load a hostile TO - this hostile TO is now what is active. The default affiliation becomes hostile – but see below – both TOs are still available
+ - When a role is switched, the TO that matches the affiliation becomes active:
+	- Select S3, the friendly TO becomes active;
+	- Now switch to S2, the hostile TO is active once again
+- If just one TO is loaded, say friendly, then switching to a role of a different affiliation (S2), for which there is no loaded default, 
+causes the language to be reset, i.e., the symbol language is cleared and you are back to the regular non-TO situation. 
+Switching back to a role matching the loaded TO affiliation, causes that TO to become active again.
+
+
+### Life cycle:
+
+- Multiple TOs can be loaded into a plan/scenario - these are not active until 
+explicitly selected as a default via the appropriate SDK call  - `setDefaultTaskOrg()`
+- Setting a default causes the STP server to generate the customized model needed to interpret the
+symbol language defined by the TO, so that symbols can be placed by speaking their names
+- The generation of the language model may take some time, particularly for larger TOs - 
+it is convenient to provide users some progress feedback while this is taking place.
+In other words, it is a best practice to have progress indicators around `setDefaultTaskOrg()`
+- Changes to TO elements (units or relationships) are _not_ immediately applied. 
+After editing a TO, `setDefaultTaskOrg()` needs to be invoked again to indicate that new
+language models should be generated
+- TOs should be crafted to cover the needs for a plan or group of related plans, and should not 
+include units that are never expected to be placed in a plan
+
+
+
+### Capabilities illustrated by this sample
 
 * Loading a TO from persistent/external storage
 * Saving a TO to persistent/external storage
@@ -121,11 +157,13 @@ TOs associated with a COA take precedence over the default.
 The `onTaskOrgSwitched` event is triggered by the sdk whenever user actions (e.g. loading a different TO)
 cause the active TO to change.
 
-In this sample, the name of the active TO is displayed to provide an indication of the language
-that is enabled.
+NOTE: when a TO is reset, for example when the user switches to a Role for which 
+there is no default TO loaded, the parameter `taskOrg` will be `null`.
+
+In this sample, the name of the active TO is displayed to provide an indication of the language that is enabled.
 
 ```javascript
-    // A new TO became active
+    // A new TO became active or was reset
     let toPoid = undefined;
     stpsdk.onTaskOrgSwitched = (taskOrg) => {
         try {
@@ -143,7 +181,7 @@ that is enabled.
             else {
                 toName.style.color = 'gray';
             }
-            log("Task Org switched to: " + taskOrg.poid, "Info");
+            log("Task Org switched to: " + taskOrg?.poid, "Info");
         } catch (error) {
             log(error.message, "Warning");
         }
