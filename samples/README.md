@@ -9,4 +9,5 @@ Samples illustrate different aspects of STP in an incremental fashin, with each 
 * [TaskOrg](to) - demonstrates handling of Task Org/ORBAT definitions
 * [Roles](roles) - demonstrates role switching
 * [Custom Commands](commands) - demonstrates the definition of custom commands
+* [Sessions](session) - demonstrates connection to STP server sessions
  
