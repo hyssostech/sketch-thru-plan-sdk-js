@@ -24,8 +24,17 @@ In addition, Roles can be set on an individual app instance basis. Apps, even if
 session, can select their own individual roles, without interfering with other instances. Two browser tabs 
 can for example share edits on a common session, but one of the tabs may be set for S2, and the other for S3. 
 Default affiliations in each tab will be different.
-Different TO/ORBAT data can also be loaded into each tab, representing for example friendly an hotile
-organizations (see the [TO sample](../to/README.md) for additional discussion). 
+
+Different TO/ORBAT data can also be active in each tab, representing for example friendly an hotile
+organizations.
+TOs that are loaded by a client are available within the shared planning scenario to all clients in
+that session. 
+All clients receive notifications as task org units and relationships are added during the load,
+just as happens with any other type of symbol during load.
+These TOs only become active when explicitly selected within app instances themselves.
+At that point, the selection made by each instance can differ, so users can pick the
+context they like, independently of what is selected in other instances 
+(see the [TO sample](../to/README.md) for additional discussion on TOs). 
 
 Sessions can be specified in two ways:
  
