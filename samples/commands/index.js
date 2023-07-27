@@ -98,6 +98,27 @@ async function start(){
         map.removeFeature(poid);
     };
  
+    // A new Role became active or was reset
+    stpsdk.onRoleSwitched = (role) => {
+        try {
+            // Display new role on the UI
+            if (!role) {
+                log("Role was reset", "Info");
+                currentRoleBtn = document.querySelector("input[type='radio'][name=role]:checked");
+                if (currentRoleBtn) {
+                    currentRoleBtn.checked = false;
+                }
+            }
+            else {
+                roleBtn = document.getElementById(role);
+                roleBtn.checked = true;
+                log("Role switched to: " + role, "Info");
+            }
+        } catch (error) {
+            log(error.message, "Warning");
+        }
+    };
+
     // A new Task Org Unit has been recognized and added
     stpsdk.onTaskOrgAdded = (taskOrg, isUndo) => {
         try {
@@ -423,11 +444,13 @@ async function start(){
     for (rb in roleRadioButtons) {
         roleRadioButtons[rb].onchange = async () => {
             try {
-                currentRole = document.querySelector("input[type='radio'][name=role]:checked").value;
-                if (currentRole) {
+                currentRoleBtn = document.querySelector("input[type='radio'][name=role]:checked");
+                if (currentRoleBtn?.value) {
+                    // Remove the user selection, waiting for STP's switch notification
+                    currentRoleBtn.checked = false;
                     // TODO: display some sort of progress indicator/wait cursor
-                    await stpsdk.setCurrentRole(currentRole);
-                    log("Set role to " + currentRole);
+                    log("Requesting role switch to " + currentRoleBtn.value);
+                    await stpsdk.setCurrentRole(currentRoleBtn.value);
                 }
                 else {
                     log("No role selected");

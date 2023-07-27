@@ -47,31 +47,44 @@ In this simple sample, a call to the `setRole` method is issued whenever `onchan
 user selection of a radio button.
 
 ```javascript
-    let currentRole = undefined;
-    const roleRadioButtons = document.querySelectorAll("input[type='radio'][name=role]");
-    for (rb in roleRadioButtons) {
-        roleRadioButtons[rb].onchange = async () => {
-            try {
-                currentRole = document.querySelector("input[type='radio'][name=role]:checked").value;
-                if (currentRole) {
-                    // TODO: display some sort of progress indicator/wait cursor
-                    await stpsdk.setRole(currentRole);
-                    // TODO: save content to persistent storage
-                    log("Set role to " + currentRole);
-                }
-                else {
-                    log("No role selected");
-                }
-            } catch (error) {
-                log(error, 'Error');
+// Role actions
+let currentRole = undefined;
+const roleRadioButtons = document.querySelectorAll("input[type='radio'][name=role]");
+for (rb in roleRadioButtons) {
+    roleRadioButtons[rb].onchange = async () => {
+        try {
+            currentRoleBtn = document.querySelector("input[type='radio'][name=role]:checked");
+            if (currentRoleBtn?.value) {
+                // Remove the user selection, waiting for STP's switch notification
+                currentRoleBtn.checked = false;                   
+                // TODO: display some sort of progress indicator/wait cursor
+                log("Requesting role switch to " + currentRoleBtn.value);
+                await stpsdk.setCurrentRole(currentRoleBtn.value);
             }
-        };
-    }
+            else {
+                log("No role selected");
+            }
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
+}
 ```
 
 Role switching results in potential loading of different language models related to the particular role and associated Task Org/ORBATs throughout STP components.
 This operation may take some time to complete. If desired, the `timeout` parameter can be used
 to extend/shorten the standard 30s timeout.
+
+In the bare-bones interface used in this sample, the visual effect of checking a radio button to 
+indicate the selected role is accomplished directly by the user click action.
+This can lead to a disconnect between the client state and STP's, in case the switch command
+failed to set the state on the Engine side for some reason - while that is unlikely, 
+it is not out of the question.
+
+A more robust implementation is to undo visual indications caused by the user selection
+(in this case unchecking the interface element right after sending STP the command to switch), 
+waiting for STP to notify that it handled the switch successfully - see the next section.
+
 
 Roles currently supported by STP are defined in the `StpRoles` enumeration:
 
@@ -86,4 +99,36 @@ export enum StpRole {
   fso = 'FSO',
   eng = 'ENG'
 }
+```
+
+### Handling Role switching notifications
+
+Role switching events are notified via `onRoleSwitched`.
+
+Here the radio button corresponding to the role is checked to provide a visual 
+indication of the currently selected role.
+If the role was reset, indicated by a `null` parameter, the currently selected role
+button is unchecked.
+
+```javascript
+// A new Role became active or was reset
+stpsdk.onRoleSwitched = (role) => {
+    try {
+        // Display new role on the UI
+        if (!role) {
+            log("Role was reset", "Info");
+            currentRoleBtn = document.querySelector("input[type='radio'][name=role]:checked");
+            if (currentRoleBtn) {
+                currentRoleBtn.checked = false;
+            }
+        }
+        else {
+            roleBtn = document.getElementById(role);
+            roleBtn.checked = true;
+            log("Role switched to: " + role, "Info");
+        }
+    } catch (error) {
+        log(error.message, "Warning");
+    }
+};
 ```
