@@ -77,6 +77,7 @@ class GoogleMap  {
         this.#map = new google.maps.Map(
             mapDiv,
             {
+                mapTypeId: google.maps.MapTypeId.TERRAIN,
                 zoom: this.zoomLevel,
                 center: { lat: this.mapCenter.lat, lng: this.mapCenter.lon },
                 gestureHandling: 'cooperative',
@@ -84,41 +85,41 @@ class GoogleMap  {
                 draggableCursor: 'crosshair'
             });
         const mapStyles /*google.maps.MapTypeStyle*/ = 
-        [
-            {
-                "featureType": "administrative",
-                "elementType": "geometry",
-                "stylers": [
+            [
                 {
-                    "visibility": "off"
-                }
-                ]
-            },
-            {
-                "featureType": "poi",
-                "stylers": [
+                    "featureType": "administrative",
+                    "elementType": "geometry",
+                    "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                    ]
+                },
                 {
-                    "visibility": "off"
-                }
-                ]
-            },
-            {
-                "featureType": "road",
-                "elementType": "labels.icon",
-                "stylers": [
+                    "featureType": "poi",
+                    "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                    ]
+                },
                 {
-                    "visibility": "off"
-                }
-                ]
-            },
-            {
-                "featureType": "transit",
-                "stylers": [
+                    "featureType": "road",
+                    "elementType": "labels.icon",
+                    "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                    ]
+                },
                 {
-                    "visibility": "off"
+                    "featureType": "transit",
+                    "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                    ]
                 }
-                ]
-            }
             ];
         this.#map.setOptions({ styles: mapStyles });
         
