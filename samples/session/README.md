@@ -1,13 +1,15 @@
 # Session sample
 
-This sample adds session connection to the  [Custom Commands](../commands) sample.
+This sample adds session connection capabilities to the  [Custom Commands](../commands) sample.
 
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 
-* Single STP engine provides support for multiple sessions: edits and task interpretation are restricted 
-to the symbols within each session
+This sample illustrates STP session capabilities:
+
+* A single STP engine (v5.9+)  provides support for multiple sessions: edits and task interpretation are applied  
+to the symbols within each session in isolation
 * Roles can be set independently for each client app instance, even if the apps share a common session
-* Different TO/ORBAT may be loaded independently into client app instances
+* Different TO/ORBAT may be loaded independently into client app instances, even if the apps share a common session
  
 ### Sessions 
 
@@ -15,9 +17,10 @@ Sessions in STP define contexts that are isolated from each other, meaning that 
 session do not affect any other sessions. This context consists of a single plan/scenario at a time. 
 New plans may be created or loaded during a session, replacing the previous state with a blank or populated 
 set of symbols and tasks. Clients that are joined to the same session receive notifications of the edits 
-performed by other clients, including plan/scenario creation and loads.
+performed by other clients, including plan/scenario creation and loads,
+and can therefore collaborate in the creation of a plan.
  
-In addition, (in STP v5.9 +) Roles can be set on an individual app instance basis. Apps, even if sharing the same 
+In addition, Roles can be set on an individual app instance basis. Apps, even if sharing the same 
 session, can select their own individual roles, without interfering with other instances. Two browser tabs 
 can for example share edits on a common session, but one of the tabs may be set for S2, and the other for S3. 
 Default affiliations in each tab will be different.
@@ -29,7 +32,7 @@ Sessions can be specified in two ways:
 1. As a suffix to the WebSocket connection string, for example `wss://stp.hyssos.com/ws/<session id>`. 
 Instances that connect using the same suffix are placed in the same session.
  
-	For example, two sessions of the sample app can be started like so, using the querystring parm that sets the 
+	For example, two sessions of the STP sample app can be started like so, using the querystring parm that sets the 
 	STP engine endpoint url:
 	* [https://stp.hyssos.com/stp-app?stpurl=wss:\stp.hyssos.com\ws\12349876](https://stp.hyssos.com/stp-app?stpurl=wss:\stp.hyssos.com\ws\12349876)
 	* [https://stp.hyssos.com/stp-app?stpurl=wss:\stp.hyssos.com\ws\98761234](https://stp.hyssos.com/stp-app?stpurl=wss:\stp.hyssos.com\ws\98761234)
@@ -37,7 +40,7 @@ Instances that connect using the same suffix are placed in the same session.
 	The Ids are arbitrary sequences of letters and numbers of any length, but should be chosen to be unique to 
 avoid clashes with others that may have chosen the same id.
  
-1. As an additional parameter to the `connect()` SDK method:
+1. As an additional `sessionId` parameter of the `connect()` SDK method:
 
  ```javascript
   /**
@@ -48,7 +51,9 @@ avoid clashes with others that may have chosen the same id.
    * @param machineId - Optional machine Id to use. If not provided, it is set to some unique Id.
    * @param sessionId - Optional session Id to use. If not provided:
    *  1. the suffix to the WebSocket connection string is used
-   *  2. if no WebSocket suffix was provided, the machineId is used.   */
+   *  2. if no WebSocket suffix was provided, the machineId is used. 
+   *  3. If machineId is not provided, a unique random Id is used
+  */
   async connect(
     serviceName: string,
     solvables: string[],
@@ -65,7 +70,7 @@ This option is further described in the next section.
 See the [gmaps sample](../gmaps) for details on most of the code. 
 Additional details on the baseline code extended by this sample can be found in the [custom command handling sample](../commands/README.md).
 
-If defining sessions during `connect`, an additional parameter specifies the desired Id.
+If defining sessions during `connect`, an additional `sessionId` parameter specifies the desired Id.
 
 ```javascript
 // Connection to STP and app launch
@@ -101,21 +106,21 @@ const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
 stpsdk = new StpSDK.StpRecognizer(stpconn);
 ```
 
-Sessions are established by the following, in order:
+Sessions are established based on the following criteria, in the given order:
  
 1. Explicit `sessionId` parameter provided in `connect()`
 2. Suffix extracted from the WebSocket connection string
 3. `machineId` `connect()` parameter
-4. `machineId`, in turn, will resolve to a random number, if not provided.
+4. `machineId`, in turn, will resolve to a random Id, if not provided.
  
-Notice that `machineId` is intended to represent an Id that is shared by all apps running on a particular machine. 
+NOTE: `machineId` is intended to represent an Id that is shared by all apps running on a particular machine. 
 The assumption is that client apps running on the same machine may provide different views of the same data that a
 user is interested in at a moment. Whether this is true or not depends on specific use cases.  In .NET apps, a 
 unique Id is extracted automatically by the SDK. JavaScript does not provide similar access to the hardware. 
-A potential solution is to inject the machine Id via some launch code that provides it to the app as a querystring 
+A potential solution, in case having all apps on a machine share a session automatically makes sense,  is to inject the machine Id via some launch code that provides it to the app as a querystring 
 parameter, for example in a batch file:
 
-```
+```shell
 set QSTRING=""
 rem Add a unique machine id used to represent input collected by the browser - needs to be the same as used in 
 rem other apps running on the machine
