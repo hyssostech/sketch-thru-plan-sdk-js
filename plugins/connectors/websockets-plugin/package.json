@@ -1,5 +1,5 @@
 {
-    "config":{
+    "config": {
         "rootjs": "stpconnector",
         "path": "websockets-plugin"
     },
@@ -14,10 +14,10 @@
         "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
         "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
         "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts && npm run bundle:min",
-        "bundle:umd": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.js --format umd --name StpWS",
-        "bundle:esm": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.js --file dist/$npm_package_config_rootjs-bundle.esm.js --format esm",
-        "bundle:dts": "rollup build/$npm_package_config_path/src/$npm_package_config_rootjs.d.ts --file dist/$npm_package_config_rootjs-bundle.d.ts --format es --plugin rollup-plugin-dts",
-        "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/$npm_package_config_rootjs-bundle-min.js -- dist/$npm_package_config_rootjs-bundle.js && gzip -9 -c dist/$npm_package_config_rootjs-bundle-min.js > dist/$npm_package_config_rootjs-bundle-min.js.gz",
+        "bundle:umd": "rollup build/websockets-plugin/src/stpconnector.js --file dist/stpconnector-bundle.js --format umd --name StpWS",
+        "bundle:esm": "rollup build/websockets-plugin/src/stpconnector.js --file dist/stpconnector-bundle.esm.js --format esm",
+        "bundle:dts": "rollup build/websockets-plugin/src/stpconnector.d.ts --file dist/stpconnector.d.ts --format es --plugin rollup-plugin-dts",
+        "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/stpconnector-bundle-min.js -- dist/stpconnector-bundle.js",
         "fix:format": "prettier --config ../../.prettierrc src --write"
     },
     "repository": {
@@ -28,12 +28,12 @@
     "license": "MIT",
     "devDependencies": {
         "copyfiles": "^2.4.0",
+        "prettier": "^2.1.2",
         "rimraf": "^3.0.2",
         "rollup": "^2.32.1",
         "rollup-plugin-dts": "^1.4.13",
         "terser": "^5.3.8",
-        "typescript": "^4.0.5",
-        "prettier": "^2.1.2",
-        "typedoc": "^0.19.2"
+        "typedoc": "^0.24.8",
+        "typescript": "^4.0.5"
     }
 }

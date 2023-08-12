@@ -1,4 +1,4 @@
-import { IStpConnector } from './interfaces/IStpConnector';
+import { IStpConnector } from '../../interfaces/IStpConnector';
 
 /**
  * Implements a connector to STP's native OAA pub/sub service via WebSockets

@@ -1,122 +1,148 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.StpWS = factory());
-}(this, (function () { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.StpWS = {}));
+})(this, (function (exports) { 'use strict';
 
-    var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
     class StpWebSocketsConnector {
-        constructor(connstring) {
-            this.DEFAULT_TIMEOUT = 30;
-            this.connstring = connstring;
-            this.socket = null;
-            this.baseName = '';
-            this.name = '';
-            this.serviceName = '';
-            this.solvables = [];
-            this.timeout = 0;
-        }
         get isConnected() {
             return this.socket != null && this.socket.readyState === this.socket.OPEN;
         }
         get isConnecting() {
-            return this.socket != null && this.socket.readyState === this.socket.CONNECTING;
+            return (this.socket != null && this.socket.readyState === this.socket.CONNECTING);
         }
         get connState() {
             return this.socket ? this.socket.readyState.toString() : '';
         }
-        connect(serviceName, solvables, timeout = this.DEFAULT_TIMEOUT) {
-            return __awaiter(this, void 0, void 0, function* () {
-                return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                    if (this.isConnected) {
-                        resolve();
+        constructor(connstring) {
+            this.DEFAULT_TIMEOUT = 30;
+            this.connstring = connstring;
+            this.socket = null;
+        }
+        async connect(serviceName, solvables, timeout = this.DEFAULT_TIMEOUT, machineId = null, sessionId = null) {
+            return new Promise(async (resolve, reject) => {
+                if (this.isConnected) {
+                    resolve(this.sessionId);
+                }
+                this.serviceName = serviceName;
+                this.solvables = solvables;
+                if (machineId != null) {
+                    this.machineId = machineId;
+                }
+                if (sessionId != null) {
+                    this.sessionId = sessionId;
+                }
+                if (timeout <= 0) {
+                    timeout = this.DEFAULT_TIMEOUT;
+                }
+                try {
+                    this.socket = await this.promiseWithTimeout(timeout, this.tryConnect(this.connstring));
+                    this.sessionId = await this.register();
+                }
+                catch (e) {
+                    reject(new Error('Failed to connect: ' + e.message));
+                    return;
+                }
+                this.socket.onmessage = (ev) => {
+                    const msg = JSON.parse(ev.data);
+                    if (msg.method === "RequestResponse") {
+                        const params = msg.params;
+                        let index = Tracker.trackedResponses.findIndex(t => t.cookie === params.cookie);
+                        Tracker.trackedResponses.find(t => t.cookie === params.cookie);
+                        if (index > -1) {
+                            let tracker = Tracker.trackedResponses.splice(index, 1)[0];
+                            if (params.success) {
+                                tracker.responseFuture.resolve(params.result);
+                            }
+                            else {
+                                tracker.responseFuture.reject(params.result);
+                            }
+                        }
                     }
-                    this.serviceName = serviceName;
-                    this.solvables = solvables;
-                    try {
-                        this.socket = yield this.promiseWithTimeout(0, this.tryConnect(this.connstring));
-                        yield this.register(this.serviceName, this.solvables, this.timeout);
-                    }
-                    catch (e) {
-                        reject(new Error('Failed to connect: ' + e.message));
-                        return;
-                    }
-                    this.socket.onmessage = (ev) => {
+                    else {
                         if (this.onInform)
                             this.onInform(ev.data);
-                    };
-                    this.socket.onerror = (ev) => {
-                        if (this.onError) {
-                            this.onError('Error connecting to STP. Check that the service is running and refresh page to retry');
+                    }
+                };
+                this.socket.onerror = (ev) => {
+                    if (this.onError) {
+                        this.onError('Error connecting to STP. Check that the service is running and refresh page to retry');
+                    }
+                };
+                this.socket.onclose = async (ev) => {
+                    if (!this.isConnecting) {
+                        try {
+                            await this.connect(this.serviceName, this.solvables, this.timeout, this.machineId);
                         }
-                    };
-                    this.socket.onclose = (ev) => __awaiter(this, void 0, void 0, function* () {
-                        if (!this.isConnecting) {
-                            try {
-                                yield this.connect(this.serviceName, this.solvables, this.timeout);
-                            }
-                            catch (error) {
-                                if (this.onError) {
-                                    this.onError('Lost connection to STP. Check that the service is running and refresh page to retry');
-                                }
+                        catch (error) {
+                            if (this.onError) {
+                                this.onError('Lost connection to STP. Check that the service is running and refresh page to retry');
                             }
                         }
-                    });
-                    resolve();
-                }));
+                    }
+                };
+                resolve(this.sessionId);
             });
         }
-        register(serviceName, solvables, timeout = this.DEFAULT_TIMEOUT) {
+        register(timeout = this.DEFAULT_TIMEOUT) {
             if (!this.isConnected) {
                 throw new Error('Failed to register: connection is not open (' + this.connState + ')');
             }
-            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                if (!this.socket) {
-                    return;
+            this.name = this.serviceName;
+            let msg = JSON.stringify({
+                method: 'Register',
+                params: {
+                    serviceName: this.serviceName,
+                    language: 'javascript',
+                    solvables: this.solvables,
+                    machineId: this.machineId || this.getUniqueId(9),
+                    sessionId: this.sessionId
                 }
-                this.baseName = serviceName;
-                this.name = this.baseName + '_' + this.getUniqueId(9);
-                this.socket.send(JSON.stringify({
-                    method: 'Register',
-                    params: {
-                        serviceName: this.name,
-                        language: 'javascript',
-                        solvables: solvables.join()
-                    }
-                }));
-                resolve();
-            })));
+            });
+            return this.request(msg, timeout);
         }
         disconnect(timeout = this.DEFAULT_TIMEOUT) {
-            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            return this.promiseWithTimeout(timeout, new Promise(async (resolve, reject) => {
                 if (!this.isConnected && this.socket) {
                     this.socket.close();
                 }
                 resolve();
-            })));
+            }));
         }
         inform(message, timeout = this.DEFAULT_TIMEOUT) {
             if (!this.isConnected) {
                 throw new Error('Failed to send inform: connection is not open (' + this.connState + ')');
             }
-            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            return this.promiseWithTimeout(timeout, new Promise(async (resolve, reject) => {
                 if (!this.socket) {
                     return;
                 }
                 this.socket.send(message);
                 resolve();
-            })));
+            }));
         }
-        request(message, timeout = this.DEFAULT_TIMEOUT) {
-            throw new Error('Method not implemented');
+        async request(message, timeout = this.DEFAULT_TIMEOUT) {
+            if (!this.isConnected || !this.socket) {
+                throw new Error('Failed to send request: connection is not open (' + this.connState + ')');
+            }
+            let tracker = new Tracker();
+            return this.promiseWithTimeout(timeout, new Promise(async (resolve, reject) => {
+                if (!this.socket) {
+                    return;
+                }
+                const requestMessage = {
+                    method: "Request",
+                    params: {
+                        jsonRequest: message,
+                        cookie: tracker.cookie,
+                        timeout: timeout,
+                    }
+                };
+                this.socket.send(JSON.stringify(requestMessage));
+                tracker.responseFuture
+                    .then((value) => resolve(value))
+                    .catch((reason) => reject(reason));
+            }));
         }
         tryConnect(connstring) {
             return new Promise((resolve, reject) => {
@@ -142,7 +168,46 @@
             return Math.random().toString(36).substr(2, numChars);
         }
     }
+    class Tracker {
+        constructor() {
+            this.cookie = Tracker.lastCookie++;
+            this.responseFuture = new Future();
+            Tracker.trackedResponses.push(this);
+        }
+    }
+    Tracker.lastCookie = 0;
+    Tracker.trackedResponses = [];
+    class Future {
+        constructor(promise) {
+            if (!(this instanceof Future)) {
+                return new Future(promise);
+            }
+            this.promise = promise || new Promise(this.promiseExecutor.bind(this));
+        }
+        asPromise() {
+            return this.promise;
+        }
+        then(onfulfilled, onrejected) {
+            return new Future(this.promise.then(onfulfilled, onrejected));
+        }
+        catch(onrejected) {
+            return new Future(this.promise.catch(onrejected));
+        }
+        resolve(value) {
+            this.resolveFunction(value);
+        }
+        reject(reason) {
+            this.rejectFunction(reason);
+        }
+        promiseExecutor(resolve, reject) {
+            this.resolveFunction = resolve;
+            this.rejectFunction = reject;
+        }
+    }
 
-    return StpWebSocketsConnector;
+    exports.StpWebSocketsConnector = StpWebSocketsConnector;
+    exports["default"] = StpWebSocketsConnector;
 
-})));
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+}));
