@@ -119,7 +119,16 @@ buttonJoin.onclick = async () =>  {
 NOTE: active scenarios may be empty. If `createNewScenario()` is invoked, for example, 
 `hasActiveScenario()` will return true, even if no symbols were added yet.
 
+### Synchronizing loaded content with a session
 
+The `syncScenarioSession()` method updates a session so it is synchronized with loaded content.
+Only the differences between the loaded content and the session result in STP update notifications
+broadcast to clients of a session.
+
+That is useful in cases where parts of a plan may have been developed offline, and are being
+brought together for joint work in a collaborative session.
+
+For a more detailed discussion of this method, see the [Sessions sample](../session/).
 
 ### Saving scenarios to external/persistent storage
 
