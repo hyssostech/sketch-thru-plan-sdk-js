@@ -25,7 +25,7 @@ session, can select their own individual roles, without interfering with other i
 can for example share edits on a common session, but one of the tabs may be set for S2, and the other for S3. 
 Default affiliations in each tab will be different.
 
-Different TO/ORBAT data can also be active in each tab, representing for example friendly an hotile
+Different TO/ORBAT data can also be active in each tab, representing for example friendly an hostile
 organizations.
 TOs that are loaded by a client are available within the shared planning scenario to all clients in
 that session. 
@@ -79,7 +79,20 @@ This option is further described in the next section.
 See the [gmaps sample](../gmaps) for details on most of the code. 
 Additional details on the baseline code extended by this sample can be found in the [custom command handling sample](../commands/README.md).
 
+
+### Connecting to a session
+
 If defining sessions during `connect`, an additional `sessionId` parameter specifies the desired Id.
+If left undefined, defaults are applied, in the given order:
+ 
+1. Explicit `sessionId` parameter provided in `connect()`
+2. Suffix extracted from the WebSocket connection string
+3. `machineId` `connect()` parameter 
+4. `machineId`, in turn, will resolve to a random Id, if not provided.
+ 
+NOTE: browser apps don't have direct access to machine specific parameters - see a discussion
+on the last section.
+
 
 ```javascript
 // Connection to STP and app launch
@@ -90,7 +103,8 @@ buttonConnect.onclick = async () => {
         const sessionBox = document.getElementById('sessionId');
         let session = sessionBox.value;
         // TODO: display some sort of progress indicator/wait cursor
-        await stpsdk.connect(appName, 10, machineId, session);
+        // Connect and display the assigned session id on the UI
+        sessionBox.value = await stpsdk.connect(appName, 10, machineId, session);
         // Load map and start edit session
         runApp(appName);
     } catch (error) {
@@ -102,6 +116,10 @@ buttonConnect.onclick = async () => {
     }
 };
 ```
+
+The assigned session is returned by `connect()`. In this sample, it is displayed on the session form textbox.
+
+### Default session as connecction string suffixes
 
 As in [all other samples](../README.md), the STP server endpoint is defined as a parameter to a
 connection plugin, more commonly the WebSocket one that is included in the SDK.
@@ -115,14 +133,90 @@ const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
 stpsdk = new StpSDK.StpRecognizer(stpconn);
 ```
 
-Sessions are established based on the following criteria, in the given order:
- 
-1. Explicit `sessionId` parameter provided in `connect()`
-2. Suffix extracted from the WebSocket connection string
-3. `machineId` `connect()` parameter
-4. `machineId`, in turn, will resolve to a random Id, if not provided.
- 
-NOTE: `machineId` is intended to represent an Id that is shared by all apps running on a particular machine. 
+As noted, suffixes to the connection string such as `webSocketUrl+'/1J3496728D'` are interpreted as session defaults. 
+
+### Automatic joining of existing session scenario
+
+After a successful connection, the map is loaded and a scenario is joined or created.
+The actual running of the app happens as the event handlers set up in `start()`
+are triggered.
+
+```javascript
+async function runApp(appName) {
+    // Load the map
+    map.load();
+
+    // Join scenario if there is an active one already
+    if (await stpsdk.hasActiveScenario()) {
+        await stpsdk.joinScenarioSession();
+        log("Joined scenario");
+    }
+    else {
+        // Start a new scenario
+        await stpsdk.createNewScenario(appName);
+        log("New scenario created");
+    }
+}
+```
+
+### Synchronizing loaded content with a session
+
+The `syncScenarioSession()` method updates a session so it is synchronized with loaded content.
+Only the differences between the loaded content and the session result in STP update notifications
+broadcast to clients of a session.
+
+That is useful in cases where parts of a plan may have been developed offline, and are being
+brought together for joint work in a collaborative session.
+
+NOTE: since the loaded data in this sample is a const, synchronization cannot
+be effectivelly demonstrated.
+It only makes sense when loaded content (from persistent storage) may have been
+evolved/modified while not connected to a particular STP instance that is
+already loaded with the same session data.
+
+
+```javascript
+const buttonSync = document.getElementById('sync');
+buttonSync.onclick = async () => {
+    try {
+        if (content !== '') {
+            // TODO: retrieve content from persistent storage instead of 'content' variable
+            // TODO: display some sort of progress indicator/wait cursor
+            await stpsdk.syncScenarioSession(content, 90);
+            log("Synched scenario with session");
+        }
+        else {
+            log("No scenario data to sync - Save first");
+        }
+    } catch (error) {
+        log(error, 'Error');
+    }
+};
+```
+
+The updates are based on the following rules:
+
+1. Objects (identified by their poids) that exist just on the loaded content and not the session are added
+1. Objects that exist in both the loaded content and the session
+    1. If their versions (`fsdb_version`) are the same, nothing is done
+    1. Otherwise the more recent object (based on `fsdb_timestamp`) replaces the other
+1. If an object is marked as deleted (STP uses an `fsdb_version==v0` to represent that) either
+in the loaded content or the session, then object is deleted
+
+Notice that these rules are lenient, and leave some space for potential conflicts.
+Picking the most recent object for example is not guaranteed to result in a semantically
+sound outcome. 
+Deletions might remove objects meaningful to one of the versions (loaded content or the session's).  
+
+The main expectation is that conflicts are avoided or fixed by proper division of labor,
+so that users understand who "owns" objects or groups of objects and don't step on each others'
+edits.
+
+
+
+### A note on MachineId in browser apps
+
+`machineId` is intended to represent an Id that is shared by all apps running on a particular machine. 
 The assumption is that client apps running on the same machine may provide different views of the same data that a
 user is interested in at a moment. Whether this is true or not depends on specific use cases.  In .NET apps, a 
 unique Id is extracted automatically by the SDK. JavaScript does not provide similar access to the hardware. 
@@ -140,27 +234,4 @@ for /f "tokens=1-4 delims=.^-" %%i in ("%SERIALNUMBER%") do @set  MACHINEID=%%i%
 rem Add to querystring if not empty - it should never be though
 IF "%MACHINEID%"=="" GOTO Loop
 set QSTRING="machineid=%MACHINEID%& "
-```
-
-After a successful connection, the map is loaded and a scenario is joined or created.
-The actual running of the app happens as the event handlers set up in `start()`
-are triggered.
-
-```javascript
-async function runApp(appName) {
-    // Load the map
-    map.load();
-
-    // Create new scenario or join ongoing one
-    if (await stpsdk.hasActiveScenario()) {
-        if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
-            await stpsdk.joinScenarioSession();
-            log("Joined scenario");
-            return;
-        }
-    }
-    // Start a new scenario
-    await stpsdk.createNewScenario(appName);
-    log("New scenario created");
-}
 ```
