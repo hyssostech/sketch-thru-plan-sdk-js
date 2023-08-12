@@ -169,7 +169,7 @@ That is useful in cases where parts of a plan may have been developed offline, a
 brought together for joint work in a collaborative session.
 
 NOTE: since the loaded data in this sample is a const, synchronization cannot
-be effectivelly demonstrated.
+be effectively demonstrated.
 It only makes sense when loaded content (from persistent storage) may have been
 evolved/modified while not connected to a particular STP instance that is
 already loaded with the same session data.
