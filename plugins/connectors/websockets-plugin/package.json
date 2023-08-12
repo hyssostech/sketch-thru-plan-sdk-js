@@ -4,7 +4,7 @@
         "path": "websockets-plugin"
     },
     "name": "@hyssostech/websockets-plugin",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Websockets connector to Sketch-thru-Plan services",
     "main": "dist/stpconnector-bundle-min.js",
     "types": "dist/stpconnector-bundle.d.ts",

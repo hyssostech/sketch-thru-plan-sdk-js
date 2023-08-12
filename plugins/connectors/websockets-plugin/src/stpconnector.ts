@@ -1,24 +1,25 @@
-import { IStpConnector } from '../../interfaces/IStpConnector';
+import { IStpConnector } from './interfaces/IStpConnector';
 
 /**
  * Implements a connector to STP's native OAA pub/sub service via WebSockets
  * @implements IStpConnector - {@link IStpConnector}
  */
-export default class StpWebSocketsConnector implements IStpConnector {
+export class StpWebSocketsConnector implements IStpConnector {
   //#region Websocket used to communicate to STP
   connstring: string;
   socket: WebSocket | null;
   //#endregion
 
   //#region Service identifiers
-  baseName: string;
-  name: string;
+  name: string | undefined;
   //#endregion
 
   //#region Connection parameters
-  serviceName: string;
-  solvables: string[];
-  timeout: number;
+  serviceName: string | undefined;
+  solvables: string[] | undefined;
+  timeout: number | undefined;
+  machineId: string | undefined;
+  sessionId: string | undefined;
   //#endregion
 
   //#region Connection status accesssors
@@ -26,7 +27,9 @@ export default class StpWebSocketsConnector implements IStpConnector {
     return this.socket != null && this.socket.readyState === this.socket.OPEN;
   }
   get isConnecting(): boolean {
-    return this.socket != null && this.socket.readyState === this.socket.CONNECTING;
+    return (
+      this.socket != null && this.socket.readyState === this.socket.CONNECTING
+    );
   }
   get connState(): string {
     return this.socket ? this.socket.readyState.toString() : '';
@@ -45,11 +48,6 @@ export default class StpWebSocketsConnector implements IStpConnector {
   constructor(connstring: string) {
     this.connstring = connstring;
     this.socket = null;
-    this.baseName = '';
-    this.name = '';
-    this.serviceName = '';
-    this.solvables = [];
-    this.timeout = 0;
   }
   //#endregion
 
@@ -58,37 +56,88 @@ export default class StpWebSocketsConnector implements IStpConnector {
    * Connect and register the service, informing of the subscriptions it handles / consumes
    * @param serviceName - Name of the service that is connecting
    * @param solvables - Array of messages that this service handles
-   * @param timeout - Number fo seconds to wait for a connection before failing
+   * @param timeout - Optional number of seconds to wait for a connection before failing
+   * @param machineId - Optional machine Id to use. If not provided, it is set to some unique Id.
+   * @param sessionId - Optional session Id to use. If not provided:
+   *  1. the suffix to the WebSocket connection string is used 
+   *  2. if no WebSocket suffix was provided, the machineId is used
+   *  3. If machineId is not provided, a unique random Id is used.
+   * @returns The actual sessionId used - the one provided here or a default set by STP
    */
   async connect(
     serviceName: string,
     solvables: string[],
-    timeout: number = this.DEFAULT_TIMEOUT
-  ): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
+    timeout: number = this.DEFAULT_TIMEOUT,
+    machineId: string | null = null,
+    sessionId: string | null = null
+  ): Promise<string | undefined> {
+    return new Promise<string | undefined>(async (resolve, reject) => {
       // Bail out if already connected
       if (this.isConnected) {
-        resolve();
+        resolve(this.sessionId);
       }
       // Save the connection parameters inc ase there is a need to reconnect
       this.serviceName = serviceName;
       this.solvables = solvables;
+      if (machineId != null) {
+        this.machineId = machineId;
+      }
+      if (sessionId != null) {
+        this.sessionId = sessionId;
+      }
+
+      // Set timeout if needed
+      if (timeout <= 0) {
+        timeout = this.DEFAULT_TIMEOUT;
+      }
 
       // Connect and register
       try {
         this.socket = await this.promiseWithTimeout<WebSocket>(
-          0,
+          timeout,
           this.tryConnect(this.connstring)
         );
-        await this.register(this.serviceName, this.solvables, this.timeout);
+        // Register with STP and save the actual sessionId used (might have been set by a default)
+        this.sessionId = await this.register();
       } catch (e) {
-        reject(new Error('Failed to connect: ' + e.message));
+        reject(new Error('Failed to connect: ' + (<Error>e).message));
         return;
       }
 
       // Invoke the clients events that propagate the socket state
       this.socket!.onmessage = (ev) => {
-        if (this.onInform) this.onInform(ev.data);
+        // Deal with meta-messages 
+        // Parse message into the generic (JsonRPC) { method: 'name', params: {}} envelope
+        const msg = JSON.parse(ev.data) as {
+          method: string;
+          params: object;
+        };
+        if (msg.method === "RequestResponse") {
+          // Extract request response parameters
+          const params = msg.params as {
+            cookie: number;
+            success: boolean;
+            result: any;
+          }
+          // Look for tracker matching the cookie parameter
+          let index: number = Tracker.trackedResponses.findIndex(t => t.cookie === params.cookie);
+          let tracker: Tracker | undefined = Tracker.trackedResponses.find(t => t.cookie === params.cookie);
+          if (index > -1) {
+            // Extract the tracker from the array
+            let tracker: Tracker = Tracker.trackedResponses.splice(index, 1)[0];
+            // Resolve the future with the result
+            if (params.success) {
+              tracker.responseFuture.resolve(params.result);
+            }
+            else {
+              tracker.responseFuture.reject(params.result);
+            }
+          }
+        }
+        else {
+          // Pass message through to subscribers (normally the stp sdk)
+          if (this.onInform) this.onInform(ev.data);
+        }
       };
 
       this.socket!.onerror = (ev) => {
@@ -104,7 +153,12 @@ export default class StpWebSocketsConnector implements IStpConnector {
         if (!this.isConnecting) {
           try {
             // Reconnect using the original saved connection parameters
-            await this.connect(this.serviceName, this.solvables, this.timeout);
+            await this.connect(
+              this.serviceName!,
+              this.solvables!,
+              this.timeout,
+              this.machineId
+            );
           } catch (error) {
             if (this.onError) {
               // Add a user readable reason
@@ -115,46 +169,35 @@ export default class StpWebSocketsConnector implements IStpConnector {
           }
         }
       };
-      resolve();
+      // Return the sessionId used
+      resolve(this.sessionId);
     });
   }
 
-  private register(
-    serviceName: string,
-    solvables: string[],
-    timeout: number = this.DEFAULT_TIMEOUT
-  ): Promise<void> {
+  private register(timeout: number = this.DEFAULT_TIMEOUT): Promise<string> {
     // Error if the connection is dead
     if (!this.isConnected) {
       throw new Error(
         'Failed to register: connection is not open (' + this.connState + ')'
       );
     }
-    return this.promiseWithTimeout<void>(
-      timeout,
-      new Promise<void>(async (resolve, reject) => {
-        if (!this.socket) {
-          reject;
-          return;
-        }
-        // Set the names
-        this.baseName = serviceName;
-        this.name = this.baseName + '_' + this.getUniqueId(9);
+    // Set the names
+    this.name = this.serviceName;
 
-        // Handshake with PubSub system behind the websockets connection
-        this.socket.send(
-          JSON.stringify({
-            method: 'Register',
-            params: {
-              serviceName: this.name,
-              language: 'javascript',
-              solvables: solvables.join()
-            }
-          })
-        );
-        resolve();
-      })
-    );
+    // Build message
+    let msg = JSON.stringify({
+      method: 'Register',
+      params: {
+        serviceName: this.serviceName,
+        language: 'javascript',
+        solvables: this.solvables,
+        machineId: this.machineId || this.getUniqueId(9),
+        sessionId: this.sessionId
+      }
+    });
+
+    // Send PubSub system handshake message
+    return this.request(msg, timeout);
   }
 
   disconnect(timeout: number = this.DEFAULT_TIMEOUT): Promise<void> {
@@ -172,7 +215,10 @@ export default class StpWebSocketsConnector implements IStpConnector {
   //#endregion
 
   //#region Messaging
-  inform(message: string, timeout: number = this.DEFAULT_TIMEOUT): Promise<void> {
+  inform(
+    message: string,
+    timeout: number = this.DEFAULT_TIMEOUT
+  ): Promise<void> {
     // Error if the connection is dead
     if (!this.isConnected) {
       throw new Error(
@@ -182,7 +228,7 @@ export default class StpWebSocketsConnector implements IStpConnector {
     return this.promiseWithTimeout<void>(
       timeout,
       new Promise<void>(async (resolve, reject) => {
-        if (! this.socket) {
+        if (!this.socket) {
           reject;
           return;
         }
@@ -193,22 +239,46 @@ export default class StpWebSocketsConnector implements IStpConnector {
     );
   }
 
-  request(message: string, timeout: number = this.DEFAULT_TIMEOUT): Promise<string[]> {
-    throw new Error('Method not implemented');
+  async request(
+    message: string,
+    timeout: number = this.DEFAULT_TIMEOUT
+  ): Promise<any> {
     // Error if the connection is dead
     if (!this.isConnected || !this.socket) {
       throw new Error(
-        'Failed to send request: connection is not open (' +
-          this.connState +
-          ')'
+        'Failed to send request: connection is not open (' + this.connState + ')'
       );
     }
-    return this.promiseWithTimeout<void>(
+    // Create object to track responses 
+    let tracker: Tracker = new Tracker();
+
+    // Send the message and wait for response
+    return this.promiseWithTimeout<any>(
       timeout,
-      new Promise<void>(async (resolve, reject) => {
+      new Promise<any>(async (resolve, reject) => {
+        if (!this.socket) {
+          reject;
+          return;
+        }
+        // Bind outcome to the future promise that will resolve/reject when response is received
+        //tracker.responseFuture.resolve.bind(resolve);
+        //tracker.responseFuture.reject.bind(reject);
+        // Build request meta-message, injecting cookie into message so that STP can tag the response 
+        const requestMessage: any = {
+          method: "Request",
+          params: {
+            jsonRequest: message,
+            cookie: tracker.cookie,
+            timeout: timeout,
+          }
+        };
         // Attempt to send
-        this.socket!.send(message);
-        resolve();
+        this.socket.send(JSON.stringify(requestMessage));
+        // Wait until a RequestResponse message is received that matches this cookie
+        // Resolve or reject are then invoked depending on success message parameter
+        tracker.responseFuture
+          .then((value: any) => resolve(value))
+          .catch((reason: any) => reject(reason));
       })
     );
   }
@@ -268,6 +338,108 @@ export default class StpWebSocketsConnector implements IStpConnector {
 
   //#endregion
 }
+
+/**
+ * Request tracking
+ */
+class Tracker {
+  static lastCookie: number = 0;
+  static trackedResponses: Tracker[] = [];
+
+  /**
+   * Response identifier - response message will make reference to it
+   */
+  cookie: number;
+  /**
+   * Future object that gets resolved when a response matching the cookie is received
+   */
+  responseFuture: Future<any>;
+
+  /**
+   * Adds a new response tracker
+   */
+  constructor() {
+    this.cookie = Tracker.lastCookie++;
+    this.responseFuture = new Future<any>();
+    Tracker.trackedResponses.push(this);
+  }
+}
+
+// From https://stackoverflow.com/a/40356701
+class Future<T> implements PromiseLike<T> {
+  private promise!: Promise<T>;
+  private resolveFunction!: (value: T | PromiseLike<T>) => void;
+  private rejectFunction!: (reason?: any) => void;
+
+  constructor(promise?: Promise<T>) {
+    if (!(this instanceof Future)) {
+      return new Future(promise);
+    }
+
+    this.promise = promise || new Promise<T>(this.promiseExecutor.bind(this));
+  }
+
+  public asPromise(): Promise<T> {
+    return this.promise;
+  }
+
+  public then<TResult>(onfulfilled?: (value: T) => TResult | PromiseLike<TResult>, onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Future<TResult>;
+  public then<TResult>(onfulfilled?: (value: T) => TResult | PromiseLike<TResult>, onrejected?: (reason: any) => void): Future<TResult>;
+  public then<TResult>(onfulfilled?: (value: T) => TResult | PromiseLike<TResult>, onrejected?: (reason: any) => any): Future<TResult> {
+    return new Future(this.promise.then(onfulfilled, onrejected));
+  }
+
+  public catch(onrejected?: (reason: any) => T | PromiseLike<T>): Future<T>;
+  public catch(onrejected?: (reason: any) => void): Future<T>;
+  public catch(onrejected?: (reason: any) => any): Future<T> {
+    return new Future(this.promise.catch(onrejected));
+  }
+
+  public resolve(value: T | PromiseLike<T>) {
+    this.resolveFunction(value);
+  }
+
+  public reject(reason?: any) {
+    this.rejectFunction(reason);
+  }
+
+  private promiseExecutor(resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) {
+    this.resolveFunction = resolve;
+    this.rejectFunction = reject;
+  }
+}
+
+/*
+/**
+ * Promises that can be resolved/rejected later
+ * Based on https://stackoverflow.com/a/71158892
+ * /
+export class Deferred<T> {
+  private resolveFunction: (value: T) => void = () => { };
+  private rejectFunction: (value: T) => void = () => { };
+
+  private promise: Promise<T> = new Promise<T>((resolve, reject) => {
+    this.rejectFunction = reject;
+    this.resolveFunction = resolve;
+  })
+
+  public get asPromise(): Promise<T> {
+    return this.promise;
+  }
+
+  public resolve(value: T) {
+    this.resolveFunction(value);
+  }
+
+  public reject(value: T) {
+    this.rejectFunction(value);
+  }
+}
+*/
+
+export default StpWebSocketsConnector;
+
+
 /*
     //UNTESTED
     private retriedExecution(numRetries: number, timeout: number, promise: Promise<any>, failMsg: string) {
