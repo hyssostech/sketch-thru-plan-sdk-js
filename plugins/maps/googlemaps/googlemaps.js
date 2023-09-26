@@ -297,7 +297,7 @@ class GoogleMap  {
      * @param poid - Unique identifier of the feature to remove
      */
     removeFeature = (poid) => {
-        let feature = this.#map.data.getFeatureById(poid);
+        let feature = this.#map?.data.getFeatureById(poid);
         if (feature) {
             // Remove associated #assets, if any
             if (this.#assets.has(poid)) {
