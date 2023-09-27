@@ -1,15 +1,22 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { LatLon, Size } from "sketch-thru-plan-sdk";
+import { Loader } from '@googlemaps/js-api-loader';
 export class GoogleMap {
     constructor(apiKey, mapDivId, mapCenter, zoomLevel) {
+        this.load = async () => {
+            let loader = new Loader({
+                apiKey: this.apiKey,
+                version: "weekly",
+            });
+            loader.loadCallback(async (e) => {
+                if (e) {
+                    console.log(e);
+                    throw new Error(e.message);
+                }
+                else {
+                    await this.initMap();
+                }
+            });
+        };
         this.apiKey = apiKey;
         this.mapDivId = mapDivId;
         this.mapCenter = mapCenter;
@@ -17,59 +24,44 @@ export class GoogleMap {
         this.strokeStart = this.strokeEnd = '';
         this.assets = new Map();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + this.apiKey;
-            if (!document.querySelectorAll('[src="' + googleMapsUrl + '"]').length) {
-                document.body.appendChild(Object.assign(document.createElement('script'), {
-                    type: 'text/javascript',
-                    src: googleMapsUrl,
-                    onload: () => __awaiter(this, void 0, void 0, function* () { return yield this.initMap(); })
-                }));
-            }
-            else {
-                yield this.initMap();
-            }
+    async initMap() {
+        const mapDiv = document.getElementById(this.mapDivId);
+        if (!mapDiv) {
+            throw new Error("Html page must contain a 'map' div");
+        }
+        const { Map } = await google.maps.importLibrary("maps");
+        this.map = new Map(mapDiv, {
+            zoom: this.zoomLevel,
+            center: { lat: this.mapCenter.lat, lng: this.mapCenter.lon },
+            gestureHandling: 'cooperative',
+            draggable: true,
+            draggableCursor: 'crosshair'
         });
-    }
-    initMap() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const mapDiv = document.getElementById(this.mapDivId);
-            if (!mapDiv) {
-                throw new Error("Html page must contain a 'map' div");
-            }
-            this.map = new google.maps.Map(mapDiv, {
-                zoom: this.zoomLevel,
-                center: { lat: this.mapCenter.lat, lng: this.mapCenter.lon },
-                gestureHandling: 'cooperative',
-                draggable: true,
-                draggableCursor: 'crosshair'
-            });
-            this.map.data.setStyle((feature) => {
-                let rend = feature.getProperty('rendering');
-                if (rend) {
-                    for (let i = 0; i < rend.length; i++) {
-                        let shape = rend[i].shape.map(item => { return [item.x, item.y]; }).flat();
-                        let marker = new google.maps.Marker({
-                            map: this.map,
-                            icon: {
-                                url: 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg,
-                                anchor: new google.maps.Point(rend[i].anchor.x, rend[i].anchor.y)
-                            },
-                            shape: {
-                                type: 'poly',
-                                coords: shape
-                            },
-                            position: { lat: rend[i].position.lat, lng: rend[i].position.lon },
-                        });
-                        if (rend[i].title) {
-                            marker.setTitle(rend[i].title);
-                        }
-                        marker.addListener("click", () => {
-                            var _a;
-                            (_a = this.onSelection) === null || _a === void 0 ? void 0 : _a.call(this, feature.getProperty('symbol'));
-                        });
-                        let poid = feature.getProperty('symbol').poid;
+        this.map.data.setStyle((feature) => {
+            let rend = feature.getProperty('rendering');
+            if (rend) {
+                for (let i = 0; i < rend.length; i++) {
+                    let shape = rend[i].shape.map(item => { return [item.x, item.y]; }).flat();
+                    let marker = new google.maps.Marker({
+                        map: this.map,
+                        icon: {
+                            url: 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg,
+                            anchor: new google.maps.Point(rend[i].anchor.x, rend[i].anchor.y)
+                        },
+                        shape: {
+                            type: 'poly',
+                            coords: shape
+                        },
+                        position: { lat: rend[i].position.lat, lng: rend[i].position.lon },
+                    });
+                    if (rend[i].title) {
+                        marker.setTitle(rend[i].title);
+                    }
+                    marker.addListener("click", () => {
+                        this.onSelection?.call(this, feature.getProperty('symbol'));
+                    });
+                    let poid = feature.getProperty('symbol')?.poid;
+                    if (poid) {
                         if (!this.assets.has(poid)) {
                             this.assets.set(poid, [marker]);
                         }
@@ -77,24 +69,22 @@ export class GoogleMap {
                             this.assets.get(poid).push(marker);
                         }
                     }
-                    return { visible: feature.getGeometry().getType() != 'Point' };
                 }
-                return { visible: true };
-            });
-            this.map.data.addListener('click', (event) => {
-                var _a;
-                (_a = this.onSelection) === null || _a === void 0 ? void 0 : _a.call(this, event.feature.getProperty('symbol'));
-            });
-            this.map.addListener('mousedown', (e) => {
-                var _a;
-                if (e.domEvent.ctrlKey) {
-                    return false;
-                }
-                e.domEvent.preventDefault();
-                this.enableDrawing();
-                (_a = this.onStrokeStart) === null || _a === void 0 ? void 0 : _a.call(this, new LatLon(e.latLng.lat(), e.latLng.lng()), this.getIsoTimestamp());
-                this.drawFreeHand(e.latLng);
-            });
+                return { visible: feature.getGeometry().getType() != 'Point' };
+            }
+            return { visible: true };
+        });
+        this.map.data.addListener('click', (event) => {
+            this.onSelection?.call(this, event.feature.getProperty('symbol'));
+        });
+        this.map.addListener('mousedown', (e) => {
+            if (e.domEvent.ctrlKey) {
+                return false;
+            }
+            e.domEvent.preventDefault();
+            this.enableDrawing();
+            this.onStrokeStart?.call(this, new LatLon(e.latLng.lat(), e.latLng.lng()), this.getIsoTimestamp());
+            this.drawFreeHand(e.latLng);
         });
     }
     drawFreeHand(latLng) {
@@ -175,7 +165,7 @@ export class GoogleMap {
             for (let i = 0; i < handlers.length; i++) {
                 let instance = node.querySelector(handlers[i].selector);
                 if (instance && handlers[i].handler) {
-                    google.maps.event.addDomListener(instance, 'click', (event) => {
+                    instance.addEventListener('click', (event) => {
                         if (handlers[i].closeInfo) {
                             infoWindow.close();
                         }
@@ -188,8 +178,7 @@ export class GoogleMap {
         infoWindow.open(this.map);
     }
     clearInk() {
-        var _a;
-        (_a = this.strokePoly) === null || _a === void 0 ? void 0 : _a.setMap(null);
+        this.strokePoly?.setMap(null);
     }
     getBounds() {
         return this.map.getBounds();

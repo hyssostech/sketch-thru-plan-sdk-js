@@ -1,5 +1,6 @@
 import { LatLon, Size, StpSymbol } from "sketch-thru-plan-sdk";
 import { BasicRenderer, IGeoSvg } from "./basicrenderer";
+import { Loader } from '@googlemaps/js-api-loader';
 
 /**
  * 
@@ -113,14 +114,14 @@ export class GoogleMap implements IStpMap {
      * See https://www.npmjs.com/package/@googlemaps/js-api-loader 
      */
     load = async () => {
-        let loader = new google.maps.plugins.loader.Loader({
+        let loader = new Loader({
             apiKey: this.apiKey,
             version: "weekly",
         });
         loader.loadCallback(async e => {
             if (e) {
                 console.log(e);
-                throw new Error(e);
+                throw new Error(e.message);
             } else {
                 await this.initMap();
             }
@@ -129,7 +130,7 @@ export class GoogleMap implements IStpMap {
 
     /**
      * Initialize google maps and the STP SDK, setting up the stroke capture events
-     * THe standard mode is drawing/sketching - users need to hold the Ctrl key to be able to use the mouse
+     * The standard mode is drawing/sketching - users need to hold the Ctrl key to be able to use the mouse
      * in a conventional (drag) way
      */
     async initMap() {
@@ -138,7 +139,8 @@ export class GoogleMap implements IStpMap {
         if (!mapDiv) {
             throw new Error("Html page must contain a 'map' div");
         }
-        this.map = new google.maps.Map(
+        const { Map } = await google.maps.importLibrary("maps") as google.maps.MapsLibrary;
+        this.map = new Map(
             mapDiv,
             {
                 zoom: this.zoomLevel,
@@ -150,7 +152,7 @@ export class GoogleMap implements IStpMap {
 
         // Set the styling of the geojson data layer, processing features with associated additional svg rendering
         this.map.data.setStyle((feature) => {
-            let rend: IGeoSvg[] | null = feature.getProperty('rendering');
+            let rend: IGeoSvg[] | null = feature.getProperty('rendering') as IGeoSvg[];
             if (rend) {
                 for (let i: number = 0; i < rend.length; i++) {
                     let shape = rend[i].shape.map(item => { return [item.x, item.y]; }).flat();
@@ -175,12 +177,14 @@ export class GoogleMap implements IStpMap {
                     });
 
                     // Store as an asset associated with this feature
-                    let poid: string = feature.getProperty('symbol').poid;
-                    if (!this.assets.has(poid)) {
-                        this.assets.set(poid, [marker]);
-                    }
-                    else {
-                        this.assets.get(poid)!.push(marker);
+                    let poid: string = (feature.getProperty('symbol') as StpSymbol)?.poid;
+                    if (poid) {
+                        if (!this.assets.has(poid)) {
+                            this.assets.set(poid, [marker]);
+                        }
+                        else {
+                            this.assets.get(poid)!.push(marker);
+                        }
                     }
                 }
                 // Hide the standard marker that google wants to display when it sees a point
@@ -359,7 +363,7 @@ export class GoogleMap implements IStpMap {
             for (let i: number = 0; i < handlers.length; i++) {
                 let instance = node.querySelector(handlers[i].selector)!;
                 if (instance && handlers[i].handler) {
-                    google.maps.event.addDomListener(instance, 'click', (event) => {
+                    instance.addEventListener('click', (event) => {
                         if (handlers[i].closeInfo) {
                             infoWindow.close();
                         };

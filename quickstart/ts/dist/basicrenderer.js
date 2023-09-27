@@ -15,8 +15,7 @@ export class BasicRenderer {
         return res;
     }
     asSVG() {
-        var _a;
-        if (((_a = this.symbol.location) === null || _a === void 0 ? void 0 : _a.fsTYPE) == 'point') {
+        if (this.symbol.location?.fsTYPE == 'point') {
             let gsvg = [this.pointSVG(this.symbol)];
             return gsvg;
         }
@@ -25,7 +24,6 @@ export class BasicRenderer {
         }
     }
     getGestureGeometry(symbol) {
-        var _a, _b, _c, _d, _e, _f, _g;
         if (symbol.location == undefined || symbol.location == null || symbol.location.coords == undefined || symbol.location.coords.length == 0 || symbol.location.centroid == undefined) {
             throw new Error('Symbol does not have location information');
         }
@@ -40,27 +38,27 @@ export class BasicRenderer {
         }
         else {
             res = this.toLineString(symbol.location.coords);
-            if (((_a = symbol.location) === null || _a === void 0 ? void 0 : _a.shape) != null && ((_b = symbol.location) === null || _b === void 0 ? void 0 : _b.shape.includes("arrowfat"))) {
+            if (symbol.location?.shape != null && symbol.location?.shape.includes("arrowfat")) {
                 let reorderedLatLon = symbol.location.coords.slice(0, symbol.location.coords.length - 1).reverse();
                 reorderedLatLon.push(symbol.location.coords[symbol.location.coords.length - 1]);
                 res = this.toLineString(reorderedLatLon);
             }
-            else if (((_c = symbol.location) === null || _c === void 0 ? void 0 : _c.shape) == "ubend") {
+            else if (symbol.location?.shape == "ubend") {
                 let reorderedLatLon = [symbol.location.coords[0], symbol.location.coords[2], symbol.location.coords[3], symbol.location.coords[1]];
                 res = this.toLineString(reorderedLatLon);
             }
-            else if (((_d = symbol.location) === null || _d === void 0 ? void 0 : _d.shape) == "ubendthreepoints") {
+            else if (symbol.location?.shape == "ubendthreepoints") {
                 let fourthPt = new LatLon(symbol.location.coords[1].lat, symbol.location.coords[2].lon);
                 let reorderedLatLon = [symbol.location.coords[0], symbol.location.coords[2], fourthPt, symbol.location.coords[1]];
                 res = this.toLineString(reorderedLatLon);
             }
-            else if (((_e = symbol.location) === null || _e === void 0 ? void 0 : _e.shape) == "vee") {
+            else if (symbol.location?.shape == "vee") {
                 let reorderedLatLon = [symbol.location.coords[1], symbol.location.coords[0], symbol.location.coords[2]];
                 res = this.toLineString(reorderedLatLon);
             }
-            else if (((_f = symbol.location) === null || _f === void 0 ? void 0 : _f.shape) == "opencircle") {
+            else if (symbol.location?.shape == "opencircle") {
             }
-            else if (((_g = symbol.location) === null || _g === void 0 ? void 0 : _g.shape) == "multipoint") {
+            else if (symbol.location?.shape == "multipoint") {
                 res = {
                     type: "MultiPoint",
                     coordinates: symbol.location.coords.map((item) => [item.lon, item.lat])
@@ -164,7 +162,7 @@ export class BasicRenderer {
         tempDiv.setAttribute('style', "position:absolute; padding:0; margin:0;visibility:hidden; width:0; height:0");
         tempDiv.insertAdjacentHTML('beforeend', svg);
         let svgEl = tempDiv.querySelector(selector);
-        let matrix = svgEl === null || svgEl === void 0 ? void 0 : svgEl.getCTM();
+        let matrix = svgEl?.getCTM();
         document.body.removeChild(tempDiv);
         if (matrix) {
             return [matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f];

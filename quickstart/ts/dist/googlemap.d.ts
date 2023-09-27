@@ -1,6 +1,7 @@
+/// <reference types="google.maps" />
 /// <reference types="googlemaps" />
 import { LatLon, Size, StpSymbol } from "sketch-thru-plan-sdk";
-declare type InfoHandlers = {
+type InfoHandlers = {
     selector: string;
     handler: (event: Event) => void;
     closeInfo: boolean;
@@ -30,7 +31,7 @@ export declare class GoogleMap implements IStpMap {
     moveListener: google.maps.MapsEventListener | undefined;
     assets: Map<string, Array<google.maps.Marker>>;
     constructor(apiKey: string, mapDivId: string, mapCenter: LatLon, zoomLevel: number);
-    load(): Promise<void>;
+    load: () => Promise<void>;
     initMap(): Promise<void>;
     private drawFreeHand;
     private enableDrawing;

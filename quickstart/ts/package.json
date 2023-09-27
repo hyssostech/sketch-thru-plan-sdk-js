@@ -13,26 +13,29 @@
     "clean": "rimraf ./dist",
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle && npm run bundle:min && npm run copyhtml",
     "bundle": "rollup ./dist/index.js --file ./dist/index.js --format iife   --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs",
-    "bundle:min": "terser --ecma 6 --compress --mangle --module -o ./dist/index.min.js -- ./dist/index.js && gzip -9 -c ./dist/index.min.js > ./dist/index.min.js.gz",
+    "bundle:min": "terser --ecma 6 --compress --mangle --module -o ./dist/index.min.js -- ./dist/index.js",
     "copyhtml": "copyfiles --flat ./src/*.css ./src/*.html ./dist"
   },
   "keywords": [],
   "author": "Hyssos Tech",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^16.0.0",
-    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@types/google.maps": "^3.54.1",
     "copyfiles": "^2.4.1",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.39.0",
-    "terser": "^5.6.0",
-    "typescript": "^4.1.5"
+    "gzip": "^0.1.0",
+    "rimraf": "^5.0.5",
+    "rollup": "^3.29.3",
+    "terser": "^5.20.0",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.2",
     "@hyssostech/azurespeech-plugin": "^0.2.0",
-    "@types/geojson": "^7946.0.7",
+    "@types/geojson": "^7946.0.11",
     "@types/googlemaps": "^3.43.3",
-    "milsymbol": "^2.0.0",
-    "sketch-thru-plan-sdk": "^0.4.0"
+    "milsymbol": "^2.2.0",
+    "sketch-thru-plan-sdk": "^0.4.1"
   }
 }
