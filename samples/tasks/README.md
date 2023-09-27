@@ -282,3 +282,17 @@ Upon processing these commands, STP replies with the corresponding events: `onTa
 It is advisable for clients to update the interface just in response to the events reflecting STP's change of state, so that all clients can remain consistent with the Engine's state.
 In other words, rather than marking a task as confirmed as the user for example selects a checkbox, it is recommended that the task be marked only in response to STP's `onTaskModified` event indicating a `confirmed` `uiStatus`.
 
+### STP cached state clean up
+
+STP caches symbols across connections. That is a foundational capability to support collaboration.
+Here we just force the creation of a blank scenario/plan to always start with a clean slate,
+and avoid the combination of new symbols with cached content that the user is not aware of.
+The [scenario sample])(../scenario) demonstrates how these cached symbols can be retrieved
+and displayed when an app loads. 
+
+```javascript
+// Always create a clean scenario, otherwise new symbols may get
+// combined with cached STP content the user cannot see
+await stpsdk.createNewScenario(appName);
+log("New scenario created");
+```

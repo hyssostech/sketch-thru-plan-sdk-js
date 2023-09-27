@@ -70,6 +70,8 @@ async function start(){
     const stpParm = urlParams.get('stpurl');
     if (stpParm) webSocketUrl =  stpParm;
 
+    const appName = "SdkTaskSample";
+
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
 
@@ -152,7 +154,7 @@ async function start(){
 
     // Attempt to connect to STP
     try {
-        await stpsdk.connect("SdkTaskSample", 10, machineId);
+        await stpsdk.connect(appName, 10, machineId);
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
@@ -250,6 +252,11 @@ async function start(){
 
     // Load the map
     map.load();
+
+    // Always create a clean scenario, otherwise new symbols may get
+    // combined with cached STP content the user cannot see
+    await stpsdk.createNewScenario(appName);
+    log("New scenario created");
 }
 
 /**

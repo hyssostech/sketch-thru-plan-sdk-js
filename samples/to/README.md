@@ -1,6 +1,6 @@
 # Task Org / ORBAT event handling sample
 
-This sample adds handling of STP Task Org / ORBAT elements, extending the [scenario](../scenario) sample.
+This sample adds handling of STP Task Org / ORBAT elements, extending the [Tasks](../tasks) sample.
 
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 

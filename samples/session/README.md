@@ -1,6 +1,6 @@
 # Session sample
 
-This sample adds session connection capabilities to the  [Custom Commands](../commands) sample.
+This sample adds session connection capabilities to the  [Scenario](../scenario) sample.
 
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 
@@ -33,7 +33,7 @@ All clients receive notifications as task org units and relationships are added 
 just as happens with any other type of symbol during load.
 These TOs only become active when explicitly selected within app instances themselves.
 At that point, the selection made by each instance can differ, so users can pick the
-context they like, independently of what is selected in other instances 
+context they like, independently of what is selected in other instances
 (see the [TO sample](../to/README.md) for additional discussion on TOs). 
 
 Sessions can be specified in two ways:
@@ -119,7 +119,7 @@ buttonConnect.onclick = async () => {
 
 The assigned session is returned by `connect()`. In this sample, it is displayed on the session form textbox.
 
-### Default session as connecction string suffixes
+### Default session as connection string suffixes
 
 As in [all other samples](../README.md), the STP server endpoint is defined as a parameter to a
 connection plugin, more commonly the WebSocket one that is included in the SDK.
@@ -133,13 +133,15 @@ const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
 stpsdk = new StpSDK.StpRecognizer(stpconn);
 ```
 
-As noted, suffixes to the connection string such as `webSocketUrl+'/1J3496728D'` are interpreted as session defaults. 
+As noted, suffixes to the connection string such as `<WebSocketUrl>/1J3496728D'` are interpreted as session Id defaults. 
 
-### Automatic joining of existing session scenario
+### Session startup 
 
-After a successful connection, the map is loaded and a scenario is joined or created.
-The actual running of the app happens as the event handlers set up in `start()`
-are triggered.
+After a successful connection (initiated via the `Connect` button), the map is loaded.
+If no scenario exists yet, a new one is created, otherwise the user is informed
+that Join or Synch can be used to load content if desired.
+Apps may choose to automatically join or synchronize, instead of leaving that users, 
+depending on requirements.
 
 ```javascript
 async function runApp(appName) {
@@ -147,72 +149,20 @@ async function runApp(appName) {
     map.load();
 
     // Join scenario if there is an active one already
-    if (await stpsdk.hasActiveScenario()) {
-        await stpsdk.joinScenarioSession();
-        log("Joined scenario");
-    }
-    else {
+    if (! await stpsdk.hasActiveScenario()) {
         // Start a new scenario
+        log("STP session has no active scenario - creating new");
         await stpsdk.createNewScenario(appName);
         log("New scenario created");
+    }
+    else {
+        // Inform user that a scenario exists
+        log("STP session has active scenario - Join or Sync to display content");
     }
 }
 ```
 
-### Synchronizing loaded content with a session
-
-The `syncScenarioSession()` method updates a session so it is synchronized with loaded content.
-Only the differences between the loaded content and the session result in STP update notifications
-broadcast to clients of a session.
-
-That is useful in cases where parts of a plan may have been developed offline, and are being
-brought together for joint work in a collaborative session.
-
-NOTE: since the loaded data in this sample is a const, synchronization cannot
-be effectively demonstrated.
-It only makes sense when loaded content (from persistent storage) may have been
-evolved/modified while not connected to a particular STP instance that is
-already loaded with the same session data.
-
-
-```javascript
-const buttonSync = document.getElementById('sync');
-buttonSync.onclick = async () => {
-    try {
-        if (content !== '') {
-            // TODO: retrieve content from persistent storage instead of 'content' variable
-            // TODO: display some sort of progress indicator/wait cursor
-            await stpsdk.syncScenarioSession(content, 90);
-            log("Synched scenario with session");
-        }
-        else {
-            log("No scenario data to sync - Save first");
-        }
-    } catch (error) {
-        log(error, 'Error');
-    }
-};
-```
-
-The updates are based on the following rules:
-
-1. Objects (identified by their poids) that exist just on the loaded content and not the session are added
-1. Objects that exist in both the loaded content and the session
-    1. If their versions (`fsdb_version`) are the same, nothing is done
-    1. Otherwise the more recent object (based on `fsdb_timestamp`) replaces the other
-1. If an object is marked as deleted (STP uses an `fsdb_version==v0` to represent that) either
-in the loaded content or the session, then object is deleted
-
-Notice that these rules are lenient, and leave some space for potential conflicts.
-Picking the most recent object for example is not guaranteed to result in a semantically
-sound outcome. 
-Deletions might remove objects meaningful to one of the versions (loaded content or the session's).  
-
-The main expectation is that conflicts are avoided or fixed by proper division of labor,
-so that users understand who "owns" objects or groups of objects and don't step on each others'
-edits.
-
-
+See the [Scenario sample](..\scenario) for details on joining and synchronization. 
 
 ### A note on MachineId in browser apps
 
@@ -235,3 +185,4 @@ rem Add to querystring if not empty - it should never be though
 IF "%MACHINEID%"=="" GOTO Loop
 set QSTRING="machineid=%MACHINEID%& "
 ```
+

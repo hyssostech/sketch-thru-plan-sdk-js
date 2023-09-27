@@ -1,6 +1,6 @@
 # Custom commands sample
 
-This sample adds custom command handling to the  [Roles](../roles) sample.
+This sample adds custom command handling to the  [Session](../session) sample.
 
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 

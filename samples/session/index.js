@@ -70,7 +70,7 @@ async function start() {
     const stpParm = urlParams.get('stpurl');
     if (stpParm) webSocketUrl = stpParm;
 
-    const appName = "SdkCommandSample";
+    const appName = "SdkSessionSample";
     
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
@@ -252,36 +252,6 @@ async function start() {
         }
     };
 
-    // A new edit operation has been identified
-    stpsdk.onSymbolEdited = (operation, location) => {
-        try {
-            // Display some properties
-            log("Symbol edit operation: " + operation + " gesture:" + location.shape, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-
-    // A new edit operation has been identified
-    stpsdk.onMapOperation = (operation, location) => {
-        try {
-            // Display some properties
-            log("Map operation: " + operation + " gesture:" + location.shape, "Info");
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-
-    // A new edit operation has been identified
-    stpsdk.onCommand = (operation, location) => {
-        try {
-            log("Command: " + operation + " gesture:" + location.shape, "Info");
-            map.addPoly(location.coords);
-        } catch (error) {
-            log(error.message, "Warning");
-        }
-    };
-
     // The collected ink has been processed and resulted in a symbol, or was rejected because it could not be matched to speech
     stpsdk.onInkProcessed = () => {
         // Remove last stroke from the map if one exists
@@ -348,7 +318,7 @@ async function start() {
                 log("Saved scenario");
             }
             else {
-                log("No Active Scenario - loading sample");
+                log("No Active Scenario");
             }
         } catch (error) {
             log(error, 'Error');
@@ -606,16 +576,15 @@ async function runApp(appName) {
     map.load();
 
     // Join scenario if there is an active one already
-    if (await stpsdk.hasActiveScenario()) {
-        log("STP session has active scenario - Join or Sync to display content");
-        // await stpsdk.joinScenarioSession();
-        // log("Joined scenario");
-    }
-    else {
+    if (! await stpsdk.hasActiveScenario()) {
         // Start a new scenario
-        log("STP session has no active - creating new");
+        log("STP session has no active scenario - creating new");
         await stpsdk.createNewScenario(appName);
         log("New scenario created");
+    }
+    else {
+        // Inform user that a scenario exists
+        log("STP session has active scenario - Join or Sync to display content");
     }
 }
 

@@ -1,6 +1,6 @@
 # Scenario management sample
 
-This sample adds management of STP scenarios, extending the [Task ](../task) sample.
+This sample adds management of STP scenarios, extending the [Roles](../roles) sample.
 
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 
@@ -13,22 +13,29 @@ STP supports collaboration, making it possible for multiple (disparate) user int
 to the STP Engine to provide users means to collaborate, by observing and building upon each other's
 actions, as they speak and sketch to create and edit symbols and tasks. 
 
-These data, shared via the Engine, is what is referred to as a `scenario`, or `session` (which are used interchangeably in this document). 
-Each instance of the Engine handles a single scenario/session at a time. 
+These data, shared via the Engine, is what is referred to as a `scenario`. 
+Each instance of the Engine can handle multiple scenarios/sessions at a time. 
 Users access this shared context via one or more user interface apps (such as the samples).
 These apps may connect and disconnect at any time, and can be used simultaneously or at 
 distinct times.
 
-In this sample, the SDK capabilities for managing this potentially shared context are presented, 
+In this sample, the focus is just on the SDK capabilities for saving/loading data into a potentially shared context, 
 illustrating how new scenarios can be created, how an app can retrieve the current scenario 
 ("joining a session"), and how scenarios can be saved and loaded  to/from persistent/external storage.
+A single default session is used in this sample.
+For a more detailed overview of `sessions`, and how multiple ones can be defined and
+connected to, see the [Sessions sample](../session/).
+
 
 Capabilities illustrate by this sample include:
 
 * Creating a new blank scenario
 * Querying STP for a scenario that is already loaded in the Engine and "joining" it
 * Saving a scenario to persistent/external storage
-* Loading a scenario from persistent/external storage
+* Loading data from persistent/external storage into a new/fresh scenario, fully replacing the previous content/context
+* Synchronizing data from persistent/external storage into a current session
+context, that operations potentially performed
+offline by multiple apps are reconciled into a common state 
 
 NOTE: client apps should always load a scenario, as the basis for further interaction.
 This scenario can be a freshly created (blank) one, one that is loaded from persistent storage, 
@@ -84,7 +91,7 @@ buttonNew.onclick = async () => {
 };
 ```
 
-### Joining a loaded scenario / session
+### Joining a loaded scenario 
 
 The `async joinScenarioSession(timeout?: number)` method retrieves the current STP scenario content and gets it loaded into 
 a local app.
@@ -119,16 +126,70 @@ buttonJoin.onclick = async () =>  {
 NOTE: active scenarios may be empty. If `createNewScenario()` is invoked, for example, 
 `hasActiveScenario()` will return true, even if no symbols were added yet.
 
-### Synchronizing loaded content with a session
+### Synchronizing loaded content
 
 The `syncScenarioSession()` method updates a session so it is synchronized with loaded content.
-Only the differences between the loaded content and the session result in STP update notifications
-broadcast to clients of a session.
+In contrast to `joinScenarioSession()`, which retrieves the current STP symbols and loads them
+locally into an app, `syncScenarioSession()` is bidirectional, merging local content with STP's. 
 
+Only the differences between the loaded content and the session's result in STP update notifications
+broadcast to clients of a session.
 That is useful in cases where parts of a plan may have been developed offline, and are being
 brought together for joint work in a collaborative session.
+The end result is a single consolidated state combining local ena Engine data being loaded in the STP 
+Engine and all apps that are connected to the same session (see the [Session]()../session) sample for
+additional discussion on session-based collaboration. 
 
-For a more detailed discussion of this method, see the [Sessions sample](../session/).
+The sample has limited capabilities to demonstrate synchronization. If there is no 
+loaded content, a fragment is loaded.
+While this content should be populated into the session if missing, or ignored, if already loaded/synched,
+the real value of synchronization is to consolidate edits performed independently by one or more users,
+so that the session participants eventually arrive at a consolidated common plan. 
+
+
+```javascript
+const buttonSync = document.getElementById('sync');
+buttonSync.onclick = async () => {
+    try {
+        if (content == '') {
+            content = `object_set([
+                [fsTYPE: planning_scenario,auth: [fsTYPE: auth,source: 'SdkCommandSample_2f5183c8-7071-4e86-bccf-6db9b4844f72',identity: '004290052034260AA207',session: '004290052034260AA207',uuid: '2f5183c8-7071-4e86-bccf-6db9b4844f72'],poid: idQL51E9VZPDQ5K45XPBTQAMFV3,name: 'SdkCommandSample',is_valid: true,is_loaded: true,fsdb_version: v6W274K3X2MLL5NA4ZDERQYZ69,fsdb_timestamp: '638272755227979645']
+                [location: [fsTYPE: point,coords: [latlon(20.1848153138375,-155.85812217041)],shape: point,candidate_poids: [],geo_bounds: [latlon(20.2252508598262,-155.9151137475586),latlon(20.025065064308414,-155.5093062524414)],pixel_bounds: [0,0,2364,1242],centroid: latlon(20.1848153138375,-155.85812217041)],fsTYPE: unit,coding_scheme: warfighting,battle_dimension: ground,modifier: none,branch: ground_unit,ground_role: combat,role: infantry,speechPoid: id1K3VUM2TKYX6HXRWK1T395W6M8,echelon: company,designator1: 'A',icon_class: military,affiliation: friend,order_battle: ground,spoken_language: 'infantry company alpha',auth: [fsTYPE: auth,source: 'SdkCommandSample_677c31b4-c1ec-4bbb-a8e4-b240403715ca',identity: '004290052034260AA207',session: '004290052034260AA207',uuid: '677c31b4-c1ec-4bbb-a8e4-b240403715ca'],ui_status: confirming,speech: 'infantry company alpha',interval: interval(timeval(1691678736,883),timeval(1691678739,440)),confidence: 0.77865199905425,status: present,symbol_id: 'SFGPUCI----E---',complete_language: 'PRESENT FRIENDLY INFANTRY COMPANY A',placed: true,poid: idFFZQLEXALV3ZL34HYJ19G3STS,glyphPoid: idFFZQLEXALV3ZL34HYJ19G3STS,alt: 0,fsdb_version: v18RV43RHAKXMCUT3FWJ878B9P7,fsdb_timestamp: '638272755427609710']
+            ---- snip ---
+                [confidence: 0.95,task_description: 'Attack OBJECTIVE WILDCATS along AXIS LOS ANGELES ',who: [fsTYPE: task_unit,symbol: poid(idFFZQLEXALV3ZL34HYJ19G3STS),unit_class: 'GroundManeuverUnitSymbol'],tgs: [[fsTYPE: task_tg,symbol: poid(id1KVXNT79YHWMBMDW9NWVAP0D26),tg_class: 'GroundAttackAxisOfAdvanceGraphicControlMeasureTG'],[fsTYPE: task_tg,symbol: poid(idGB9JUXWKE21LGRK8R1BU6R9Q9),tg_class: 'OffenseObjectiveAreaGraphicControlMeasureTG']],tgs_desired: [],creator_role: s3,fsTYPE: task,parent_coa: _x2d8,name: 'AssaultObjectiveOnAxis',how: 'ATTACK',what: 'NOT_SPECIFIED',prob: 0.90,usergroups: [[fsTYPE: usergroups,role: s3,affiliation: friend],[fsTYPE: usergroups,role: s2,affiliation: hostile]],trigger: 'GroundAttackAxisOfAdvanceGraphicControlMeasure',movement_features: [fsTYPE: movement_features,movement: true,moves_to: 'OffenseObjectiveAreaGraphicControlMeasure'],fires_features: [],tasksets: [mcwl14,adapx10],task_status: implicit,start_time: 0,end_time: 1,auth: [fsTYPE: auth,source: 'SdkCommandSample_677c31b4-c1ec-4bbb-a8e4-b240403715ca',identity: '004290052034260AA207',session: '004290052034260AA207',uuid: '677c31b4-c1ec-4bbb-a8e4-b240403715ca'],ui_status: confirming,speech: '',interval: interval(timeval(1691678736,883),timeval(1691678739,440)),poid: id4K18E8C5KRX03,glyphPoid: id4K18E8C5KRX03,alt: 0,fsdb_version: vGW9GAKVMSG9T1TX9ANHXAEM7U,fsdb_timestamp: '638272755794491689']
+            ])`;
+        }
+            // TODO: retrieve content from persistent storage instead of 'content' variable
+            // TODO: display some sort of progress indicator/wait cursor
+            await stpsdk.syncScenarioSession(content, 90);
+            log("Synched scenario with session");
+        // }
+        // else {
+        //     log("No scenario data to sync - Save first");
+        // }
+    } catch (error) {
+        log(error, 'Error');
+    }
+};
+```
+
+The updates are based on the following rules:
+
+1. Objects (identified by their poids) that exist just on the loaded content and not the session are added
+1. Objects that exist in both the loaded content and the session
+    1. If their versions (`fsdb_version`) are the same, nothing is done
+    1. Otherwise the more recent object (based on `fsdb_timestamp`) replaces the other
+1. If an object is marked as deleted (STP uses an `fsdb_version==v0` to represent that) either
+in the loaded content or the session, then object is deleted
+
+Notice that these rules are lenient, and leave some space for potential conflicts.
+Picking the most recent object for example is not guaranteed to result in a semantically
+sound outcome. 
+Deletions might remove objects meaningful to one of the versions (loaded content or the session's).  
+
+The main expectation is that conflicts are avoided or fixed by proper division of labor,
+so that users understand who "owns" objects or groups of objects and don't step on each others'
+edits.
 
 ### Saving scenarios to external/persistent storage
 
@@ -219,8 +280,8 @@ As previously mentioned, client apps should start by establishing a proper conte
 * Joining an existing scenario already loaded into the STP Engine, or 
 * Creating a new (blank) scenario
 
-The following snippet shows a simple approach, which offers users the option to 
-join a scenario, if one is available, creating a blank one otherwise.
+The following snippet shows a simple approach, which creates a blank scenario if no
+active one is found, or let users decide if they want to join or synch if one exists.
 
 This snippet assumes that this is the last action performed on start(), after all
 the event handlers have been setup, connection to STP was achieved, and the map
@@ -231,22 +292,23 @@ for display).
     // Load the map
     map.load();
 
-    // Create new scenario or join ongoing one
-    if (await stpsdk.hasActiveScenario()) {
-        if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
-            await stpsdk.joinScenarioSession();
-            log("Joined scenario");
-            return;
-        }
+    // Create new scenario if there is no active one already
+    if (! await stpsdk.hasActiveScenario()) {
+        // Start a new scenario
+        log("STP session has no active scenario - creating new");
+        await stpsdk.createNewScenario(appName);
+        log("New scenario created");
     }
-    // Start a new scenario - named it the same as the sample app - ain absence of a more meaningful name 
-    await stpsdk.createNewScenario(appName);
-    log("New " + appName + " scenario created");
+    else {
+        // Inform user that a scenario exists
+        log("STP session has active scenario - Join or Sync to display content");
+    }
 }
 ```
 NOTE: `hasActiveScenario` looks for a "planning_scenario" object, which is what is added by `createNewScenario`, or loaded in `loadNewScenario()`.
 
-If sn app does not invoke `createNewScenario` - which is the case in the previous samples up to this one, this element will _not_ be available, 
+If an app does not invoke `createNewScenario`, this element will _not_ be available, 
 and `hasActiveScenario` will return _false_, even if objects have been added to STP.
 
-If in doubt about the existence of the "planning_scenario" object, use an alternative (and more resource intensive) approach of attempting to retrieve the content via `getScenarioContent()` and joining if the result is not null/empty.
+If in doubt about the existence of the "planning_scenario" object, use an alternative (and more resource intensive) approach of attempting to retrieve
+the content via `getScenarioContent()` and joining if the result is not null/empty.

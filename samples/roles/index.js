@@ -279,68 +279,6 @@ async function start(){
     }
 
     // UI element handlers
-    // Scenario actions
-    const buttonNew = document.getElementById('new');
-    buttonNew.onclick = async () => {
-        try {
-            // TODO: display some sort of progress indicator/wait cursor
-            await stpsdk.createNewScenario(appName);
-            log("New scenario created");
-        } catch (error) {
-            log(error, 'Error');
-        }
-    };
-    const buttonJoin = document.getElementById('join');
-    buttonJoin.onclick = async () =>  {
-        try {
-            // TODO: display some sort of progress indicator/wait cursor
-            if (await stpsdk.hasActiveScenario()) {
-                await stpsdk.joinScenarioSession();
-                log("Joined scenario");
-            }
-            else {
-                log("No Active Scenario");
-            }
-        } catch (error) {
-            log(error, 'Error');
-        }
-    };
-    // Save and load content
-    // TODO: save/retrieve content to/from file
-    let content = '';
-    const buttonSave = document.getElementById('save');
-    buttonSave.onclick = async () => {
-        try {
-            // TODO: display some sort of progress indicator/wait cursor
-            if (await stpsdk.hasActiveScenario()) {
-                content = await stpsdk.getScenarioContent();
-                // TODO: save content to persistent storage
-                log("Saved scenario");
-            }
-            else {
-                log("No Active Scenario");
-            }
-        } catch (error) {
-            log(error, 'Error');
-        }
-    };
-    const buttonLoad = document.getElementById('load');
-    buttonLoad.onclick = async () => {
-        try {
-            if (content !== '') {
-                // TODO: retrieve content from persistent storage instead of 'content' variable
-                // TODO: display some sort of progress indicator/wait cursor
-                await stpsdk.loadNewScenario(content, 90);
-                log("Loaded scenario");
-            }
-            else {
-                log("No scenario data to load - Save first");
-            }
-        } catch (error) {
-            log(error, 'Error');
-        }
-    };
-
     // TO/ORBAT actions
     // Get content of the last loaded TO into a variable, ready to persist
     const buttonGetTO = document.getElementById('getto');
@@ -444,7 +382,7 @@ async function start(){
     // Attempt to connect to STP
     try {
         // TODO: display some sort of progress indicator/wait cursor
-        await stpsdk.connect("SdkRoleSample", 10, machineId);
+        await stpsdk.connect(appName, 10, machineId);
     } catch (error) {
         let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
         log(msg, "Error", true);
@@ -543,15 +481,8 @@ async function start(){
     // Load the map
     map.load();
 
-    // Create new scenario or join ongoing one
-    if (await stpsdk.hasActiveScenario()) {
-        if (confirm("Select Ok to join existing scenario or Cancel to create a new one")) {
-            await stpsdk.joinScenarioSession();
-            log("Joined scenario");
-            return;
-        }
-    }
-    // Start a new scenario
+    // Always create a clean scenario, otherwise new symbols may get
+    // combined with cached STP content the user cannot see
     await stpsdk.createNewScenario(appName);
     log("New scenario created");
 }
