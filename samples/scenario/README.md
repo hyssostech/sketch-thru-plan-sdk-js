@@ -140,38 +140,41 @@ The end result is a single consolidated state combining local ena Engine data be
 Engine and all apps that are connected to the same session (see the [Session]()../session) sample for
 additional discussion on session-based collaboration. 
 
-The sample has limited capabilities to demonstrate synchronization. If there is no 
-loaded content, a fragment is loaded.
-While this content should be populated into the session if missing, or ignored, if already loaded/synched,
-the real value of synchronization is to consolidate edits performed independently by one or more users,
-so that the session participants eventually arrive at a consolidated common plan. 
+The sample has limited capabilities to demonstrate synchronization. Whatever has been saved (using the `Save` button)
+gets submitted as the synchronization data.
 
 
 ```javascript
 const buttonSync = document.getElementById('sync');
 buttonSync.onclick = async () => {
     try {
-        if (content == '') {
-            content = `object_set([
-                [fsTYPE: planning_scenario,auth: [fsTYPE: auth,source: 'SdkCommandSample_2f5183c8-7071-4e86-bccf-6db9b4844f72',identity: '004290052034260AA207',session: '004290052034260AA207',uuid: '2f5183c8-7071-4e86-bccf-6db9b4844f72'],poid: idQL51E9VZPDQ5K45XPBTQAMFV3,name: 'SdkCommandSample',is_valid: true,is_loaded: true,fsdb_version: v6W274K3X2MLL5NA4ZDERQYZ69,fsdb_timestamp: '638272755227979645']
-                [location: [fsTYPE: point,coords: [latlon(20.1848153138375,-155.85812217041)],shape: point,candidate_poids: [],geo_bounds: [latlon(20.2252508598262,-155.9151137475586),latlon(20.025065064308414,-155.5093062524414)],pixel_bounds: [0,0,2364,1242],centroid: latlon(20.1848153138375,-155.85812217041)],fsTYPE: unit,coding_scheme: warfighting,battle_dimension: ground,modifier: none,branch: ground_unit,ground_role: combat,role: infantry,speechPoid: id1K3VUM2TKYX6HXRWK1T395W6M8,echelon: company,designator1: 'A',icon_class: military,affiliation: friend,order_battle: ground,spoken_language: 'infantry company alpha',auth: [fsTYPE: auth,source: 'SdkCommandSample_677c31b4-c1ec-4bbb-a8e4-b240403715ca',identity: '004290052034260AA207',session: '004290052034260AA207',uuid: '677c31b4-c1ec-4bbb-a8e4-b240403715ca'],ui_status: confirming,speech: 'infantry company alpha',interval: interval(timeval(1691678736,883),timeval(1691678739,440)),confidence: 0.77865199905425,status: present,symbol_id: 'SFGPUCI----E---',complete_language: 'PRESENT FRIENDLY INFANTRY COMPANY A',placed: true,poid: idFFZQLEXALV3ZL34HYJ19G3STS,glyphPoid: idFFZQLEXALV3ZL34HYJ19G3STS,alt: 0,fsdb_version: v18RV43RHAKXMCUT3FWJ878B9P7,fsdb_timestamp: '638272755427609710']
-            ---- snip ---
-                [confidence: 0.95,task_description: 'Attack OBJECTIVE WILDCATS along AXIS LOS ANGELES ',who: [fsTYPE: task_unit,symbol: poid(idFFZQLEXALV3ZL34HYJ19G3STS),unit_class: 'GroundManeuverUnitSymbol'],tgs: [[fsTYPE: task_tg,symbol: poid(id1KVXNT79YHWMBMDW9NWVAP0D26),tg_class: 'GroundAttackAxisOfAdvanceGraphicControlMeasureTG'],[fsTYPE: task_tg,symbol: poid(idGB9JUXWKE21LGRK8R1BU6R9Q9),tg_class: 'OffenseObjectiveAreaGraphicControlMeasureTG']],tgs_desired: [],creator_role: s3,fsTYPE: task,parent_coa: _x2d8,name: 'AssaultObjectiveOnAxis',how: 'ATTACK',what: 'NOT_SPECIFIED',prob: 0.90,usergroups: [[fsTYPE: usergroups,role: s3,affiliation: friend],[fsTYPE: usergroups,role: s2,affiliation: hostile]],trigger: 'GroundAttackAxisOfAdvanceGraphicControlMeasure',movement_features: [fsTYPE: movement_features,movement: true,moves_to: 'OffenseObjectiveAreaGraphicControlMeasure'],fires_features: [],tasksets: [mcwl14,adapx10],task_status: implicit,start_time: 0,end_time: 1,auth: [fsTYPE: auth,source: 'SdkCommandSample_677c31b4-c1ec-4bbb-a8e4-b240403715ca',identity: '004290052034260AA207',session: '004290052034260AA207',uuid: '677c31b4-c1ec-4bbb-a8e4-b240403715ca'],ui_status: confirming,speech: '',interval: interval(timeval(1691678736,883),timeval(1691678739,440)),poid: id4K18E8C5KRX03,glyphPoid: id4K18E8C5KRX03,alt: 0,fsdb_version: vGW9GAKVMSG9T1TX9ANHXAEM7U,fsdb_timestamp: '638272755794491689']
-            ])`;
-        }
+        if (content !== '') {
             // TODO: retrieve content from persistent storage instead of 'content' variable
             // TODO: display some sort of progress indicator/wait cursor
             await stpsdk.syncScenarioSession(content, 90);
-            log("Synched scenario with session");
-        // }
-        // else {
-        //     log("No scenario data to sync - Save first");
-        // }
+            log("Synched (predefined) scenario with session");
+        }
+        else {
+            log("No scenario data to sync - Save first");
+        }
     } catch (error) {
         log(error, 'Error');
     }
 };
 ```
+
+Here's a suggested sequence of steps to examine synchronization capabilities. While these 
+might provide some sense of the synchronization in action, 
+the real value of synchronization is to consolidate edits performed independently by one or more users,
+so that the session participants eventually arrive at a consolidated common plan, which is not demonstrated 
+here:
+
+- Add a few symbols to a scenario (new or existing)
+- Save the content using the `Save` button - this keeps the current state cached in a variable.
+- Make changes to the scenario, adding, deleting, and modifying symbols
+- Select the `Sync` button - this will attempt to consolidate the new state of the scenario
+with the state that was cached via `Save`
+
 
 The updates are based on the following rules:
 
@@ -190,6 +193,9 @@ Deletions might remove objects meaningful to one of the versions (loaded content
 The main expectation is that conflicts are avoided or fixed by proper division of labor,
 so that users understand who "owns" objects or groups of objects and don't step on each others'
 edits.
+
+While this content should be populated into the session if missing, or ignored, if already loaded/synched,
+
 
 ### Saving scenarios to external/persistent storage
 
