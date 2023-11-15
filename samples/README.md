@@ -10,4 +10,5 @@ Samples illustrate different aspects of STP in an incremental fashion, with each
 * [Scenario](scenario) - demonstrates management of scenario data
 * [Sessions](session) - demonstrates connection to STP server sessions
 * [Custom Commands](commands) - demonstrates the definition of custom commands
+* [C2SIM](c2sim) - demonstrates generation of C2SIM-compliant documents and server interaction
  

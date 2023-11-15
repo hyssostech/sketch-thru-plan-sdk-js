@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sketch-thru-Plan Browser App</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">  
+    <!-- Map -->
+    <script src="https://unpkg.com/@googlemaps/js-api-loader@1.x/dist/index.min.js"></script>
+    <!-- Renderers -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/milsymbol@2.0.0/dist/milsymbol.min.js"></script>
+    <!-- Speech recognition -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <!-- STP SDK and plugins - needs to be added *after* the references to speech and communication services it may use -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.6.5-alpha.0/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <!--<script type="application/javascript" src="../../../stp-js/dist/sketch-thru-plan-sdk-bundle-min.js"></script>-->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@0.2.0/dist/stpazurespeech-bundle-min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="actions">
+      <label for="sessionId" id="sessionGroup" class="group">Session:</label>
+      <input type="text" id="sessionId" placeholder="auto">
+      <input type="button" id="connect" value="Connect" />
+      <br>
+      <label id="scenarioGroup" class="group">Scenario:</label>
+      <input type="button" id="new" value="New" />
+      <input type="button" id="join" value="Join" />
+      <input type="button" id="save" value="Save" />
+      <input type="button" id="load" value="Load" />
+      <input type="button" id="sync" value="Sync" />
+      <br>
+      <label id="toGroup"class="group">TO/ORBAT:</label>
+      <input type="button" id="friend" value="Load Friend" />
+      <input type="button" id="hostile" value="Load Hostile" />
+      <br>
+      <label>Active:</label>
+      <br>
+      <label id="toName">none</label>
+      <input type="button" id="getto" value="Save" />
+      <br>
+      <label id="roleGroup" class="group">Role:</label>
+      <input type="radio" name="role" id="s2" value="s2">
+      <label for="s2">S2</label>
+      <input type="radio" name="role" id="s3" value="s3">
+      <label for="s3">S3</label>
+      <input type="radio" name="role" id="s4" value="s4">
+      <label for="s4">S4</label>
+      <input type="radio" name="role" id="fso" value="fso">
+      <label for="fso">FSO</label>
+      <input type="radio" name="role" id="eng" value="eng">
+      <label for="eng">Eng</label>
+      <br>
+      <label id="c2simGroup"class="group">C2SIM:</label>
+      <input type="button" id="export" value="Export" />
+      <input type="button" id="import" value="Import" />
+    </div>
+    <div id="messages"></div>
+    <div id="map">Connect to load map...</div>
+    <script type="application/javascript" src="../../plugins/maps/googlemaps/googlemaps.js"></script>
+    <script type="application/javascript" src="../../plugins/renderers/mil-sym-js.js"></script>
+    <script type="application/javascript" src="../../plugins/renderers/jmsrenderer.js"></script>
+    <script src="index.js"></script>
+   </body>
+</html>

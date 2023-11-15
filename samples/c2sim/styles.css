@@ -1,0 +1,43 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+#actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    overflow: hidden;
+    background-color: darkgrey;
+    border: 1px solid gray;
+    display: flex;
+    align-items: center;
+}
+.group {
+    margin-left: 15px;
+}
+input[name=role] {
+    margin-left: 15px;
+    margin-right: 5px;
+}
+#messages {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    overflow: hidden;
+}
+/* Always set the map height explicitly to define the size of the div
+* element that contains the map. */
+#map {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    cursor: crosshair;
+}
