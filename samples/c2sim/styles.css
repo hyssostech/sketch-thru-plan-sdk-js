@@ -19,7 +19,7 @@ html, body {
 .group {
     margin-left: 15px;
 }
-input[name=role] {
+input[id=import] {
     margin-left: 15px;
     margin-right: 5px;
 }
