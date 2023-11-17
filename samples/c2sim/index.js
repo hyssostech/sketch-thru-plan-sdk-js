@@ -97,21 +97,18 @@ async function start(){
     stpsdk.onSymbolDeleted = (poid, isUndo) => {
         map.removeFeature(poid);
     };
- 
+
     // A new Role became active or was reset
+    roleSelect = document.getElementById("roles")
     stpsdk.onRoleSwitched = (role) => {
         try {
             // Display new role on the UI
             if (!role) {
                 log("Role was reset", "Info");
-                currentRoleBtn = document.querySelector("input[type='radio'][name=role]:checked");
-                if (currentRoleBtn) {
-                    currentRoleBtn.checked = false;
-                }
+                roleSelect.value = "none";
             }
             else {
-                roleBtn = document.getElementById(role);
-                roleBtn.checked = true;
+                roleSelect.value = role;
                 log("Role switched to: " + role, "Info");
             }
         } catch (error) {
@@ -457,34 +454,30 @@ async function start(){
 
     // Role actions
     let currentRole = undefined;
-    const roleRadioButtons = document.querySelectorAll("input[type='radio'][name=role]");
-    for (rb in roleRadioButtons) {
-        roleRadioButtons[rb].onchange = async () => {
-            try {
-                currentRoleBtn = document.querySelector("input[type='radio'][name=role]:checked");
-                if (currentRoleBtn?.value) {
-                    // Remove the user selection, waiting for STP's switch notification
-                    currentRoleBtn.checked = false;
-                    // TODO: display some sort of progress indicator/wait cursor
-                    log("Requesting role switch to " + currentRoleBtn.value);
-                    await stpsdk.setCurrentRole(currentRoleBtn.value);
-                }
-                else {
-                    log("No role selected");
-                }
-            } catch (error) {
-                log(error, 'Error');
-            }
-        };
-    }
+    roleSelect.onchange =  async (e) => {
+        try {
+            selectedRole = roleSelect.value;
+            // Remove the user selection, waiting for STP's switch notification
+            roleSelect.value = "none";
+            // TODO: display some sort of progress indicator/wait cursor
+            log("Requesting role switch to " + selectedRole);
+            await stpsdk.setCurrentRole(selectedRole);
+        } catch (error) {
+            log(error, 'Error');
+        }
+    };
 
-    // C2SIM actions
+    // C2SIM actions and events
+    // Get a proxy to interact with C2SIM
+    const c2simProxy = stpsdk.createC2SIMProxy();
     const buttonExport = document.getElementById('export');
+    const affilSelect = document.getElementById('affiliation');
+    const typesSelect = document.getElementById('types');
     buttonExport.onclick = async () => {
         try {
             // TODO: display some sort of progress indicator/wait cursor
             if (await stpsdk.hasActiveScenario()) {
-                await stpsdk.exportPlanDataToC2SIMServer('C2SIMSample','initialization','all');
+                await c2simProxy.exportPlanDataToC2SIMServer('C2SIMSample',typesSelect.value.toLowerCase(),affilSelect.value);
                 log("Initialization exported to C2SIM");
             }
             else {
@@ -502,32 +495,41 @@ async function start(){
                 await stpsdk.createNewScenario(appName);
                 log("New scenario created");
             }
-            await stpsdk.importInitializationFromC2SIMServer();
+            await c2simProxy.importInitializationFromC2SIMServer();
             log("Initialization imported from C2SIM into the current scenario");
         } catch (error) {
             log(error, 'Error');
         }
     };
+    // The properties of a symbol were updated by C2SIM 
+    c2simProxy.onSymbolReport = (poid, symbol) => {
+        // Remove current verion
+        map.removeFeature(poid);
+        // Add the updated symbol
+        let gj = new BasicRenderer(symbol).asGeoJSON();
+        map.addFeature(gj);
+    };
+    
 
     // Connection to STP and app launch
     const buttonConnect = document.getElementById('connect');
     buttonConnect.onclick = async () => {
-    try {
-        // Retrieve the session - if empty, defaults are applied by STP - 
-        const sessionBox = document.getElementById('sessionId');
-        let session = sessionBox.value;
-        // TODO: display some sort of progress indicator/wait cursor
-        // Connect and display the assigned session id on the UI
-            sessionBox.value = await stpsdk.connect(appName, 30, machineId, session);
-            // Load map and start edit session
-            runApp(appName);
-    } catch (error) {
-        let msg = "Failed to connect to STP at " + webSocketUrl + ". \nSymbols will not be recognized. Please reload to try again";
-        log(msg, "Error", true);
-        // Nothing else we can do
-        return;
-    }
-};
+        try {
+            // Retrieve the session - if empty, defaults are applied by STP - 
+            const sessionBox = document.getElementById('sessionId');
+            let session = sessionBox.value;
+            // TODO: display some sort of progress indicator/wait cursor
+            // Connect and display the assigned session id on the UI
+                sessionBox.value = await stpsdk.connect(appName, 30, machineId, session);
+                // Load map and start edit session
+                runApp(appName);
+        } catch (error) {
+            let msg = "Failed to connect to STP at " + webSocketUrl + ". \nSymbols will not be recognized. Please reload to try again";
+            log(msg, "Error", true);
+            // Nothing else we can do
+            return;
+        }
+    };
 
     // Setup the networked MS recognizer unless disabled via configuration
     let speechreco;
