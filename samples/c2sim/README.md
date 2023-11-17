@@ -12,10 +12,10 @@ Command and Control Systems to Simulation Systems Interoperation (C2SIM) is defi
 For a comprehensive C2SIM description, see the [C2SIM Overview](https://github.com/hyssostech/OpenC2SIM.github.io/blob/master/Reference/C2SIM-Overview1.pdf). For additional details see the official [OpenC2SIM github](https://github.com/OpenC2SIM/OpenC2SIM.github.io) repo, or [Hyssos' fork](https://github.com/hyssostech/OpenC2SIM.github.io), with some additional documentation.
 
 In short, C2SIM provides a standardized representation of 
-1. a plan Initialization - the initial state of entities in a
+1. Plan Initialization - the initial state of entities in a
 scenario, for example Units, Equipment, Mootw entities; 
-1. plan Orders - tasking of entities contained in the initialization, for example directing a Unit to attack an Objective;
-1.  Reports - entity updates that may result from a Simulation/C2 system's changes to location and status as 
+1. Plan Orders - tasking of entities contained in the initialization, for example directing a Unit to attack an Objective;
+1. Reports - entity updates that may result from a Simulation/C2 system's changes to location and status as 
 a result of simulated order execution.
 
 Capabilities illustrated by this sample include:
@@ -104,8 +104,8 @@ The functionality, as can be seen in the C2SIM proxy code snippet copied below, 
 Parameters:
 
 * `name` - tag/label defining the scenario being exported
-* `dataType` - C2SIM plan data is grouped under `initialization` and oOrder` documents, the former usually representing the initial state of a scenario, and the latter representing orders issued to the taskable entities
-* `affiliation` - filters the export by affiliation, if one is specified
+* `dataType` - C2SIM plan data is grouped under `initialization` and `order` documents, the former usually representing the initial state of a scenario, and the latter representing orders issued to the taskable entities
+* `affiliation` - filters the export by affiliation, if one is specified, so that only friendly or hostile elements are included
 * `coaPoids` - (future capability) filters specific COAs, if more than one exist. This is in support of 
 apps that opt to manage multiple COAs within the same scenario.
 While this capability is supported by STP, most apps have a single COA with friend and hostile entities.
@@ -115,7 +115,7 @@ The functionality, as can be seen, is provided by lower-level SDK methods, which
 
 ### Importing Initialization data from a C2SIM server into the current scenario
 
-The `importInitializationFromC2SIMServer` method imports Initializaiton data from a C2SIM server. 
+The `importInitializationFromC2SIMServer` method imports Initialization data from a C2SIM server. 
 This is useful to populate a baseline scenario that is shared by all systems connected to the same
 C2SIM server, and then use STP to issue orders, for example.
 
