@@ -468,8 +468,10 @@ async function start(){
     };
 
     // C2SIM actions and events
-    // Get a proxy to interact with C2SIM
-    const c2simProxy = stpsdk.createC2SIMProxy();
+    // Get a proxy to interact with C2SIM, setting generation options
+    const c2simProxy = stpsdk.createC2SIMProxy({ serverProtocol: '1.0.2'});
+
+    // C2SIM export to server
     const buttonExport = document.getElementById('export');
     const affilSelect = document.getElementById('affiliation');
     const typesSelect = document.getElementById('types');

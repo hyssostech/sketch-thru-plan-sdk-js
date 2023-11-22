@@ -45,6 +45,139 @@ factory method.
 const c2simProxy = stpsdk.createC2SIMProxy();
 ```
 
+The proxy constructor takes an optional `StpC2SIMOptions` object, which can be used to 
+override the STP C2SIM Connector defaults, for example: 
+
+```javascript
+const c2simProxy = stpsdk.createC2SIMProxy({
+  restUrl: 'http://mydomain.com:8080/C2SIMServer',
+  stompUrl: 'http://mydomain.com:61613/topic/C2SIMS',
+  systemName: 'MySystemName'
+});
+```
+
+Default parameters are used for the options that are not explicitly overridden. 
+These may vary depending on the STP Engine instance configuration (discuss with the
+system's administrator).
+
+The options available are the following:
+
+```javascript
+/** 
+ * C2SIM generation options
+*/
+export class StpC2SIMOptions {
+    /**
+     * Full C2SIM server endpoint, including host:port/path, e.g. "http://10.2.10.30:8080/C2SIMServer</param>
+     */
+    restUrl: string | undefined;
+
+    /**
+     * C2SIM REST endpoint password
+     */
+    restPassword: string | undefined;
+
+    /**
+     * Full STOMP service endpoint, including host:port/destination, e.g. "http://10.2.10.30:61613/topic/C2SIM"</param>
+     */
+    stompUrl: string | undefined;
+
+    /**
+     * Server protocol version: "1.0.0", "1.0.1", "1.0.2"
+     */
+    serverProtocol: string | undefined;
+
+    /**
+     * value of the <SystemEntityList>/<SystemName> element included in the C2SIM Initialization document
+     */
+    systemName: string | undefined;
+
+    /**
+     * Force a C2SIM server state transition to Running right after pushing Initialization
+     * This is just required if interfaces that can only be started after the Initialization is shared are used
+     * One example is the VRF interface 2.16
+     */
+    resetBeforeInitialize: boolean | undefined;
+
+    /**
+     * Force a C2SIM server state transition to Running right after pushing Initialization
+     * This is just required if interfaces that can only be started after the Initialization is shared are used
+     * One example is the VRF interface 2.16
+     */
+    runAfterInitialize: boolean | undefined;
+
+    /**
+     * Include the full TO (and all TG) in the Initialization and Order document. If false, just the elements that are placed in the map (and their subordinates) are included 
+     */
+    fullTO: boolean | undefined;
+
+    /**
+     * Use the older version of the C2SIM schema - v1.0.0 - for compatibility with existing tooling
+     */
+    schemaVersion: string | undefined;
+
+    /**
+     * Add TGs that are not included in any Task as MapGraphicID elements in the Initialization document
+     */
+    addOrphanTgToInitialization: boolean | undefined;
+
+    /**
+     * Place Task TGs  MapGraphicID elements in the Initialization documents, rather than the Orders
+     */
+    placeAllTgInInitialization: boolean | undefined;
+
+    /**
+     * Amount of minutes each STP phase takes
+     */
+    updateUnitPositions: boolean | undefined;
+
+    /**
+     * Folder to write export json file to.
+     */
+    exportFileDir: string | undefined;
+
+    /**
+     *Amount of minutes each STP phase takes
+        */
+    startDate: Date | undefined;
+
+    /**
+     *Amount of minutes each STP phase takes
+        */
+    phaseDuration: number | undefined;
+
+    /**
+     * Sender unique id - defaults to "00000000-0000-0001-0001-000000000000"
+     */
+    fromSenderUUID: string | undefined;
+
+    /**
+     * Receiver unique id - defaults to "00000000-0007-0001-0000-000000000000"
+     */
+    toReceiverUUID: string | undefined;
+
+    /**
+     * Friendly forces unique id - defaults to "00000000-0000-0001-0000-000000000000"
+     */
+    friendFstUUID: string | undefined;
+
+    /**
+     * Hostile forces unique id - defaults to "00000000-0000-0002-0000-000000000000"
+     */
+    hostileFstUUID: string | undefined;
+
+    /**
+     *Neutral forces unique id - defaults to "00000000-0000-0003-0000-000000000000"
+        */
+    neutralFstUUID: string | undefined;
+
+    /**
+     * Unknown forces unique id - defaults to "00000000-0000-0004-0000-000000000000"
+     */
+    unknownFstUUID: string | undefined;
+}
+```
+
 ### Exporting the current scenario to C2 and Simulators connected to a C2SIM server
 
 The `exportPlanDataToC2SIMServer` retrieves the content of the current scenario in C2SIM-compliant format and 
@@ -160,7 +293,7 @@ These calls are described in further detail in the next section.
 
 #### Retrieving C2SIM-compliant representations
 
-A C2SIM representaiton of the current scenario can be retrieved via the 
+A C2SIM representation of the current scenario can be retrieved via the 
 `getC2SIMContent` method.
 Each call returns an Initialization or an Order document. See the [OpenC2SIM documentation](https://github.com/hyssostech/OpenC2SIM.github.io/tree/master/Standard/C2SIM) for details.
 
@@ -253,10 +386,16 @@ to show the evolution of the entity over time.
 ```javascript
 // The properties of a symbol were updated by C2SIM 
 c2simProxy.onSymbolReport = (poid, symbol) => {
-    // Remove current verion
+    // Remove current version
     map.removeFeature(poid);
     // Add the updated symbol
     let gj = new BasicRenderer(symbol).asGeoJSON();
     map.addFeature(gj);
 };
 ```
+
+NOTE: some reports may contain unchanged properties, as systems may choose to 
+inform the status for all symbols being tracked, even if there were no actual
+updates. 
+Depending on the number of entities, it may be advisable to check for changes
+before spending resources rendering.
