@@ -182,8 +182,15 @@ The updates are based on the following rules:
 1. Objects that exist in both the loaded content and the session
     1. If their versions (`fsdb_version`) are the same, nothing is done
     1. Otherwise the more recent object (based on `fsdb_timestamp`) replaces the other
-1. If an object is marked as deleted (STP uses an `fsdb_version==v0` to represent that) either
-in the loaded content or the session, then object is deleted
+1. If an object is marked as deleted (STP uses an `fsdb_version==v0` to represent that) 
+in the loaded content, then object is deleted. 
+Notice that this is unidirectional - if an object is deleted in the session, but not on 
+the loaded content, it will be restored. 
+The objective is to provide a state after the synchronization that matches the loaded content
+more closely. 
+If existing loaded content were not to show in the synchronized results, users would
+not be able to easily restore them, if it was their intention to go back to a previous
+state they had saved.
 
 Notice that these rules are lenient, and leave some space for potential conflicts.
 Picking the most recent object for example is not guaranteed to result in a semantically
