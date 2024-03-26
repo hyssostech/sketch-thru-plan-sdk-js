@@ -160,7 +160,22 @@ async function start(){
         return;
     }
 
-    // Setup the networked MS recognizer unless disabled via configuraiton
+    // // Add a unit to the map
+    // let ss = new StpSDK.StpSymbol();
+    // ss.fsTYPE = 'unit';
+    // ss.sidc = new StpSDK.Sidc();
+    // ss.sidc.legacy = 'SFGPUCI----E---';
+    // ss.designator1 = 'A';
+    // ss.parent = '3/1';
+    // ss.location = new StpSDK.Location();
+    // ss.location.fsTYPE = 'point';
+    // ss.location.shape = 'point';
+    // ss.location.coords = [new StpSDK.LatLon(20.1479439829813,-155.782825168697)];
+    // stpsdk.addSymbol(ss);
+    // log("Loaded predefined unit");
+
+
+    // Setup the networked MS recognizer unless disabled via configuration
     let speechreco;
     if (inkOnly != null) {
         // Likely using a local recognizer SxS

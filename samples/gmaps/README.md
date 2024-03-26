@@ -195,7 +195,7 @@ If using a different renderer, STP makes the following properties available by d
 
 | Property          | Description                                                                   |
 | ---------------   | ----------------------------------------------------------------------------- |
-| fsTYPE            | Symbol type: unit, mootw, equipment, tg, task                                 |
+| fsTYPE            | Symbol type: unit, mootw, tg, task                                 |
 | poid              | STP unique identifier                                                         |
 | parentCoa         | Unique id of the COA this symbol belongs to |
 | creatorRole       | Role that created the symbol: S2, S3, S4, Eng, FSO |
@@ -228,7 +228,7 @@ If using a different renderer, STP makes the following properties available by d
 | toUnitPoid        | For symbols created from a Task Org, the unique id of the Task Org Unit that this symbol was created from |
 
 
-### Location properties:
+**Location properties:**
 
 | Property          | Description                                                                   |
 | ---------------   | ----------------------------------------------------------------------------- |
@@ -239,3 +239,34 @@ If using a different renderer, STP makes the following properties available by d
 | coords            | Array of { lat: latitude, lon: longitude } |
 | centroid          | Corrdinates of the location centroid { lat: latitude, lon: longitude } |
 | candidatePoids    | Unique Ids of the symbols intersected by "coords". Used for editing operations that use sketches to select objects, for example "move this", "delete this" |
+
+### Adding/removing/modifying symbols programmatically
+
+The primary mechanism for adding and modifying symbols to STP is via speech and sketch as already discussed.
+
+The SDK offers additional methods that allow for creation, deletion and modification of symbols: `addSymbol(symbol:StpSymbol)`, `updateSymbol(poid: string, symbol:StpSymbol)` and `deleteSymbol(poid: string)`.
+The `poid` parameter is the unique Id of a symbol, assigned by STP.
+
+Here's a symbol creation example - see the property tables above for information about the fields and values:
+
+```javascript
+// Add a unit to the map
+let ss = new StpSDK.StpSymbol();
+ss.fsTYPE = 'unit';
+ss.sidc = new StpSDK.Sidc();
+ss.sidc.legacy = 'SFGPUCI----E---';
+ss.designator1 = 'A';
+ss.parent = '3/1';
+ss.location = new StpSDK.Location();
+ss.location.fsTYPE = 'point';
+ss.location.shape = 'point';
+ss.location.coords = [new StpSDK.LatLon(20.1479439829813,-155.782825168697)];
+stpsdk.addSymbol(ss);
+log("Loaded predefined unit");
+```
+Once STP processes the symbol creation, the `OnObjectAdded` is 
+fired, as if the symbol had been created via speech and sketch.
+STP will in most cases add detail to the symbol, filling out aspects that may not have
+been provided explicitly.
+
+Events are also fired as a response to updates - `onSymbolModified` - and removal - `onSymbolDeleted`.
