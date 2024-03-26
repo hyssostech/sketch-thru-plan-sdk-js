@@ -14,6 +14,7 @@
     serviceRegion: string;
     speechConfig: SpeechSDK.SpeechConfig
     audioConfig: SpeechSDK.AudioConfig;
+    phraseList: string[] | undefined;
     recognizer: SpeechSDK.SpeechRecognizer | undefined;
     recoStart: Date;
     isListening: boolean;
@@ -60,6 +61,29 @@
 
         this.isListening = false;
     }
+
+    /**
+     * Set the list of phrases with enhanced importance for recognition
+     * @param phrases 
+     */
+    setPhraseList(phrases: string[]){
+      this.phraseList = phrases;
+    }
+
+    /**
+     * Initialize the recognizer
+     */
+    private initializeReco() {
+        this.recognizer = new SpeechSDK.SpeechRecognizer(
+          this.speechConfig,
+          this.audioConfig
+        );
+        // Set the phrase list, if provided
+        if (this.phraseList) {
+              const phraseList = SpeechSDK.PhraseListGrammar.fromRecognizer(this.recognizer);
+              phraseList.addPhrases(this.phraseList);
+        }
+    }
     //#endregion Construction / initialization
 
     //#region Events
@@ -93,10 +117,9 @@
         maxRetries = 2000 / delay;
       }
       // Initialize the recognizer - could do this only once, but this will re-establish a connection if lost
-      this.recognizer = new SpeechSDK.SpeechRecognizer(
-        this.speechConfig,
-        this.audioConfig
-      );
+      this.initializeReco();
+
+      // Recognize
       return new Promise<ISpeechRecoResult | null>(async (resolve, reject) => {
         for (let i: number = 0; i < maxRetries!; i++) {
           // Timing is provided in terms of deltas over the reco start, so capture the start here
@@ -184,17 +207,15 @@
       }
       
       // Initialize the recognizer - could do this only once, but this will re-establish a connection if lost
-      this.recognizer = new SpeechSDK.SpeechRecognizer(
-        this.speechConfig,
-        this.audioConfig
-      );
+      this.initializeReco();
+
       // Timing is provided in terms of deltas over the reco start, so capture the start here
       this.recoStart = new Date();
 
       // The event recognizing signals that an intermediate recognition result is received.
       // You will receive one or more recognizing events as a speech phrase is recognized, with each containing
       // more recognized speech. The event will contain the text for the recognition since the last phrase was recognized.
-      this.recognizer.recognizing = (s, e) => {
+      this.recognizer!.recognizing = (s, e) => {
         // Add new bit of reco and invoke the user event, if any
         this.onRecognizing?.call(this, e.result.text);
       }
@@ -202,7 +223,7 @@
       // The event recognized signals that a final recognition result is received.
       // This is the final event that a phrase has been recognized.
       // For continuous recognition, you will get one recognized event for each phrase recognized.       
-      this.recognizer.recognized = (s, e) => {
+      this.recognizer!.recognized = (s, e) => {
           // Pack into sdk-friendly result (can also be null) and return
           let recoResult = this.convertResults(this.recoStart, e.result);
           this.onRecognized?.call(this, recoResult);
@@ -229,7 +250,7 @@
 
       // Get the recognition started
       this.isListening = true;
-      this.recognizer.startContinuousRecognitionAsync();
+      this.recognizer!.startContinuousRecognitionAsync();
     }
 
     /**
