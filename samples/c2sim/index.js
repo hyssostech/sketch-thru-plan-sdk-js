@@ -354,11 +354,15 @@ async function start(){
     const buttonLoad = document.getElementById('load');
     buttonLoad.onclick = async () => {
         try {
-            if (content !== '') {
+            //     content = 
+            //     `object_set([
+            //    [symbol_id: 'GFGPSAO--------',sidc: 'GFGPSAO-------X',modifier: none,affiliation: friend,echelon: none,designator1: '1st PLT AO',status: present,strength: none,location: [fsTYPE: area,width: 0,altitude: 0,shape: area,radius: 0,coords: [latlon(35.325245,-116.523445),latlon(35.3228,-116.52421),latlon(35.321983,-116.52236),latlon(35.321915,-116.51829),latlon(35.32227,-116.517784),latlon(35.32365,-116.51562),latlon(35.326763,-116.51578),latlon(35.3258,-116.51883),latlon(35.325172,-116.519714),latlon(35.325207,-116.52035),latlon(35.32434,-116.520706),latlon(35.325245,-116.523445)],centroid: latlon(35.3240441248771,-116.519653296175),candidate_poids: []],fsTYPE: tg]
+            //    ])`;
+           if (content !== '') {
                 // TODO: retrieve content from persistent storage instead of 'content' variable
                 // TODO: display some sort of progress indicator/wait cursor
                 await stpsdk.loadNewScenario(content, 90);
-                log("Loaded scenario");
+                log("Loaded previously Saved scenario data");
             }
             else {
                 log("No scenario data to load - Save first");
@@ -468,7 +472,7 @@ async function start(){
     };
 
     // C2SIM actions and events
-    // Get a proxy to interact with C2SIM, setting generation options
+// Get a proxy to interact with C2SIM, setting generation options
     const c2simProxy = stpsdk.createC2SIMProxy({ serverProtocol: '1.0.2'});
 
     // C2SIM export to server
@@ -479,8 +483,9 @@ async function start(){
         try {
             // TODO: display some sort of progress indicator/wait cursor
             if (await stpsdk.hasActiveScenario()) {
+                log("Exporting " + typesSelect.value + "...");
                 await c2simProxy.exportPlanDataToC2SIMServer('C2SIMSample',typesSelect.value.toLowerCase(),affilSelect.value);
-                log("Initialization exported to C2SIM");
+                log(typesSelect.value + " exported to C2SIM");
             }
             else {
                 log("No Active Scenario to export");
@@ -497,6 +502,7 @@ async function start(){
                 await stpsdk.createNewScenario(appName);
                 log("New scenario created");
             }
+            log("Importing C2SIM Initialization...")
             await c2simProxy.importInitializationFromC2SIMServer();
             log("Initialization imported from C2SIM into the current scenario");
         } catch (error) {
