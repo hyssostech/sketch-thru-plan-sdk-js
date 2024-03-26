@@ -1,8 +1,4 @@
 {
-    "config": {
-        "rootjs": "stpconnector",
-        "path": "websockets-plugin"
-    },
     "name": "@hyssostech/websockets-plugin",
     "version": "0.1.1",
     "description": "Websockets connector to Sketch-thru-Plan services",
@@ -22,7 +18,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-resources/plugins/connectors/websockets-plugin"
+        "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/plugins/connectors/websockets-plugin"
     },
     "author": "Hyssos Tech",
     "license": "MIT",
