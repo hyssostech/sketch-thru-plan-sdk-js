@@ -1,6 +1,24 @@
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
-import { ISpeechRecognizer, ISpeechRecoResult } from '../../interfaces/ISpeechRecognizer';
-export declare class AzureSpeechRecognizer implements ISpeechRecognizer {
+
+interface ISpeechRecognizer {
+    recognizeOnce(maxRetries?: number): Promise<ISpeechRecoResult | null>;
+    startRecognizing(): void;
+    stopRecognizing(wait?: number): void;
+    onRecognized: ((result: ISpeechRecoResult | null) => void) | undefined;
+    onRecognizing: ((snippet: string) => void) | undefined;
+    onError: ((error: Error) => void) | undefined;
+}
+interface ISpeechRecoResult {
+    results: ISpeechRecoItem[];
+    startTime: Date;
+    endTime: Date;
+}
+interface ISpeechRecoItem {
+    text: string;
+    confidence: number;
+}
+
+declare class AzureSpeechRecognizer implements ISpeechRecognizer {
     speechSubscriptionKey: string;
     serviceRegion: string;
     speechConfig: SpeechSDK.SpeechConfig;
@@ -22,3 +40,5 @@ export declare class AzureSpeechRecognizer implements ISpeechRecognizer {
     private convertResults;
     private addTicksToDate;
 }
+
+export { AzureSpeechRecognizer };

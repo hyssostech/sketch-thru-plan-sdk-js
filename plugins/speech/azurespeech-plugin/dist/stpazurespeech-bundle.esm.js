@@ -1,5 +1,6 @@
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
-export class AzureSpeechRecognizer {
+
+class AzureSpeechRecognizer {
     constructor(speechSubscriptionKey, serviceRegion, endPoint, audioConfig, recoLanguage) {
         this.speechSubscriptionKey = speechSubscriptionKey;
         this.serviceRegion = serviceRegion;
@@ -161,26 +162,10 @@ class AzureSpeechDetailedResults {
     constructor() {
         this.RecognitionStatus = '';
         this.Offset = 0;
-        ;
         this.Duration = 0;
         this.DisplayText = '';
         this.NBest = [];
     }
 }
-class AzureSpeechNBestItem {
-    constructor() {
-        this.Confidence = 0;
-        this.Lexical = '';
-        this.ITN = '';
-        this.MaskedITN = '';
-        this.Display = '';
-        this.Words = [];
-    }
-}
-class AzureSpeechWordsItem {
-    constructor() {
-        this.Word = '';
-        this.Confidence = 0;
-    }
-}
-//# sourceMappingURL=stpazurespeech.js.map
+
+export { AzureSpeechRecognizer };
