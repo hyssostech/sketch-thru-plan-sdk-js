@@ -1,8 +1,8 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-      "target": "es2015",
-      "module": "es2015",
+      "target": "es2020", 
+      "module": "es2020",
         "rootDirs": ["src", "../../interfaces"],
         "outDir": "build",
         "experimentalDecorators": true,
@@ -17,10 +17,14 @@
       "build",
       "test"
     ],
-    "typedocOptions": {    
-        "out": "docs",
-        "readme": "README.md",
-        "name": "Sketch-thru-Plan Speech Connector"
+    "typedocOptions": {  
+      "entryPoints": ["./src/stpazurespeech.ts"],
+      "readme": "README.md",
+      "out": "docs",
+      "excludePrivate": "true",
+      "theme": "default",
+      "includeVersion": "true", 
+      "name": "Sketch-thru-Plan Speech Connector"
     }
 }
   
