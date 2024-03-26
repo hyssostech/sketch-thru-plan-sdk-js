@@ -1,5 +1,8 @@
 # Sketch-Thru-Plan Microsfot Cognitive Services Speech Plugin Change Log
 
+## Version 0.3.1
+- Added `setPhraseList()` method that accepts an array of custom words/sentences that are given higher interpretation priority
+
 ## Version 0.3.0
 - Bundling Microsoft Cognitive Service Speech SDK to avoid separate references on the client apps
 
