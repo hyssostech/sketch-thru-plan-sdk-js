@@ -93,9 +93,9 @@ export class StpC2SIMOptions {
     systemName: string | undefined;
 
     /**
-     * Force a C2SIM server state transition to Running right after pushing Initialization
-     * This is just required if interfaces that can only be started after the Initialization is shared are used
-     * One example is the VRF interface 2.16
+     * Force a C2SIM server state transition to Uninitialized before pushing Initialization.
+     * Used to clear up the state to clear previous initializations - if not used, Initialization 
+     * may be merged with previous ones
      */
     resetBeforeInitialize: boolean | undefined;
 
@@ -127,6 +127,21 @@ export class StpC2SIMOptions {
     placeAllTgInInitialization: boolean | undefined;
 
     /**
+     * Place Task TGs  MapGraphicID elements in the Initialization documents, rather than the Orders
+     */
+    includeMapGraphicId: boolean | undefined;
+
+    /**
+     * Maximum number of character for generate entitiy names - VRF Interface restriction - 0 for none 
+     */
+    entityNameCharLimit: number | undefined;
+
+    /**
+     * Rules of Engagement 
+     */
+    rulesOfEngagement: 'ROEHold' | 'ROEFree' | 'ROETight' | undefined;
+    
+    /**
      * Amount of minutes each STP phase takes
      */
     updateUnitPositions: boolean | undefined;
@@ -157,9 +172,19 @@ export class StpC2SIMOptions {
     toReceiverUUID: string | undefined;
 
     /**
+     * Friendly forces name
+     */
+    friendFstName: string | undefined;
+
+    /**
      * Friendly forces unique id - defaults to "00000000-0000-0001-0000-000000000000"
      */
     friendFstUUID: string | undefined;
+
+    /**
+     * Hostile forces name
+     */
+    hostileFstName: string | undefined;
 
     /**
      * Hostile forces unique id - defaults to "00000000-0000-0002-0000-000000000000"
@@ -167,14 +192,24 @@ export class StpC2SIMOptions {
     hostileFstUUID: string | undefined;
 
     /**
-     *Neutral forces unique id - defaults to "00000000-0000-0003-0000-000000000000"
+     *Neutral forces name
         */
-    neutralFstUUID: string | undefined;
+     neutralFstName: string | undefined;
 
     /**
+     *Neutral forces unique id - defaults to "00000000-0000-0003-0000-000000000000"
+        */
+     neutralFstUUID: string | undefined;
+
+     /**
+     * Unknown forces name
+     */
+     unknownFstName: string | undefined;
+    
+     /**
      * Unknown forces unique id - defaults to "00000000-0000-0004-0000-000000000000"
      */
-    unknownFstUUID: string | undefined;
+     unknownFstUUID: string | undefined;
 }
 ```
 
