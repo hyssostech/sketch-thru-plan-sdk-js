@@ -128,4 +128,4 @@ Incoming messages follow the same format as the outgoing ones, with a `method` p
 
 ## Schema
 
-**UNDER CONSTRUCTION** An [OpenRPC](https://github.com/open-rpc) definition of the api can be found in [sketch-thru-plan-api.json](sketch-thru-plan-api.json)
+An [OpenRPC](https://github.com/open-rpc) definition of the api can be found in [sketch-thru-plan-api.json](sketch-thru-plan-api.json)

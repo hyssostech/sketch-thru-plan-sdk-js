@@ -1,48 +1,1424 @@
 {
-    "openrpc": "2.0.0",
-    "info": {
-      "title": "Sketch-thru-Plan API",
-      "version": "0.1.0"
+  "openrpc": "2.0.0",
+  "info": {
+    "title": "Sketch-thru-Plan API",
+    "version": "0.2.0"
+  },
+  "methods": [
+    {
+      "name": "SendPenDown",
+      "description": "Notify STP that the user began a sketch gesture (pen down) at a map coordinate.",
+      "params": [
+        {
+          "name": "location",
+          "description": "Map coordinate of the first sketched point (latitude/longitude).",
+          "schema": {
+            "$ref": "#/components/schemas/LatLon"
+          }
+        },
+        {
+          "name": "timestamp",
+          "description": "ISO 8601 timestamp (UTC) when the initial point was placed.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      ]
     },
-    "methods": [
-      {
-        "name": "SendPenDown",
-        "description": "User started a sketched gesture",
-        "params": [
-          {
-            "name": "location",
-            "description": "Location of the initial sketched point",
-            "schema": {
-                "$ref": "#/components/schemas/Location"
-            }
-          },
-          {
-            "name": "timestamp",
-            "description": "UTC time when the initial point was placed",
-            "schema": {
-                "type": "date-time"
+    {
+      "name": "SendInk",
+      "description": "Send a sketched gesture (stroke) to STP, including the window bounds, map extents, stroke points and intersection context.",
+      "params": [
+        {
+          "name": "pixelBoundsWindow",
+          "description": "Screen bounds of the map viewport in pixels (width x height).",
+          "schema": {
+            "$ref": "#/components/schemas/Size"
+          }
+        },
+        {
+          "name": "topLeftGeoMap",
+          "description": "Top-left map coordinate (latitude/longitude).",
+          "schema": {
+            "$ref": "#/components/schemas/LatLon"
+          }
+        },
+        {
+          "name": "bottomRightGeoMap",
+          "description": "Bottom-right map coordinate (latitude/longitude).",
+          "schema": {
+            "$ref": "#/components/schemas/LatLon"
+          }
+        },
+        {
+          "name": "strokePoints",
+          "description": "Ordered list of coordinates comprising the sketched stroke.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LatLon"
             }
           }
-        ]
-      }
-    ],
-    "components": {
-      "schemas": {
-        "Location": {
-          "required": [
-            "lat",
-            "lon"
-          ],
-          "properties": {
-            "lat": {
-              "type": "number"
-            },
-            "lon": {
-              "type": "number"
+        },
+        {
+          "name": "timeStrokeStart",
+          "description": "ISO 8601 timestamp (UTC) when the first stroke point was placed.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "timeStrokeEnd",
+          "description": "ISO 8601 timestamp (UTC) when the last stroke point was placed.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "intersectedPoids",
+          "description": "Unique identifiers of symbols intersected by the stroke (used for edit operations).",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         }
+      ]
+    },
+    {
+      "name": "SendSpeechRecognition",
+      "description": "Send transcribed speech recognition results to STP (or typed phrases).",
+      "params": [
+        {
+          "name": "recoList",
+          "description": "Hypothesis list returned by a speech recognizer.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ISpeechRecoItem"
+            }
+          }
+        },
+        {
+          "name": "startTime",
+          "description": "ISO 8601 timestamp (UTC) when speech started.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "endTime",
+          "description": "ISO 8601 timestamp (UTC) when speech ended.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreateNewScenario",
+      "description": "Create and load a new scenario, replacing any previous content.",
+      "params": [
+        {
+          "name": "name",
+          "description": "Human-friendly scenario name.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "LoadNewScenario",
+      "description": "Load a scenario from a serialized content string (object_set([...])). Replaces previous content.",
+      "params": [
+        {
+          "name": "content",
+          "description": "Scenario content string in STP's object_set format.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "ImportPlanData",
+      "description": "Import additional content into the current scenario (object_set([...])).",
+      "params": [
+        {
+          "name": "content",
+          "description": "Data to merge into the scenario.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "GetScenarioContent",
+      "description": "Return the current scenario as a serialized string (object_set([...])) suitable for persistence.",
+      "params": [],
+      "result": {
+        "name": "content",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "JoinScenarioSession",
+      "description": "Emit the current scenario objects as if they were received live, allowing a client to rebuild local state.",
+      "params": [],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "SyncScenarioSession",
+      "description": "Load a scenario and update the session state with detected differences.",
+      "params": [
+        {
+          "name": "content",
+          "description": "Scenario content string in STP's object_set format.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "HasActiveScenario",
+      "description": "Check whether STP currently has a loaded scenario.",
+      "params": [],
+      "result": {
+        "name": "active",
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "name": "AddSymbol",
+      "description": "Request addition of a symbol. STP will respond with a SymbolAdded event.",
+      "params": [
+        {
+          "name": "symbol",
+          "description": "Symbol to add.",
+          "schema": {
+            "$ref": "#/components/schemas/StpSymbol"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateSymbol",
+      "description": "Request update of a symbol. STP will respond with a SymbolModified event.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique identifier of the symbol to update.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "symbol",
+          "description": "New symbol properties.",
+          "schema": {
+            "$ref": "#/components/schemas/StpSymbol"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeleteSymbol",
+      "description": "Request deletion of a symbol. STP will respond with a SymbolDeleted event.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique identifier of the symbol to delete.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ChooseAlternate",
+      "description": "Pick an alternate recognition for a symbol/task.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique identifier of the object.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "nBestIndex",
+          "description": "Index of the chosen alternate.",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ImportTaskOrgContent",
+      "description": "Import a Task Organization (TO) from serialized content, using fresh unique IDs.",
+      "params": [
+        {
+          "name": "content",
+          "description": "TO content string (object_set([...])).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "toPoid",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "GetTaskOrgContent",
+      "description": "Return the serialized content of a Task Organization.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "TO unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "content",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "SetDefaultTaskOrg",
+      "description": "Set a TO as the default for its affiliation (used when a COA is selected).",
+      "params": [
+        {
+          "name": "poid",
+          "description": "TO unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "ResetDefaultTaskOrg",
+      "description": "Unset the default TO for an affiliation.",
+      "params": [
+        {
+          "name": "affiliation",
+          "description": "Affiliation whose default TO should be reset.",
+          "schema": {
+            "$ref": "#/components/schemas/Affiliation"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "AddTaskOrg",
+      "description": "Add a Task Organization (ORBAT) definition.",
+      "params": [
+        {
+          "name": "taskOrg",
+          "description": "TO to add.",
+          "schema": {
+            "$ref": "#/components/schemas/StpTaskOrg"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateTaskOrg",
+      "description": "Update an existing TO definition.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "TO unique id.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "taskOrg",
+          "description": "Updated TO.",
+          "schema": {
+            "$ref": "#/components/schemas/StpTaskOrg"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeleteTaskOrg",
+      "description": "Delete a Task Organization.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "TO unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AddTaskOrgUnit",
+      "description": "Add a Task Org Unit (e.g., a military unit within the ORBAT).",
+      "params": [
+        {
+          "name": "toUnit",
+          "description": "Unit to add.",
+          "schema": {
+            "$ref": "#/components/schemas/StpTaskOrgUnit"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateTaskOrgUnit",
+      "description": "Update a Task Org Unit.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unit unique id.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "toUnit",
+          "description": "Updated Unit.",
+          "schema": {
+            "$ref": "#/components/schemas/StpTaskOrgUnit"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeleteTaskOrgUnit",
+      "description": "Delete a Task Org Unit.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unit unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AddTaskOrgRelationship",
+      "description": "Add a relationship between TO units (e.g., command/attached).",
+      "params": [
+        {
+          "name": "toRelationship",
+          "description": "Relationship to add.",
+          "schema": {
+            "$ref": "#/components/schemas/StpTaskOrgRelationship"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateTaskOrgRelationship",
+      "description": "Update a relationship between TO units.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Relationship unique id.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "toRelationship",
+          "description": "Updated relationship.",
+          "schema": {
+            "$ref": "#/components/schemas/StpTaskOrgRelationship"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeleteTaskOrgRelationship",
+      "description": "Delete a relationship between TO units.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Relationship unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AddTask",
+      "description": "Request addition of a task. STP will respond with TaskAdded.",
+      "params": [
+        {
+          "name": "task",
+          "description": "Task to add.",
+          "schema": {
+            "$ref": "#/components/schemas/StpTask"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateTask",
+      "description": "Request update of a task (usually one of the alternates). STP will respond with TaskModified.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Task unique id.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "alternates",
+          "description": "Task alternates to update (usually one updated).",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StpTask"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeleteTask",
+      "description": "Request deletion of a task. STP will respond with TaskDeleted.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Task unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ConfirmTask",
+      "description": "Confirm or unconfirm a task alternate, transitioning UI status between 'confirming' and 'confirmed'.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Task unique id.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "nBestIndex",
+          "description": "Index of the chosen alternate.",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "isConfirmed",
+          "description": "Whether to mark the task as confirmed (default true).",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SetCoaTaskOrg",
+      "description": "Associate a TO with a specific COA or set as global default (if COA unspecified).",
+      "params": [
+        {
+          "name": "toPoid",
+          "description": "TO unique id to associate.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "coaPoid",
+          "description": "COA unique id (optional). If omitted, sets the global default for the TO's affiliation.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "ResetCoaTaskOrg",
+      "description": "Remove TO association from a COA (or global default if COA unspecified).",
+      "params": [
+        {
+          "name": "coaPoid",
+          "description": "COA unique id (optional) to reset.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "ImportCoaContent",
+      "description": "Import a new COA from serialized content, using fresh unique IDs.",
+      "params": [
+        {
+          "name": "content",
+          "description": "COA content string (object_set([...])).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "coaPoid",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "GetCoaContent",
+      "description": "Return the serialized content of a COA.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "COA unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "content",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "SetCurrentCoa",
+      "description": "Select the current COA; subsequent edits and imports apply to this COA.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "COA unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "name": "AddCoa",
+      "description": "Add a COA to the scenario.",
+      "params": [
+        {
+          "name": "coa",
+          "description": "COA to add.",
+          "schema": {
+            "$ref": "#/components/schemas/StpCoa"
+          }
+        }
+      ]
+    },
+    {
+      "name": "UpdateCoa",
+      "description": "Update an existing COA.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "COA unique id.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "coa",
+          "description": "Updated COA.",
+          "schema": {
+            "$ref": "#/components/schemas/StpCoa"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeleteCoa",
+      "description": "Delete a COA from the scenario.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "COA unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SetRole",
+      "description": "Switch the role associated with the current COA (e.g., S2, S3, S4, FSO, ENG). If no COA exists for the role and createIfNone is true, a default COA may be created.",
+      "params": [
+        {
+          "name": "role",
+          "description": "Role to set.",
+          "schema": {
+            "$ref": "#/components/schemas/StpRole"
+          }
+        },
+        {
+          "name": "createIfNone",
+          "description": "If true, create a default COA for the role if none exists (default true).",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
+    }
+  ],
+  "components": {
+    "schemas": {
+      "LatLon": {
+        "description": "Geodetic coordinate (latitude, longitude).",
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "properties": {
+          "lat": {
+            "type": "number",
+            "description": "Latitude in decimal degrees."
+          },
+          "lon": {
+            "type": "number",
+            "description": "Longitude in decimal degrees."
+          }
+        }
+      },
+      "Size": {
+        "description": "Screen-space size (width x height).",
+        "required": [
+          "width",
+          "height"
+        ],
+        "properties": {
+          "width": {
+            "type": "number",
+            "description": "Viewport width in pixels."
+          },
+          "height": {
+            "type": "number",
+            "description": "Viewport height in pixels."
+          }
+        }
+      },
+      "Location": {
+        "description": "Spatial location and geometry used by STP for symbols and gestures.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "enum": [
+              "point",
+              "line",
+              "area",
+              "multipoint"
+            ],
+            "description": "General geometry type."
+          },
+          "width": {
+            "type": "number",
+            "description": "Width of line/area strokes (meters)."
+          },
+          "altitude": {
+            "type": "number",
+            "description": "Altitude (meters)."
+          },
+          "shape": {
+            "type": "string",
+            "description": "Gesture-derived shape classification (e.g., arrowthin, hook)."
+          },
+          "radius": {
+            "type": "number",
+            "description": "Radius around the symbol (meters)."
+          },
+          "coords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LatLon"
+            },
+            "description": "Anchor coordinates, order following MIL-STD-2525D draw rules."
+          },
+          "centroid": {
+            "$ref": "#/components/schemas/LatLon"
+          },
+          "candidatePoids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Symbols intersected by coords (unique STP identifiers)."
+          }
+        }
+      },
+      "ISpeechRecoItem": {
+        "description": "Single speech recognition hypothesis.",
+        "required": [
+          "text",
+          "confidence"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Transcribed text."
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Likelihood/confidence (0..1)."
+          }
+        }
+      },
+      "Sidc": {
+        "description": "2525D/C military code identifiers.",
+        "properties": {
+          "partA": {
+            "type": "string",
+            "description": "SIDC part A (2525D)."
+          },
+          "partB": {
+            "type": "string",
+            "description": "SIDC part B (2525D)."
+          },
+          "partC": {
+            "type": "string",
+            "description": "SIDC part C (2525D)."
+          },
+          "symbolSet": {
+            "type": "string",
+            "description": "2525D symbol set."
+          },
+          "legacy": {
+            "type": "string",
+            "description": "Legacy 2525C SIDC."
+          }
+        }
+      },
+      "DISCode": {
+        "description": "SISO Entity Type (DIS) code used by C2SIM.",
+        "properties": {
+          "category": {
+            "type": "number",
+            "description": "DIS category."
+          },
+          "country": {
+            "type": "string",
+            "description": "DIS country code."
+          },
+          "domain": {
+            "type": "number",
+            "description": "DIS domain."
+          },
+          "extra": {
+            "type": "number",
+            "description": "DIS extra code."
+          },
+          "kind": {
+            "type": "number",
+            "description": "DIS kind."
+          },
+          "specific": {
+            "type": "number",
+            "description": "DIS specific code."
+          },
+          "subcategory": {
+            "type": "number",
+            "description": "DIS subcategory."
+          }
+        }
+      },
+      "Resource": {
+        "description": "C2SIM resource details (name, quantities, DIS code).",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Resource name (e.g., '155mm shells')."
+          },
+          "operationalQuantity": {
+            "type": "number",
+            "description": "Operationally usable quantity."
+          },
+          "disCode": {
+            "$ref": "#/components/schemas/DISCode"
+          },
+          "onHandQuantity": {
+            "type": "number",
+            "description": "Optional current on-hand quantity."
+          },
+          "requiredOnHandQuantity": {
+            "type": "number",
+            "description": "Optional required on-hand quantity."
+          }
+        }
+      },
+      "StpSymbol": {
+        "description": "STP military symbol and common properties.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "description": "Item type identifier (e.g., 'unit', 'equipment', 'tg')."
+          },
+          "poid": {
+            "type": "string",
+            "description": "Unique STP identifier for this symbol."
+          },
+          "parentCoa": {
+            "type": "string",
+            "description": "Unique id of the COA this symbol belongs to."
+          },
+          "creatorRole": {
+            "type": "string",
+            "description": "Role that created the symbol (S2, S3, S4, FSO, ENG)."
+          },
+          "interval": {
+            "description": "Time interval of symbol validity.",
+            "type": "object"
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Recognition confidence score (0..1)."
+          },
+          "alt": {
+            "type": "number",
+            "description": "Alternate index: ranking of this interpretation among hypotheses."
+          },
+          "sidc": {
+            "$ref": "#/components/schemas/Sidc"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "shortDescription": {
+            "type": "string",
+            "description": "Short symbol description; essential distinguishing elements (e.g., designators)."
+          },
+          "description": {
+            "type": "string",
+            "description": "Regular description; name/type plus designators, may omit assumed decorators."
+          },
+          "fullDescription": {
+            "type": "string",
+            "description": "Full description including all relevant decorators."
+          },
+          "affiliation": {
+            "$ref": "#/components/schemas/Affiliation"
+          },
+          "echelon": {
+            "type": "string",
+            "description": "Echelon (e.g., company, battalion, brigade)."
+          },
+          "parent": {
+            "type": "string",
+            "description": "Parent unit designator."
+          },
+          "designator1": {
+            "type": "string",
+            "description": "Primary unit designator (e.g., 'A', '1')."
+          },
+          "designator2": {
+            "type": "string",
+            "description": "Additional designator (e.g., neighbor company indicator)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "anticipated"
+            ],
+            "description": "Operational status of the symbol."
+          },
+          "modifier": {
+            "type": "string",
+            "description": "HQ/Task Force/Installation modifiers."
+          },
+          "strength": {
+            "type": "string",
+            "description": "Strength modifier (reduced/reinforced/etc.)."
+          },
+          "branch": {
+            "type": "string",
+            "description": "Branch, e.g., ground_unit, equipment, installation."
+          },
+          "timeFrom": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start time (UTC) for time-bounded symbols."
+          },
+          "timeTo": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End time (UTC) for time-bounded symbols."
+          },
+          "altitude": {
+            "type": "number",
+            "description": "Altitude (meters)."
+          },
+          "minAltitude": {
+            "type": "number",
+            "description": "Minimum altitude (meters)."
+          },
+          "maxAltitude": {
+            "type": "number",
+            "description": "Maximum altitude (meters)."
+          },
+          "toUnitPoid": {
+            "type": "string",
+            "description": "If created from a TO, the source Task Org Unit id."
+          },
+          "federate": {
+            "type": "string",
+            "description": "C2SIM federate this entity is assigned to."
+          },
+          "disCode": {
+            "$ref": "#/components/schemas/DISCode"
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            },
+            "description": "Associated C2SIM resources for this symbol."
+          }
+        }
+      },
+      "StpTaskOrg": {
+        "description": "Task Organization (ORBAT) definition.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "enum": [
+              "task_org"
+            ],
+            "description": "Item type identifier for Task Org."
+          },
+          "poid": {
+            "type": "string",
+            "description": "Unique id of the Task Org (TO)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable TO name (e.g., '3-3')."
+          },
+          "affiliation": {
+            "$ref": "#/components/schemas/Affiliation"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Version timestamp (UTC)."
+          }
+        }
+      },
+      "StpTaskOrgUnit": {
+        "description": "Task Org Unit, extends StpSymbol with unit-specific properties.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StpSymbol"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "fsTYPE": {
+                "type": "string",
+                "enum": [
+                  "task_org_unit"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "description": "Unit name; may include grouping/alternatives for speech."
+              },
+              "speechPhrases": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "Phrase usable for speech placement/selection."
+                },
+                "description": "Speech phrases derived from the unit name to improve speech interaction."
+              },
+              "unitType": {
+                "type": "string",
+                "description": "Functional type (e.g., MECHANIZED INFANTRY)."
+              },
+              "info": {
+                "type": "string",
+                "description": "Additional notes or metadata about the unit."
+              },
+              "parentTO": {
+                "type": "string",
+                "description": "Unique id of the parent Task Org."
+              }
+            }
+          }
+        ]
+      },
+      "CommandRelationship": {
+        "type": "string",
+        "description": "Command relationship between parent and child units (e.g., OPCON, TACON, Direct Support).",
+        "enum": [
+          "none",
+          "organic",
+          "attached",
+          "assigned",
+          "adcon",
+          "opcon",
+          "tacon",
+          "ds",
+          "r",
+          "gsr",
+          "gs"
+        ]
+      },
+      "StpTaskOrgRelationship": {
+        "description": "Relationship between TO units.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "enum": [
+              "task_org_relationship"
+            ]
+          },
+          "poid": {
+            "type": "string",
+            "description": "Unique id of this relationship."
+          },
+          "parent": {
+            "type": "string",
+            "description": "Unique id of the parent unit."
+          },
+          "child": {
+            "type": "string",
+            "description": "Unique id of the child unit."
+          },
+          "relationship": {
+            "$ref": "#/components/schemas/CommandRelationship"
+          },
+          "isMTOE": {
+            "type": "boolean",
+            "description": "True if this comes from a MTOE (Table of Organization and Equipment)."
+          },
+          "parentTO": {
+            "type": "string",
+            "description": "Unique id of the Task Org this relationship belongs to."
+          }
+        }
+      },
+      "MovementFeatures": {
+        "description": "Task movement features.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "enum": [
+              "movement_features"
+            ]
+          },
+          "movement": {
+            "type": "boolean",
+            "description": "True if the task involves movement."
+          },
+          "movesTo": {
+            "type": "string",
+            "description": "Destination or target identifier for movement."
+          }
+        }
+      },
+      "TaskWhat": {
+        "type": "string",
+        "description": "Task objective (enumerated in STP: e.g., secure, seize, delay)."
+      },
+      "TaskHow": {
+        "type": "string",
+        "description": "Method or approach (enumerated in STP: e.g., defend, attack, cordon_and_search)."
+      },
+      "TaskWhy": {
+        "type": "string",
+        "description": "Purpose/intent (enumerated in STP: e.g., enable, protect, prevent)."
+      },
+      "TaskROE": {
+        "type": "string",
+        "enum": [
+          "not_specified",
+          "hold",
+          "tight",
+          "free"
+        ]
+      },
+      "StpTask": {
+        "description": "STP task definition and common properties.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "description": "Item type identifier for tasks."
+          },
+          "poid": {
+            "type": "string",
+            "description": "Unique id of the task."
+          },
+          "parentCoa": {
+            "type": "string",
+            "description": "Unique id of the COA this task belongs to."
+          },
+          "creatorRole": {
+            "type": "string",
+            "description": "Role that created the task (S2, S3, S4, FSO, ENG)."
+          },
+          "interval": {
+            "type": "object",
+            "description": "Temporal interval of task execution."
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Recognition confidence (0..1)."
+          },
+          "alt": {
+            "type": "number",
+            "description": "Alternate index in the set of task hypotheses."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable task description."
+          },
+          "who": {
+            "type": "string",
+            "description": "Unit executing the task (unique id)."
+          },
+          "supported": {
+            "type": "string",
+            "description": "Supported unit (unique id), if applicable."
+          },
+          "tgs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated Tactical Graphics unique ids."
+          },
+          "name": {
+            "type": "string",
+            "description": "Task type/name (e.g., 'AssaultObjectiveOnAxis')."
+          },
+          "how": {
+            "$ref": "#/components/schemas/TaskHow"
+          },
+          "what": {
+            "$ref": "#/components/schemas/TaskWhat"
+          },
+          "why": {
+            "$ref": "#/components/schemas/TaskWhy"
+          },
+          "rulesOfEngagement": {
+            "$ref": "#/components/schemas/TaskROE"
+          },
+          "startTime": {
+            "type": "integer",
+            "description": "Start time slot index."
+          },
+          "endTime": {
+            "type": "integer",
+            "description": "End time slot index."
+          },
+          "speech": {
+            "type": "string",
+            "description": "Associated speech transcript, if applicable."
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of the task description/speech."
+          },
+          "taskStatus": {
+            "type": "string",
+            "enum": [
+              "implicit",
+              "explicit"
+            ],
+            "description": "Whether the task was generated implicitly or explicitly."
+          },
+          "uiStatus": {
+            "type": "string",
+            "enum": [
+              "confirming",
+              "confirmed"
+            ],
+            "description": "UI confirmation state for the task."
+          },
+          "prob": {
+            "type": "number",
+            "description": "Task interpretation likelihood (0..1)."
+          },
+          "movementFeatures": {
+            "$ref": "#/components/schemas/MovementFeatures"
+          }
+        }
+      },
+      "StpCoa": {
+        "description": "Course of Action (COA) definition.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "enum": [
+              "coa"
+            ],
+            "description": "Item type identifier for COA."
+          },
+          "name": {
+            "type": "string",
+            "description": "COA name."
+          },
+          "poid": {
+            "type": "string",
+            "description": "Unique id of the COA."
+          },
+          "affiliation": {
+            "$ref": "#/components/schemas/Affiliation"
+          },
+          "creatorRole": {
+            "type": "string",
+            "description": "Role that created the COA (S2, S3, S4, FSO, ENG)."
+          },
+          "state": {
+            "$ref": "#/components/schemas/TaskOrgState",
+            "description": "State details associated with this COA."
+          }
+        }
+      },
+      "TaskOrgState": {
+        "description": "State details associated with a TO at a point in time.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "enum": [
+              "task_org_state"
+            ],
+            "description": "Item type identifier for task org state."
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Version date/time (UTC)."
+          },
+          "userRole": {
+            "type": "string",
+            "description": "Role associated with this state snapshot."
+          }
+        }
+      },
+      "StpRole": {
+        "type": "string",
+        "enum": [
+          "S2",
+          "S3",
+          "S4",
+          "FSO",
+          "ENG"
+        ],
+        "description": "STP roles."
+      },
+      "Affiliation": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "unknown",
+          "assumedfriend",
+          "friend",
+          "neutral",
+          "suspected",
+          "hostile"
+        ],
+        "description": "Affiliation used for Symbols, COAs and TOs."
       }
     }
   }
-  
+}
