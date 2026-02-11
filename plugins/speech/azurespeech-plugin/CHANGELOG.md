@@ -1,5 +1,8 @@
 # Sketch-Thru-Plan Microsfot Cognitive Services Speech Plugin Change Log
 
+## Version 0.3.2
+- Updated package versions
+
 ## Version 0.3.1
 - Added `setPhraseList()` method that accepts an array of custom words/sentences that are given higher interpretation priority
 

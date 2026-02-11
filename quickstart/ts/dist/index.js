@@ -1020,6 +1020,7 @@
                 throw new Error("Html page must contain a 'map' div");
             }
             const { Map } = await google.maps.importLibrary("maps");
+            await google.maps.importLibrary("marker");
             this.map = new Map(mapDiv, {
                 zoom: this.zoomLevel,
                 center: { lat: this.mapCenter.lat, lng: this.mapCenter.lon },
@@ -1031,22 +1032,16 @@
                 let rend = feature.getProperty('rendering');
                 if (rend) {
                     for (let i = 0; i < rend.length; i++) {
-                        let shape = rend[i].shape.map(item => { return [item.x, item.y]; }).flat();
-                        let marker = new google.maps.Marker({
+                        const img = document.createElement('img');
+                        img.src = 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg;
+                        img.style.transform = `translate(${-rend[i].anchor.x}px, ${-rend[i].anchor.y}px)`;
+                        img.style.transformOrigin = 'top left';
+                        const marker = new google.maps.marker.AdvancedMarkerElement({
                             map: this.map,
-                            icon: {
-                                url: 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg,
-                                anchor: new google.maps.Point(rend[i].anchor.x, rend[i].anchor.y)
-                            },
-                            shape: {
-                                type: 'poly',
-                                coords: shape
-                            },
                             position: { lat: rend[i].position.lat, lng: rend[i].position.lon },
+                            content: img,
+                            title: rend[i].title ?? undefined,
                         });
-                        if (rend[i].title) {
-                            marker.setTitle(rend[i].title);
-                        }
                         marker.addListener("click", () => {
                             this.onSelection?.call(this, feature.getProperty('symbol'));
                         });
@@ -1135,9 +1130,9 @@
             let feature = this.map.data.getFeatureById(poid);
             if (feature) {
                 if (this.assets.has(poid)) {
-                    let markers = this.assets.get(poid);
+                    const markers = this.assets.get(poid);
                     for (let i = 0; i < markers.length; i++) {
-                        markers[i].setMap(null);
+                        markers[i].map = null;
                     }
                 }
                 this.map.data.remove(feature);

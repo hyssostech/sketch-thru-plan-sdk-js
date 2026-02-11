@@ -1,9 +1,13 @@
 {
     "name": "@hyssostech/websockets-plugin",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Websockets connector to Sketch-thru-Plan services",
     "main": "dist/stpconnector-bundle-min.js",
     "types": "dist/stpconnector-bundle.d.ts",
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "clean": "rimraf dist build",
         "clean:docs": "rimraf docs",
@@ -14,7 +18,10 @@
         "bundle:esm": "rollup build/websockets-plugin/src/stpconnector.js --file dist/stpconnector-bundle.esm.js --format esm",
         "bundle:dts": "rollup build/websockets-plugin/src/stpconnector.d.ts --file dist/stpconnector.d.ts --format es --plugin rollup-plugin-dts",
         "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/stpconnector-bundle-min.js -- dist/stpconnector-bundle.js",
-        "fix:format": "prettier --config ../../.prettierrc src --write"
+        "fix:format": "prettier --config ../../.prettierrc src --write",
+        "publish": "npm publish",
+        "prepublishOnly": "npm run build",
+        "publish:dry": "npm run build && npm pack"
     },
     "repository": {
         "type": "git",
@@ -23,13 +30,13 @@
     "author": "Hyssos Tech",
     "license": "MIT",
     "devDependencies": {
-        "copyfiles": "^2.4.0",
-        "prettier": "^2.1.2",
-        "rimraf": "^3.0.2",
-        "rollup": "^2.32.1",
-        "rollup-plugin-dts": "^1.4.13",
-        "terser": "^5.3.8",
-        "typedoc": "^0.24.8",
-        "typescript": "^4.0.5"
+        "copyfiles": "^2.4.1",
+        "prettier": "^3.8.1",
+        "rimraf": "^6.1.2",
+        "rollup": "^4.57.1",
+        "rollup-plugin-dts": "^6.3.0",
+        "terser": "^5.46.0",
+        "typedoc": "^0.28.16",
+        "typescript": "^5.9.3"
     }
 }

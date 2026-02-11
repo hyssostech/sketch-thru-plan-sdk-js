@@ -1,6 +1,6 @@
 {
   "name": "ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sketch-thru-Plan typescript quickstart",
   "main": "./dist/index.js",
   "module": "./dist/index.min.js",
@@ -32,10 +32,9 @@
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.2",
-    "@hyssostech/azurespeech-plugin": "^0.2.0",
+    "@hyssostech/azurespeech-plugin": "^0.3.2",
     "@types/geojson": "^7946.0.11",
-    "@types/googlemaps": "^3.43.3",
     "milsymbol": "^2.2.0",
-    "sketch-thru-plan-sdk": "^0.4.1"
+    "sketch-thru-plan-sdk": "^0.6.12"
   }
 }

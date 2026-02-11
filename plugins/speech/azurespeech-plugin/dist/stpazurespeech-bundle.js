@@ -4,8 +4,7 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.StpAS = {}, global.SpeechSDK));
 })(this, (function (exports, SpeechSDK) { 'use strict';
 
-    function _interopNamespace(e) {
-        if (e && e.__esModule) return e;
+    function _interopNamespaceDefault(e) {
         var n = Object.create(null);
         if (e) {
             Object.keys(e).forEach(function (k) {
@@ -18,11 +17,11 @@
                 }
             });
         }
-        n["default"] = e;
+        n.default = e;
         return Object.freeze(n);
     }
 
-    var SpeechSDK__namespace = /*#__PURE__*/_interopNamespace(SpeechSDK);
+    var SpeechSDK__namespace = /*#__PURE__*/_interopNamespaceDefault(SpeechSDK);
 
     class AzureSpeechRecognizer {
         constructor(speechSubscriptionKey, serviceRegion, endPoint, audioConfig, recoLanguage) {
@@ -193,7 +192,5 @@
     }
 
     exports.AzureSpeechRecognizer = AzureSpeechRecognizer;
-
-    Object.defineProperty(exports, '__esModule', { value: true });
 
 }));

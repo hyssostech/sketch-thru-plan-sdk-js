@@ -307,9 +307,9 @@ async function start(){
                 // TODO: retrieve content from persistent storage instead of 'content' variable
                 // TODO: display some sort of progress indicator/wait cursor
                 let content = `object_set([
-                    [fsTYPE: task_org, name: '3-3 short', affiliation: friend, poid: idR47DS5VCGL9ZE, date: '2023-05-22T13:40:00Z'],
-                    [fsTYPE: task_org_unit, name: 'A/2-69', designator1: 'A', unit_parent: '2-69', symbol_id: 'SFGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: company, poid: 'uuid7e99345a-f15a-4939-b963-0b83b1ec40f0'],
-                    [fsTYPE: task_org_unit, name: 'PINEAPPLES | [ROYAL] PINEAPPLES', designator1: '1', unit_parent: 'A/2-69', symbol_id: 'SFGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: platoon, poid: 'uuid5336c5d5-9182-4846-bdd8-5c517869c274'],
+                    [fsTYPE: task_org, name: '2-69 short', affiliation: friend, poid: idR47DS5VCGL9ZE, date: '2023-05-22T13:40:00Z'],
+                    [fsTYPE: task_org_unit, name: 'ALPHA TWO SIX NINE', designator1: 'A', unit_parent: '2-69', symbol_id: 'SFGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: company, poid: 'uuid7e99345a-f15a-4939-b963-0b83b1ec40f0'],
+                    [fsTYPE: task_org_unit, name: '(ONE | FIRST) [ROYAL] IRISH [GUARDS]', designator1: '1', unit_parent: 'A/2-69', symbol_id: 'SFGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL9ZE), affiliation: friend, echelon: platoon, poid: 'uuid5336c5d5-9182-4846-bdd8-5c517869c274'],
                     [fsTYPE: task_org_relationship, poid: idPNPMCKGE2TPLF, affiliation: friend, parent: poid(uuid7e99345a-f15a-4939-b963-0b83b1ec40f0), relationship: organic, child: poid(uuid5336c5d5-9182-4846-bdd8-5c517869c274), parent_poid: poid(idR47DS5VCGL9ZE)],
                 ])`;
                 toFriend = await stpsdk.importTaskOrgContent(content);

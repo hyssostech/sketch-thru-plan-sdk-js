@@ -7,7 +7,7 @@
   
   /**
    * Implements speech recognition services using Azure Speech-to-text
-   * @implements ISpeechRecognizer - {@link ISpeechRecognizer}
+    * @see {@link ISpeechRecognizer}
    */
   export class AzureSpeechRecognizer implements ISpeechRecognizer {
     speechSubscriptionKey: string;

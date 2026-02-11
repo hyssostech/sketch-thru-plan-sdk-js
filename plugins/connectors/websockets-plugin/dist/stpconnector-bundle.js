@@ -206,7 +206,7 @@
     }
 
     exports.StpWebSocketsConnector = StpWebSocketsConnector;
-    exports["default"] = StpWebSocketsConnector;
+    exports.default = StpWebSocketsConnector;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

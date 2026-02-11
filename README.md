@@ -4,7 +4,7 @@ This project hosts developer resources related to Hyssos Tech Sketch-Thru-Plan N
 
 ## Prerequisites
 
-* Sketch-Thru-Plan (STP) Engine (v5.8.7+) running on an accessible server
+* Sketch-Thru-Plan (STP) Engine (v5.9.9+) running on an accessible Windows server or locally (for development)
 * Most samples will require a PC or Mac with a working microphone, mouse or stylus
 
 ## Npm packages

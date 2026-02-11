@@ -155,17 +155,16 @@ export class GoogleMap implements IStpMap {
             let rend: IGeoSvg[] | null = feature.getProperty('rendering') as IGeoSvg[];
             if (rend) {
                 for (let i: number = 0; i < rend.length; i++) {
-                    let shape = rend[i].shape.map(item => { return [item.x, item.y]; }).flat();
+                    // Flatten shape points into [x1, y1, x2, y2, ...] as required by google.maps.MarkerShape
+                    const shape: number[] = rend[i].shape.flatMap(item => [item.x, item.y]);
+                    const iconShape: google.maps.MarkerShape = { type: 'poly', coords: shape };
                     let marker = new google.maps.Marker({
                         map: this.map,
                         icon: {
                             url: 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg,
                             anchor: new google.maps.Point(rend[i].anchor.x, rend[i].anchor.y)
                         },
-                        shape: {
-                            type: 'poly',
-                            coords: shape as google.maps.MarkerShapePolyCoords
-                        },
+                        shape: iconShape,
                         position: { lat: rend[i].position.lat, lng: rend[i].position.lon },
                     });
                     if (rend[i].title) {

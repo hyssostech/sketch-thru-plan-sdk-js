@@ -1,9 +1,9 @@
 # STP Plugin: Websockets connector
 
-The Sketch-thru-Plan (STP) recognizer requires a connector configuration during initialization. This connection is used by the recognizer to send and receive messages/events to/from STP (see the [quicktstarts](../../quickstart)).
+The Sketch-thru-Plan (STP) recognizer requires a connector configuration during initialization. This connection is used by the recognizer to send and receive messages/events to/from STP (see the [quickstarts](../../../quickstart/README.md)).
 
-This plugin implements a Websockets-based connector. The STP server provides a native publish/subscribe mechanism, based on the Open Agent Architecture (OAA) framework, but other Websockets based mechanisms could be used on the server side as well.
-
+This plugin implements a Websockets-based connector. The STP server provides a native publish/subscribe mechanism, based on the Open Agent Architecture (OAA) framework, but other Websocket-based mechanisms could be used on the server side as well.
+n
 ## Accessing the plugin functionality
 
 You can get the plugin from npm:
@@ -45,12 +45,12 @@ const stpConn = new StpWebSocketsConnector("wss://server.com:port");
 
 ## Quickstart example
 
-This plugin is used in the [quicktstarts](../../../quickstart) to provide the main SDK object the means to communicate with STP.  
+This plugin is used in the [quickstart](../../../quickstart/README.md) to provide the main SDK object the means to communicate with STP.  
 
 
 ## Building the project
 
-The repository includes a pre-built [`dist`](dist) folder that can be used directly for testing. If changes are made to the sample and there is a need to rebuild, run:
+The repository includes a pre-built `dist` folder that can be used directly for testing. If changes are made to the sample and there is a need to rebuild, run:
 
 ```
 npm install

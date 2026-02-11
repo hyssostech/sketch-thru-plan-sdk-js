@@ -1,7 +1,8 @@
 interface IStpConnector {
+    baseName?: string;
     name: string | undefined;
     isConnected: boolean;
-    connect(serviceName: string, solvables: string[], timeout?: number, machineId?: string, sessionId?: string): Promise<string | undefined>;
+    connect(serviceName: string, solvables: string[], timeout?: number, machineId?: string | null, sessionId?: string | null): Promise<string | undefined>;
     disconnect(timeout?: number): Promise<void>;
     inform(message: string, timeout?: number): Promise<void>;
     request(message: string, timeout?: number): Promise<any>;

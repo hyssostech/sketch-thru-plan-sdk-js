@@ -18,7 +18,10 @@
       "test"
     ],
     "typedocOptions": {  
-      "entryPoints": ["./src/stpazurespeech.ts"],
+      "entryPoints": [
+        "./src/stpazurespeech.ts",
+        "../interfaces/ISpeechRecognizer.ts"
+      ],
       "readme": "README.md",
       "out": "docs",
       "excludePrivate": "true",
