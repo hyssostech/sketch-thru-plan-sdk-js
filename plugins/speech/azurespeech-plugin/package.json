@@ -9,6 +9,9 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "overrides": {
+    "rimraf": "^6.1.2"
+  },
   "scripts": {
     "clean": "rimraf dist build",
     "clean:docs": "rimraf docs",
