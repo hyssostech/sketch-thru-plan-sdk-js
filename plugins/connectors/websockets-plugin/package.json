@@ -30,7 +30,6 @@
     "author": "Hyssos Tech",
     "license": "MIT",
     "devDependencies": {
-        "copyfiles": "^2.4.1",
         "prettier": "^3.8.1",
         "rimraf": "^6.1.2",
         "rollup": "^4.57.1",
