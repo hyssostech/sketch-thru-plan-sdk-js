@@ -1,4 +1,3 @@
-/// <reference types="google.maps" />
 import { LatLon, Size, StpSymbol } from "sketch-thru-plan-sdk";
 type InfoHandlers = {
     selector: string;
@@ -28,7 +27,7 @@ export declare class GoogleMap implements IStpMap {
     strokeEnd: string;
     strokePoly: google.maps.Polyline | undefined;
     moveListener: google.maps.MapsEventListener | undefined;
-    assets: Map<string, Array<google.maps.marker.AdvancedMarkerElement>>;
+    assets: Map<string, Array<google.maps.Marker>>;
     constructor(apiKey: string, mapDivId: string, mapCenter: LatLon, zoomLevel: number);
     load: () => Promise<void>;
     initMap(): Promise<void>;

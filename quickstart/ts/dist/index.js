@@ -1,5 +1,24 @@
-(function (require$$0) {
+(function (SpeechSDK) {
     'use strict';
+
+    function _interopNamespaceDefault(e) {
+        var n = Object.create(null);
+        if (e) {
+            Object.keys(e).forEach(function (k) {
+                if (k !== 'default') {
+                    var d = Object.getOwnPropertyDescriptor(e, k);
+                    Object.defineProperty(n, k, d.get ? d : {
+                        enumerable: true,
+                        get: function () { return e[k]; }
+                    });
+                }
+            });
+        }
+        n.default = e;
+        return Object.freeze(n);
+    }
+
+    var SpeechSDK__namespace = /*#__PURE__*/_interopNamespaceDefault(SpeechSDK);
 
     function rewind(gj, outer) {
         let type = gj && gj.type, i;
@@ -52,44 +71,52 @@
         StpMessageLevel["Info"] = "Info";
         StpMessageLevel["Debug"] = "Debug";
     })(StpMessageLevel || (StpMessageLevel = {}));
+    var StpRole;
+    (function (StpRole) {
+        StpRole["s2"] = "S2";
+        StpRole["s3"] = "S3";
+        StpRole["s4"] = "S4";
+        StpRole["fso"] = "FSO";
+        StpRole["eng"] = "ENG";
+    })(StpRole || (StpRole = {}));
     class StpItem {
     }
     class StpSymbol extends StpItem {
         asGeoJSON() {
-            var _a, _b, _c, _d, _e, _f;
             if (this.location == undefined ||
                 this.location.coords == undefined ||
-                ((_a = this.location) === null || _a === void 0 ? void 0 : _a.coords.length) == 0) {
+                this.location?.coords.length == 0) {
                 throw new Error('Coordinates are undefined or empty');
             }
             let geom;
-            if (((_b = this.location) === null || _b === void 0 ? void 0 : _b.fsTYPE) === 'point') {
+            if (this.location?.fsTYPE === 'point') {
                 geom = {
                     type: 'Point',
                     coordinates: [this.location.coords[0].lon, this.location.coords[0].lat]
                 };
             }
-            else if (((_c = this.location) === null || _c === void 0 ? void 0 : _c.fsTYPE) === 'line') {
+            else if (this.location?.fsTYPE === 'line') {
                 geom = {
                     type: 'LineString',
                     coordinates: this.location.coords.map((item) => [item.lon, item.lat])
                 };
             }
-            else if (((_d = this.location) === null || _d === void 0 ? void 0 : _d.fsTYPE) === 'area') {
+            else if (this.location?.fsTYPE === 'area') {
                 geom = {
                     type: 'Polygon',
                     coordinates: [this.location.coords.map((item) => [item.lon, item.lat])]
                 };
                 geom = rewind(geom, false);
             }
-            else if (((_e = this.location) === null || _e === void 0 ? void 0 : _e.fsTYPE) === 'multipoint') {
+            else if (this.location?.fsTYPE === 'multipoint') {
                 geom = {
                     type: 'MultiPoint',
                     coordinates: this.location.coords.map((item) => [item.lon, item.lat])
                 };
             }
             else {
-                throw new Error('Expected "point", "line", "area", or "multipoint" geometry type. Got: ' + ((_f = this.location) === null || _f === void 0 ? void 0 : _f.fsTYPE));
+                throw new Error('Expected "point", "line", "area", or "multipoint" geometry type. Got: ' +
+                    this.location?.fsTYPE);
             }
             let symbolGJ = {
                 type: 'Feature',
@@ -102,6 +129,170 @@
             return symbolGJ;
         }
     }
+    class StpTaskOrg {
+    }
+    class StpTaskOrgUnit extends StpSymbol {
+    }
+    class StpTaskOrgRelationship {
+    }
+    var CommandRelationship;
+    (function (CommandRelationship) {
+        CommandRelationship["None"] = "none";
+        CommandRelationship["Organic"] = "organic";
+        CommandRelationship["Attached"] = "attached";
+        CommandRelationship["Assigned"] = "assigned";
+        CommandRelationship["AdCon"] = "adcon";
+        CommandRelationship["OpCon"] = "opcon";
+        CommandRelationship["TaCon"] = "tacon";
+        CommandRelationship["DirectSupport"] = "ds";
+        CommandRelationship["Reinforcing"] = "r";
+        CommandRelationship["GeneralSupportReinforcing"] = "gsr";
+        CommandRelationship["GeneralSupport"] = "gs";
+    })(CommandRelationship || (CommandRelationship = {}));
+    class StpTask extends StpItem {
+    }
+    class StpCoa {
+    }
+    var TaskWhat;
+    (function (TaskWhat) {
+        TaskWhat["NotSpecified"] = "not_specified";
+        TaskWhat["AdvisePolice"] = "advise_police";
+        TaskWhat["Ambush"] = "ambush";
+        TaskWhat["AssignResponsibility"] = "assign_responsibility";
+        TaskWhat["Block"] = "block";
+        TaskWhat["BombAttack"] = "bomb_attack";
+        TaskWhat["Breach"] = "breach";
+        TaskWhat["Bypass"] = "bypass";
+        TaskWhat["Clear"] = "clear";
+        TaskWhat["CoerciveRecruiting"] = "coercive_recruiting";
+        TaskWhat["CollectCasualties"] = "collect_casualties";
+        TaskWhat["CollectCivilians"] = "collect_civilians";
+        TaskWhat["CollectPrisoners"] = "collect_prisoners";
+        TaskWhat["ConductAmbush"] = "conduct_ambush";
+        TaskWhat["ConductAviatonAmbush"] = "conduct_aviaton_ambush";
+        TaskWhat["ConductBilat"] = "conduct_bilat";
+        TaskWhat["ConductGroupEngagement"] = "conduct_group_engagement";
+        TaskWhat["ConductRaid"] = "conduct_raid";
+        TaskWhat["ConductTcpOperation"] = "conduct_tcp_operation";
+        TaskWhat["ConstituteReserve"] = "constitute_reserve";
+        TaskWhat["Convoy"] = "convoy";
+        TaskWhat["Defeat"] = "defeat";
+        TaskWhat["Delay"] = "delay";
+        TaskWhat["DeliverLeafletPsyop"] = "deliver_leaflet_psyop";
+        TaskWhat["Demonstrate"] = "demonstrate";
+        TaskWhat["Destroy"] = "destroy";
+        TaskWhat["Disrupt"] = "disrupt";
+        TaskWhat["DistributeFood"] = "distribute_food";
+        TaskWhat["Emplace"] = "emplace";
+        TaskWhat["EquipPolice"] = "equip_police";
+        TaskWhat["EscortConvoy"] = "escort_convoy";
+        TaskWhat["EvacuateCasualties"] = "evacuate_casualties";
+        TaskWhat["EvacuateCivilians"] = "evacuate_civilians";
+        TaskWhat["EvacuatePrisoners"] = "evacuate_prisoners";
+        TaskWhat["Fix"] = "fix";
+        TaskWhat["Follow"] = "follow";
+        TaskWhat["FollowAndAssume"] = "follow_and_assume";
+        TaskWhat["FollowAndSupport"] = "follow_and_support";
+        TaskWhat["Halt"] = "halt";
+        TaskWhat["HarrassmentFires"] = "harrassment_fires";
+        TaskWhat["HouseToHousePsyop"] = "house_to_house_psyop";
+        TaskWhat["IedAttack"] = "ied_attack";
+        TaskWhat["Limit"] = "limit";
+        TaskWhat["Looting"] = "looting";
+        TaskWhat["MaintainHide"] = "maintain_hide";
+        TaskWhat["MaintainOutpost"] = "maintain_outpost";
+        TaskWhat["Move"] = "move";
+        TaskWhat["Neutralize"] = "neutralize";
+        TaskWhat["Observe"] = "observe";
+        TaskWhat["Occupy"] = "occupy";
+        TaskWhat["Patrol"] = "patrol";
+        TaskWhat["Penetrate"] = "penetrate";
+        TaskWhat["PositionSniper"] = "position_sniper";
+        TaskWhat["PriorityOfFires"] = "priority_of_fires";
+        TaskWhat["ProvideMedicalServices"] = "provide_medical_services";
+        TaskWhat["ProvideService"] = "provide_service";
+        TaskWhat["Receive"] = "receive";
+        TaskWhat["Reconstruction"] = "reconstruction";
+        TaskWhat["RecruitPolice"] = "recruit_police";
+        TaskWhat["Refuel"] = "refuel";
+        TaskWhat["RegulateTraffic"] = "regulate_traffic";
+        TaskWhat["Reinforce"] = "reinforce";
+        TaskWhat["Release"] = "release";
+        TaskWhat["Resupply"] = "resupply";
+        TaskWhat["Retain"] = "retain";
+        TaskWhat["Rioting"] = "rioting";
+        TaskWhat["Secure"] = "secure";
+        TaskWhat["SeekRefuge"] = "seek_refuge";
+        TaskWhat["Seize"] = "seize";
+        TaskWhat["SniperAttack"] = "sniper_attack";
+        TaskWhat["Supply"] = "supply";
+        TaskWhat["SupplyMunitions"] = "supply_munitions";
+        TaskWhat["TrainPolice"] = "train_police";
+        TaskWhat["TransferMunitions"] = "transfer_munitions";
+        TaskWhat["TrashRemoval"] = "trash_removal";
+        TaskWhat["Turn"] = "turn";
+        TaskWhat["TvRadioPsyop"] = "tv_radio_psyop";
+        TaskWhat["WaterDelivery"] = "water_delivery";
+        TaskWhat["WillfulRecruiting"] = "willful_recruiting";
+    })(TaskWhat || (TaskWhat = {}));
+    var TaskHow;
+    (function (TaskHow) {
+        TaskHow["NotSpecified"] = "not_specified";
+        TaskHow["AirAssault"] = "air_assault";
+        TaskHow["AirReconnaissance"] = "air_reconnaissance";
+        TaskHow["AreaDefense"] = "area_defense";
+        TaskHow["Assault"] = "assault";
+        TaskHow["Attack"] = "attack";
+        TaskHow["AttackInZone"] = "attack_in_zone";
+        TaskHow["AttackByFire"] = "attack_by_fire";
+        TaskHow["CerpFunding"] = "cerp_funding";
+        TaskHow["Civilian"] = "civilian";
+        TaskHow["Contracting"] = "contracting";
+        TaskHow["CordonAndSearch"] = "cordon_and_search";
+        TaskHow["Counterattack"] = "counterattack";
+        TaskHow["CounterattackByFire"] = "counterattack_by_fire";
+        TaskHow["Cover"] = "cover";
+        TaskHow["Defend"] = "defend";
+        TaskHow["DeliverServices"] = "deliver_services";
+        TaskHow["Guard"] = "guard";
+        TaskHow["InformationOperations"] = "information_operations";
+        TaskHow["Insurgent"] = "insurgent";
+        TaskHow["MobileDefense"] = "mobile_defense";
+        TaskHow["MovingScreen"] = "moving_screen";
+        TaskHow["NgoOperation"] = "ngo_operation";
+        TaskHow["PassageOfLines"] = "passage_of_lines";
+        TaskHow["Screen"] = "screen";
+        TaskHow["SearchAndAttack"] = "search_and_attack";
+        TaskHow["Security"] = "security";
+        TaskHow["SecurityForceAssistance"] = "security_force_assistance";
+        TaskHow["SupportByFire"] = "support_by_fire";
+        TaskHow["Withdrawal"] = "withdrawal";
+    })(TaskHow || (TaskHow = {}));
+    var TaskWhy;
+    (function (TaskWhy) {
+        TaskWhy["Unknown"] = "unknown";
+        TaskWhy["Allow"] = "allow";
+        TaskWhy["Cause"] = "cause";
+        TaskWhy["Create"] = "create";
+        TaskWhy["Deceive"] = "deceive";
+        TaskWhy["Deny"] = "deny";
+        TaskWhy["Divert"] = "divert";
+        TaskWhy["Enable"] = "enable";
+        TaskWhy["Envelop"] = "envelop";
+        TaskWhy["Influence"] = "influence";
+        TaskWhy["Open"] = "open";
+        TaskWhy["Prevent"] = "prevent";
+        TaskWhy["Protect"] = "protect";
+        TaskWhy["Support"] = "support";
+        TaskWhy["Surprise"] = "surprise";
+    })(TaskWhy || (TaskWhy = {}));
+    var TaskROE;
+    (function (TaskROE) {
+        TaskROE["NotSpecified"] = "not_specified";
+        TaskROE["Hold"] = "hold";
+        TaskROE["Tight"] = "tight";
+        TaskROE["Free"] = "free";
+    })(TaskROE || (TaskROE = {}));
     class LatLon {
         constructor(lat, lon) {
             this.lat = lat;
@@ -121,34 +312,73 @@
         }
     }
 
-    var __awaiter$1 = function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
+    class StpC2SIMProxy {
+        constructor(stpsdk, options) {
+            this.stpsdk = stpsdk;
+            this.options = options;
+            stpsdk.onSymbolReport = (poid, symbol) => {
+                if (this.onSymbolReport) {
+                    this.onSymbolReport(poid, symbol);
+                }
+            };
+        }
+        async exportPlanDataToC2SIMServer(name, dataType, affiliation, coaPoids, timeout) {
+            let content = await this.getC2SIMContent(name, dataType, affiliation, coaPoids, timeout);
+            if (content) {
+                await this.pushC2SIMContent(content, dataType, timeout);
+            }
+        }
+        async importInitializationFromC2SIMServer(timeout) {
+            let content = await this.pullC2SIMInitialization(timeout);
+            let stpContent = await this.convertC2SIMContent(content, timeout);
+            await this.stpsdk.syncScenarioSession(stpContent, timeout);
+        }
+        async getC2SIMContent(name, dataType, affiliation, coaPoids, timeout) {
+            return this.stpsdk.requestStp('GetC2SIMContent', {
+                name: arguments[0],
+                dataType: arguments[1],
+                affiliation: arguments[2],
+                coaPoids: arguments[3],
+                options: this.options
+            }, timeout);
+        }
+        async pushC2SIMContent(content, dataType, timeout) {
+            return this.stpsdk.requestStp('PushC2SIMContent', {
+                content: arguments[0],
+                dataType: arguments[1],
+                options: this.options
+            }, timeout);
+        }
+        async pullC2SIMInitialization(timeout) {
+            return this.stpsdk.requestStp('PullC2SIMInitialization', {
+                options: this.options
+            }, timeout);
+        }
+        async convertC2SIMContent(content, timeout) {
+            return this.stpsdk.requestStp('ConvertC2SIMContent', {
+                content: arguments[0],
+                options: this.options
+            }, timeout);
+        }
+    }
+
     class StpRecognizer {
         constructor(stpConnector) {
             this.stpConnector = stpConnector;
             this.serviceName = '';
         }
-        connect(serviceName, timeout, machineId) {
-            return __awaiter$1(this, void 0, void 0, function* () {
-                this.serviceName = serviceName;
-                this.stpConnector.onInform = this.onInform.bind(this);
-                this.stpConnector.onRequest = this.onRequest.bind(this);
-                this.stpConnector.onError = this.onError.bind(this);
-                try {
-                    let solvables = this.buildSolvables();
-                    return this.stpConnector.connect(this.serviceName, solvables, timeout, machineId);
-                }
-                catch (e) {
-                    throw e;
-                }
-            });
+        async connect(serviceName, timeout, machineId, sessionId) {
+            this.serviceName = serviceName;
+            this.stpConnector.onInform = this.onInform.bind(this);
+            this.stpConnector.onRequest = this.onRequest.bind(this);
+            this.stpConnector.onError = this.onError.bind(this);
+            try {
+                let solvables = this.buildSolvables();
+                return this.stpConnector.connect(this.serviceName, solvables, timeout, machineId, sessionId);
+            }
+            catch (e) {
+                throw e;
+            }
         }
         buildSolvables() {
             return Object.getOwnPropertyNames(this)
@@ -169,12 +399,171 @@
                 this.onStpMessage(error, StpMessageLevel.Error);
             }
         }
+        handleInform(msg) {
+            if (msg.method === 'SymbolAdded' && this.onSymbolAdded) {
+                const pp = msg.params;
+                let alts = [];
+                for (let i = 0; i < pp.alternates.length; i++) {
+                    const symbol = Object.assign(new StpSymbol(), pp.alternates[i]);
+                    alts.push(symbol);
+                }
+                this.onSymbolAdded(alts, pp.isUndo);
+            }
+            else if (msg.method === 'SymbolModified' && this.onSymbolModified) {
+                const pp = msg.params;
+                const symbol = Object.assign(new StpSymbol(), pp.symbol);
+                this.onSymbolModified(pp.poid, symbol, pp.isUndo);
+            }
+            else if (msg.method === 'SymbolDeleted' && this.onSymbolDeleted) {
+                const pp = msg.params;
+                this.onSymbolDeleted(pp.poid, pp.isUndo);
+            }
+            else if (msg.method === 'SymbolReport' && this.onSymbolReport) {
+                const pp = msg.params;
+                const symbol = Object.assign(new StpSymbol(), pp.symbol);
+                this.onSymbolReport(pp.poid, symbol);
+            }
+            else if (msg.method === 'TaskOrgAdded' && this.onTaskOrgAdded || msg.method === 'TaskOrgModified' && this.onTaskOrgModified) {
+                const pp = msg.params;
+                const taskOrg = Object.assign(new StpTaskOrg(), pp.taskOrg);
+                if (msg.method === 'TaskOrgAdded' && this.onTaskOrgAdded) {
+                    this.onTaskOrgAdded(taskOrg, pp.isUndo);
+                }
+                else if (msg.method === 'TaskOrgModified' && this.onTaskOrgModified) {
+                    this.onTaskOrgModified(pp.poid, taskOrg, pp.isUndo);
+                }
+            }
+            else if (msg.method === 'TaskOrgDeleted' && this.onTaskOrgDeleted) {
+                const pp = msg.params;
+                this.onTaskOrgDeleted(pp.poid, pp.isUndo);
+            }
+            else if (msg.method === 'TaskOrgUnitAdded' && this.onTaskOrgUnitAdded || msg.method === 'TaskOrgUnitModified' && this.onTaskOrgUnitModified) {
+                const pp = msg.params;
+                const unit = Object.assign(new StpTaskOrgUnit(), pp.toUnit);
+                if (msg.method === 'TaskOrgUnitAdded' && this.onTaskOrgUnitAdded) {
+                    this.onTaskOrgUnitAdded(unit, pp.isUndo);
+                }
+                else if (msg.method === 'TaskOrgUnitModified' && this.onTaskOrgUnitModified) {
+                    this.onTaskOrgUnitModified(pp.poid, unit, pp.isUndo);
+                }
+            }
+            else if (msg.method === 'TaskOrgUnitDeleted' && this.onTaskOrgUnitDeleted) {
+                const pp = msg.params;
+                this.onTaskOrgUnitDeleted(pp.poid, pp.isUndo);
+            }
+            else if (msg.method === 'TaskOrgRelationshipAdded' && this.onTaskOrgRelationshipAdded || msg.method === 'TaskOrgRelationshipModified' && this.onTaskOrgRelationshipModified) {
+                const pp = msg.params;
+                const unit = Object.assign(new StpTaskOrgRelationship(), pp.toRelationship);
+                if (msg.method === 'TaskOrgRelationshipAdded' && this.onTaskOrgRelationshipAdded) {
+                    this.onTaskOrgRelationshipAdded(unit, pp.isUndo);
+                }
+                else if (msg.method === 'TaskOrgRelationshipModified' && this.onTaskOrgRelationshipModified) {
+                    this.onTaskOrgRelationshipModified(pp.poid, unit, pp.isUndo);
+                }
+            }
+            else if (msg.method === 'TaskOrgRelationshipDeleted' && this.onTaskOrgRelationshipDeleted) {
+                const pp = msg.params;
+                this.onTaskOrgRelationshipDeleted(pp.poid, pp.isUndo);
+            }
+            else if (msg.method === 'TaskAdded' && this.onTaskAdded || msg.method === 'TaskModified' && this.onTaskModified) {
+                const pp = msg.params;
+                let alts = [];
+                for (let i = 0; i < pp.alternates.length; i++) {
+                    const task = Object.assign(new StpTask(), pp.alternates[i]);
+                    alts.push(task);
+                }
+                if (msg.method === 'TaskAdded' && this.onTaskAdded) {
+                    this.onTaskAdded(pp.poid, alts, pp.taskPoids, pp.isUndo);
+                }
+                else if (msg.method === 'TaskModified' && this.onTaskModified) {
+                    this.onTaskModified(pp.poid, alts, pp.taskPoids, pp.isUndo);
+                }
+            }
+            else if (msg.method === 'TaskDeleted' && this.onTaskDeleted) {
+                const pp = msg.params;
+                this.onTaskDeleted(pp.poid, pp.isUndo);
+            }
+            else if (msg.method === 'TaskOrgSwitched' && this.onTaskOrgSwitched) {
+                const pp = msg.params;
+                this.onTaskOrgSwitched(pp.taskOrg);
+            }
+            else if (msg.method === 'CoaAdded' && this.onCoaAdded || msg.method === 'CoaModified' && this.onCoaModified) {
+                const pp = msg.params;
+                const unit = Object.assign(new StpCoa(), pp.coa);
+                if (msg.method === 'CoaAdded' && this.onCoaAdded) {
+                    this.onCoaAdded(pp.poid, pp.coa, pp.isUndo);
+                }
+                else if (msg.method === 'CoaModified' && this.onCoaModified) {
+                    this.onCoaModified(pp.poid, unit, pp.isUndo);
+                }
+            }
+            else if (msg.method === 'CoaDeleted' && this.onCoaDeleted) {
+                const pp = msg.params;
+                this.onCoaDeleted(pp.poid, pp.isUndo);
+            }
+            else if (msg.method === 'RoleSwitched' && this.onRoleSwitched) {
+                const pp = msg.params;
+                this.onRoleSwitched(pp.role);
+            }
+            else if (msg.method === 'InkProcessed' && this.onInkProcessed) {
+                this.onInkProcessed();
+            }
+            else if (msg.method === 'SpeechRecognized' && this.onSpeechRecognized) {
+                const pp = msg.params;
+                this.onSpeechRecognized(pp.phrases);
+            }
+            else if (msg.method === 'SymbolEdited' && this.onSymbolEdited) {
+                const pp = msg.params;
+                this.onSymbolEdited(pp.operation, pp.location);
+            }
+            else if (msg.method === 'MapOperation' && this.onMapOperation) {
+                const pp = msg.params;
+                this.onMapOperation(pp.operation, pp.location);
+            }
+            else if (msg.method === 'Command' && this.onCommand) {
+                const pp = msg.params;
+                this.onCommand(pp.operation, pp.location);
+            }
+            else if (msg.method === 'StpMessage' && this.onStpMessage) {
+                const pp = msg.params;
+                this.onStpMessage(pp.message, pp.level);
+            }
+            else {
+                console.log('Received message with no handler: ' + msg.method);
+            }
+        }
+        informStp(name, parms) {
+            try {
+                let msg = {
+                    method: name,
+                    params: parms
+                };
+                this.stpConnector.inform(JSON.stringify(msg));
+            }
+            catch (e) {
+                if (this.onStpMessage) {
+                    this.onStpMessage(e.message, StpMessageLevel.Error);
+                }
+            }
+        }
+        async requestStp(name, parms, timeout) {
+            try {
+                let msg = {
+                    method: name,
+                    params: parms
+                };
+                return this.stpConnector.request(JSON.stringify(msg), timeout);
+            }
+            catch (e) {
+                if (this.onStpMessage) {
+                    this.onStpMessage(e.message, StpMessageLevel.Error);
+                }
+            }
+        }
         sendPenDown(location, timestamp) {
-            return __awaiter$1(this, arguments, void 0, function* () {
-                this.informStp('SendPenDown', {
-                    location: arguments[0],
-                    timestamp: arguments[1]
-                });
+            this.informStp('SendPenDown', {
+                location: arguments[0],
+                timestamp: arguments[1]
             });
         }
         sendInk(pixelBoundsWindow, topLeftGeoMap, bottomRightGeoMap, strokePoints, timeStrokeStart, timeStrokeEnd, intersectedPoids) {
@@ -194,6 +583,38 @@
                 startTime: arguments[1],
                 endTime: arguments[2]
             });
+        }
+        async createNewScenario(name, timeout) {
+            return this.requestStp('CreateNewScenario', {
+                name: arguments[0],
+            }, timeout);
+        }
+        async loadNewScenario(content, timeout) {
+            return this.requestStp('LoadNewScenario', {
+                content: arguments[0],
+            }, timeout);
+        }
+        async importPlanData(content, timeout) {
+            return this.requestStp('ImportPlanData', {
+                content: arguments[0],
+            }, timeout);
+        }
+        async getScenarioContent(timeout) {
+            return this.requestStp('GetScenarioContent', null, timeout);
+        }
+        async joinScenarioSession(timeout) {
+            return this.requestStp('JoinScenarioSession', null, timeout);
+        }
+        async syncScenarioSession(content, timeout) {
+            return this.requestStp('SyncScenarioSession', {
+                content: arguments[0],
+            }, timeout);
+        }
+        async hasActiveScenario(timeout) {
+            return this.requestStp('HasActiveScenario', null, timeout);
+        }
+        createC2SIMProxy(options) {
+            return new StpC2SIMProxy(this, options);
         }
         addSymbol(symbol) {
             this.informStp('AddSymbol', {
@@ -217,71 +638,159 @@
                 nBestIndex: arguments[1]
             });
         }
-        informStp(name, parms) {
-            try {
-                let msg = {
-                    method: name,
-                    params: parms
-                };
-                this.stpConnector.inform(JSON.stringify(msg));
-            }
-            catch (e) {
-                if (this.onStpMessage) {
-                    this.onStpMessage(e.message, StpMessageLevel.Error);
-                }
-            }
+        async importTaskOrgContent(content, timeout) {
+            return this.requestStp('ImportTaskOrgContent', {
+                content: arguments[0],
+            }, timeout);
         }
-        handleInform(msg) {
-            if (msg.method === 'SymbolAdded' && this.onSymbolAdded) {
-                const pp = msg.params;
-                let alts = [];
-                for (let i = 0; i < pp.alternates.length; i++) {
-                    const symbol = Object.assign(new StpSymbol(), pp.alternates[i]);
-                    alts.push(symbol);
-                }
-                this.onSymbolAdded(alts, pp.isUndo);
-            }
-            else if (msg.method === 'SymbolModified' && this.onSymbolModified) {
-                const pp = msg.params;
-                const symbol = Object.assign(new StpSymbol(), pp.symbol);
-                this.onSymbolModified(pp.poid, symbol, pp.isUndo);
-            }
-            else if (msg.method === 'SymbolDeleted' && this.onSymbolDeleted) {
-                const pp = msg.params;
-                this.onSymbolDeleted(pp.poid, pp.isUndo);
-            }
-            else if (msg.method === 'InkProcessed' && this.onInkProcessed) {
-                this.onInkProcessed();
-            }
-            else if (msg.method === 'SpeechRecognized' && this.onSpeechRecognized) {
-                const pp = msg.params;
-                this.onSpeechRecognized(pp.phrases);
-            }
-            else if (msg.method === 'StpMessage' && this.onStpMessage) {
-                const pp = msg.params;
-                this.onStpMessage(pp.message, pp.level);
-            }
-            else {
-                console.log('Received message with no handler: ' + msg.method);
-            }
+        async getTaskOrgContent(poid, timeout) {
+            return this.requestStp('GetTaskOrgContent', {
+                poid: arguments[0],
+            }, timeout);
+        }
+        async setDefaultTaskOrg(poid, timeout) {
+            return this.requestStp('SetDefaultTaskOrg', {
+                poid: arguments[0],
+            }, timeout);
+        }
+        async resetDefaultTaskOrg(affiliation, timeout) {
+            return this.requestStp('ResetDefaultTaskOrg', {
+                affiliation: arguments[0],
+            }, timeout);
+        }
+        addTaskOrg(taskOrg) {
+            this.informStp('AddTaskOrg', {
+                taskOrg: arguments[0],
+            });
+        }
+        updateTaskOrg(poid, taskOrg) {
+            this.informStp('UpdateTaskOrg', {
+                poid: arguments[0],
+                taskOrg: arguments[1],
+            });
+        }
+        deleteTaskOrg(poid) {
+            this.informStp('DeleteTaskOrg', {
+                poid: arguments[0],
+            });
+        }
+        addTaskOrgUnit(toUnit) {
+            this.informStp('AddTaskOrgUnit', {
+                toUnit: arguments[0]
+            });
+        }
+        updateTaskOrgUnit(poid, toUnit) {
+            this.informStp('UpdateTaskOrgUnit', {
+                poid: arguments[0],
+                toUnit: arguments[1]
+            });
+        }
+        deleteTaskOrgUnit(poid) {
+            this.informStp('DeleteTaskOrgUnit', {
+                poid: arguments[0]
+            });
+        }
+        addTaskOrgRelationship(toUnit) {
+            this.informStp('AddTaskOrgRelationship', {
+                toRelationship: arguments[0]
+            });
+        }
+        updateTaskOrgRelationship(poid, toUnit) {
+            this.informStp('UpdateTaskOrgRelationship', {
+                poid: arguments[0],
+                toRelationship: arguments[1]
+            });
+        }
+        deleteTaskOrgRelationship(poid) {
+            this.informStp('DeleteTaskOrgRelationship', {
+                poid: arguments[0]
+            });
+        }
+        addTask(task) {
+            this.informStp('AddTask', {
+                task: arguments[0]
+            });
+        }
+        updateTask(poid, alternates) {
+            this.informStp('UpdateTask', {
+                poid: arguments[0],
+                alternates: arguments[1]
+            });
+        }
+        deleteTask(poid) {
+            this.informStp('DeleteTask', {
+                poid: arguments[0]
+            });
+        }
+        confirmTask(poid, nBestIndex, isConfirmed = true) {
+            this.informStp('ConfirmTask', {
+                poid: arguments[0],
+                nBestIndex: arguments[1],
+                isConfirmed: arguments[2]
+            });
+        }
+        async setCoaTaskOrg(toPoid, coaPoid, timeout) {
+            return this.requestStp('SetCoaTaskOrg', {
+                toPoid: arguments[0],
+                coaPoid: arguments[1],
+            }, timeout);
+        }
+        async resetCoaTaskOrg(coaPoid, timeout) {
+            return this.requestStp('SetCoaTaskOrg', {
+                affiliation: arguments[0],
+                coaPoid: arguments[1],
+            }, timeout);
+        }
+        async importCoaContent(toContent, timeout) {
+            return this.requestStp('ImportCoaContent', {
+                content: arguments[0],
+            }, timeout);
+        }
+        async getCoaContent(poid, timeout) {
+            return this.requestStp('GetCoaContent', {
+                poid: arguments[0],
+            }, timeout);
+        }
+        async setCurrentCoa(poid, timeout) {
+            return this.requestStp('SetCurrentCoa', {
+                poid: arguments[0],
+            }, timeout);
+        }
+        addCoa(coa) {
+            this.informStp('AddCoa', {
+                coa: arguments[0],
+            });
+        }
+        updateCoa(poid, coa) {
+            this.informStp('UpdateCoa', {
+                poid: arguments[0],
+                coa: arguments[1],
+            });
+        }
+        deleteCoa(poid) {
+            this.informStp('DeleteCoa', {
+                poid: arguments[0],
+            });
+        }
+        async setCurrentRole(role, createIfNone = true, timeout) {
+            return this.requestStp('SetRole', {
+                role: arguments[0],
+            }, timeout);
+        }
+        promiseWithTimeout(timeout, promise) {
+            return Promise.race([
+                promise,
+                new Promise((resolve, reject) => {
+                    let id = setTimeout(() => {
+                        clearTimeout(id);
+                        reject(new Error('Operation timed out'));
+                    }, timeout * 1000);
+                })
+            ]);
         }
     }
 
-    var __awaiter$1$1 = function (thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    };
     class StpWebSocketsConnector {
-        constructor(connstring) {
-            this.DEFAULT_TIMEOUT = 30;
-            this.connstring = connstring;
-            this.socket = null;
-        }
         get isConnected() {
             return this.socket != null && this.socket.readyState === this.socket.OPEN;
         }
@@ -291,96 +800,141 @@
         get connState() {
             return this.socket ? this.socket.readyState.toString() : '';
         }
-        connect(serviceName, solvables, timeout = this.DEFAULT_TIMEOUT, machineId = null) {
-            return __awaiter$1$1(this, void 0, void 0, function* () {
-                return new Promise((resolve, reject) => __awaiter$1$1(this, void 0, void 0, function* () {
-                    if (this.isConnected) {
-                        resolve();
+        constructor(connstring) {
+            this.DEFAULT_TIMEOUT = 30;
+            this.connstring = connstring;
+            this.socket = null;
+        }
+        async connect(serviceName, solvables, timeout = this.DEFAULT_TIMEOUT, machineId = null, sessionId = null) {
+            return new Promise(async (resolve, reject) => {
+                if (this.isConnected) {
+                    resolve(this.sessionId);
+                }
+                this.serviceName = serviceName;
+                this.solvables = solvables;
+                if (machineId != null) {
+                    this.machineId = machineId;
+                }
+                if (sessionId != null) {
+                    this.sessionId = sessionId;
+                }
+                if (timeout <= 0) {
+                    timeout = this.DEFAULT_TIMEOUT;
+                }
+                try {
+                    this.socket = await this.promiseWithTimeout(timeout, this.tryConnect(this.connstring));
+                }
+                catch (e) {
+                    reject(new Error('Failed to connect: ' + e.message));
+                    return;
+                }
+                this.socket.onmessage = (ev) => {
+                    const msg = JSON.parse(ev.data);
+                    if (msg.method === "RequestResponse") {
+                        const params = msg.params;
+                        let index = Tracker.trackedResponses.findIndex(t => t.cookie === params.cookie);
+                        Tracker.trackedResponses.find(t => t.cookie === params.cookie);
+                        if (index > -1) {
+                            let tracker = Tracker.trackedResponses.splice(index, 1)[0];
+                            if (params.success) {
+                                tracker.responseFuture.resolve(params.result);
+                            }
+                            else {
+                                tracker.responseFuture.reject(params.result);
+                            }
+                        }
                     }
-                    this.serviceName = serviceName;
-                    this.solvables = solvables;
-                    if (machineId != null) {
-                        this.machineId = machineId;
-                    }
-                    if (timeout <= 0) {
-                        timeout = this.DEFAULT_TIMEOUT;
-                    }
-                    try {
-                        this.socket = yield this.promiseWithTimeout(timeout, this.tryConnect(this.connstring));
-                        yield this.register();
-                    }
-                    catch (e) {
-                        reject(new Error('Failed to connect: ' + e.message));
-                        return;
-                    }
-                    this.socket.onmessage = (ev) => {
+                    else {
                         if (this.onInform)
                             this.onInform(ev.data);
-                    };
-                    this.socket.onerror = (ev) => {
-                        if (this.onError) {
-                            this.onError('Error connecting to STP. Check that the service is running and refresh page to retry');
+                    }
+                };
+                this.socket.onerror = (ev) => {
+                    if (this.onError) {
+                        this.onError('Error connecting to STP. Check that the service is running and refresh page to retry');
+                    }
+                };
+                this.socket.onclose = async (ev) => {
+                    if (!this.isConnecting) {
+                        try {
+                            await this.connect(this.serviceName, this.solvables, this.timeout, this.machineId);
                         }
-                    };
-                    this.socket.onclose = (ev) => __awaiter$1$1(this, void 0, void 0, function* () {
-                        if (!this.isConnecting) {
-                            try {
-                                yield this.connect(this.serviceName, this.solvables, this.timeout, this.machineId);
-                            }
-                            catch (error) {
-                                if (this.onError) {
-                                    this.onError('Lost connection to STP. Check that the service is running and refresh page to retry');
-                                }
+                        catch (error) {
+                            if (this.onError) {
+                                this.onError('Lost connection to STP. Check that the service is running and refresh page to retry');
                             }
                         }
-                    });
-                    resolve();
-                }));
+                    }
+                };
+                try {
+                    this.sessionId = await this.register(timeout);
+                }
+                catch (e) {
+                    reject(new Error('Failed to register with STP: ' + e.message));
+                    return;
+                }
+                resolve(this.sessionId);
             });
         }
-        register() {
+        register(timeout = this.DEFAULT_TIMEOUT) {
             if (!this.isConnected) {
                 throw new Error('Failed to register: connection is not open (' + this.connState + ')');
             }
-            return this.promiseWithTimeout(this.timeout || this.DEFAULT_TIMEOUT, new Promise((resolve, reject) => __awaiter$1$1(this, void 0, void 0, function* () {
-                if (!this.socket) {
-                    return;
+            this.name = this.serviceName;
+            let msg = {
+                method: 'Register',
+                params: {
+                    serviceName: this.serviceName,
+                    language: 'javascript',
+                    solvables: this.solvables,
+                    machineId: this.machineId || this.getUniqueId(9),
+                    sessionId: this.sessionId
                 }
-                this.name = this.serviceName;
-                this.socket.send(JSON.stringify({
-                    method: 'Register',
-                    params: {
-                        serviceName: this.name,
-                        language: 'javascript',
-                        solvables: this.solvables,
-                        machineId: this.machineId || this.getUniqueId(9)
-                    }
-                }));
-                resolve();
-            })));
+            };
+            return this.request(JSON.stringify(msg), timeout);
         }
         disconnect(timeout = this.DEFAULT_TIMEOUT) {
-            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter$1$1(this, void 0, void 0, function* () {
+            return this.promiseWithTimeout(timeout, new Promise(async (resolve, reject) => {
                 if (!this.isConnected && this.socket) {
                     this.socket.close();
                 }
                 resolve();
-            })));
+            }));
         }
         inform(message, timeout = this.DEFAULT_TIMEOUT) {
             if (!this.isConnected) {
                 throw new Error('Failed to send inform: connection is not open (' + this.connState + ')');
             }
-            return this.promiseWithTimeout(timeout, new Promise((resolve, reject) => __awaiter$1$1(this, void 0, void 0, function* () {
+            return this.promiseWithTimeout(timeout, new Promise(async (resolve, reject) => {
                 if (!this.socket) {
                     return;
                 }
                 this.socket.send(message);
                 resolve();
-            })));
+            }));
         }
-        request(message, timeout = this.DEFAULT_TIMEOUT) {
-            throw new Error('Method not implemented');
+        async request(message, timeout = this.DEFAULT_TIMEOUT) {
+            if (!this.isConnected || !this.socket) {
+                throw new Error('Failed to send request: connection is not open (' + this.connState + ')');
+            }
+            let tracker = new Tracker();
+            return this.promiseWithTimeout(timeout, new Promise(async (resolve, reject) => {
+                if (!this.socket) {
+                    return;
+                }
+                const requestMessage = {
+                    method: "Request",
+                    params: {
+                        jsonRequest: message,
+                        cookie: tracker.cookie,
+                        timeout: timeout,
+                    }
+                };
+                this.socket.send(JSON.stringify(requestMessage));
+                tracker.responseFuture
+                    .then((value) => resolve(value))
+                    .catch((reason) => reject(reason));
+            }));
         }
         tryConnect(connstring) {
             return new Promise((resolve, reject) => {
@@ -406,14 +960,210 @@
             return Math.random().toString(36).substr(2, numChars);
         }
     }
+    class Tracker {
+        constructor() {
+            this.cookie = Tracker.lastCookie++;
+            this.responseFuture = new Future();
+            Tracker.trackedResponses.push(this);
+        }
+    }
+    Tracker.lastCookie = 0;
+    Tracker.trackedResponses = [];
+    class Future {
+        constructor(promise) {
+            if (!(this instanceof Future)) {
+                return new Future(promise);
+            }
+            this.promise = promise || new Promise(this.promiseExecutor.bind(this));
+        }
+        asPromise() {
+            return this.promise;
+        }
+        then(onfulfilled, onrejected) {
+            return new Future(this.promise.then(onfulfilled, onrejected));
+        }
+        catch(onrejected) {
+            return new Future(this.promise.catch(onrejected));
+        }
+        resolve(value) {
+            this.resolveFunction(value);
+        }
+        reject(reason) {
+            this.rejectFunction(reason);
+        }
+        promiseExecutor(resolve, reject) {
+            this.resolveFunction = resolve;
+            this.rejectFunction = reject;
+        }
+    }
 
-    var stpazurespeechBundleMin = {exports: {}};
-
-    (function (module, exports) {
-    	var t;t=function(e,t){var i=function(e,t,i,n){return new(i||(i=Promise))((function(o,s){function r(e){try{a(n.next(e));}catch(e){s(e);}}function c(e){try{a(n.throw(e));}catch(e){s(e);}}function a(e){var t;e.done?o(e.value):(t=e.value,t instanceof i?t:new i((function(e){e(t);}))).then(r,c);}a((n=n.apply(e,t||[])).next());}))};class n{constructor(){this.results=[],this.startTime=new Date,this.endTime=new Date;}}class o{constructor(e,t){this.text=e,this.confidence=t;}}class s{constructor(){this.RecognitionStatus="",this.Offset=0,this.Duration=0,this.DisplayText="",this.NBest=[];}}e.AzureSpeechRecognizer=class{constructor(e,i,n,o){this.speechSubscriptionKey=e,this.serviceRegion=i,this.speechConfig=t.SpeechConfig.fromSubscription(this.speechSubscriptionKey,this.serviceRegion),this.speechConfig.outputFormat=t.OutputFormat.Detailed,n&&(this.speechConfig.endpointId=n),this.audioConfig=o||t.AudioConfig.fromDefaultMicrophoneInput();}recognizeOnce(e){return e||(e=8),this.recognizer=new t.SpeechRecognizer(this.speechConfig,this.audioConfig),new Promise(((t,n)=>i(this,void 0,void 0,(function*(){var i;for(let i=0;i<e;i++){this.recoStart=new Date;try{const e=yield this.tryReco(this.recoStart);return void t(e)}catch(e){}i<e-1&&(yield new Promise((e=>setTimeout(e,250))));}let o=new Error("Failed to recognize speech");null===(i=this.onError)||void 0===i||i.call(this,o),n(o);}))))}tryReco(e){return new Promise(((i,n)=>{var o;this.recognizer.recognizing=(e,t)=>{var i;null===(i=this.onRecognizing)||void 0===i||i.call(this,t.result.text);},this.recognizer.recognized=(t,n)=>{var o;let s=this.convertResults(e,n.result);null===(o=this.onRecognized)||void 0===o||o.call(this,s),i(s);},this.recognizer.canceled=(e,i)=>{n(new Error(t.CancellationReason[i.reason]));},null===(o=this.recognizer)||void 0===o||o.recognizeOnceAsync();}))}startRecognizing(){this.recognizer=new t.SpeechRecognizer(this.speechConfig,this.audioConfig),this.recoStart=new Date,this.recognizer.recognizing=(e,t)=>{var i;null===(i=this.onRecognizing)||void 0===i||i.call(this,t.result.text);},this.recognizer.recognized=(e,t)=>{var i;let n=this.convertResults(this.recoStart,t.result);null===(i=this.onRecognized)||void 0===i||i.call(this,n);},this.recognizer.canceled=(e,i)=>{var n;let o=new Error(t.CancellationReason[i.reason]);this.onError?this.onError.call(this,o):null===(n=this.onRecognized)||void 0===n||n.call(this,null);},this.recognizer.startContinuousRecognitionAsync();}stopRecognizing(e){this.recognizer&&setTimeout((()=>{var e;null===(e=this.recognizer)||void 0===e||e.close(),this.recognizer=void 0;}),e||0);}convertResults(e,i){if(i.reason===t.ResultReason.NoMatch)return null;let r=new n;r.startTime=this.addTicksToDate(e,i.offset),r.endTime=this.addTicksToDate(r.startTime,i.duration);let c=i.properties.getProperty(t.PropertyId.SpeechServiceResponse_JsonResult);const a=Object.assign(new s,JSON.parse(c)).NBest.map((e=>new o(e.Lexical,e.Confidence)));let h=Array.from(a);for(let e=0;e<a.length;e++){const t=a[e];if(t.text.search(/^([a-zA-Z]\s)+[a-zA-Z]$/)>=0){const e=t.text.replace(/\s/g,""),i=.9*t.confidence;h.push(new o(e,i));}else if(t.text.search(/^([a-zA-Z]\s)+[a-zA-Z]+$/)>=0){let e=t.text.match(/^(([a-zA-Z]\s)+)([a-zA-Z]+)$/);if(e&&4==e.length){const i=e[1].replace(/\s/g,""),n=e[3],s=.7*t.confidence;h.push(new o(i+" "+n,s));}}}return r.results=h.sort(((e,t)=>t.confidence-e.confidence)),r}addTicksToDate(e,t){let i=1e4*e.getTime()+621355968e9;return new Date((i+t-621355968e9)/1e4)}},Object.defineProperty(e,"__esModule",{value:!0});},t(exports,require$$0); 
-    } (stpazurespeechBundleMin, stpazurespeechBundleMin.exports));
-
-    var stpazurespeechBundleMinExports = stpazurespeechBundleMin.exports;
+    class AzureSpeechRecognizer {
+        constructor(speechSubscriptionKey, serviceRegion, endPoint, audioConfig, recoLanguage) {
+            this.speechSubscriptionKey = speechSubscriptionKey;
+            this.serviceRegion = serviceRegion;
+            this.speechConfig = SpeechSDK__namespace.SpeechConfig.fromSubscription(this.speechSubscriptionKey, this.serviceRegion);
+            this.speechConfig.speechRecognitionLanguage = recoLanguage ? recoLanguage : 'en-US';
+            this.speechConfig.outputFormat = SpeechSDK__namespace.OutputFormat.Detailed;
+            if (endPoint) {
+                this.speechConfig.endpointId = endPoint;
+            }
+            this.audioConfig = audioConfig
+                ? audioConfig
+                : SpeechSDK__namespace.AudioConfig.fromDefaultMicrophoneInput();
+            this.isListening = false;
+        }
+        setPhraseList(phrases) {
+            this.phraseList = phrases;
+        }
+        initializeReco() {
+            this.recognizer = new SpeechSDK__namespace.SpeechRecognizer(this.speechConfig, this.audioConfig);
+            if (this.phraseList) {
+                const phraseList = SpeechSDK__namespace.PhraseListGrammar.fromRecognizer(this.recognizer);
+                phraseList.addPhrases(this.phraseList);
+            }
+        }
+        recognizeOnce(maxRetries) {
+            const delay = 250;
+            if (!maxRetries) {
+                maxRetries = 2000 / delay;
+            }
+            this.initializeReco();
+            return new Promise(async (resolve, reject) => {
+                for (let i = 0; i < maxRetries; i++) {
+                    this.recoStart = new Date();
+                    try {
+                        const recoResult = await this.tryReco(this.recoStart);
+                        resolve(recoResult);
+                        return;
+                    }
+                    catch (e) {
+                    }
+                    if (i < maxRetries - 1) {
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+                    }
+                }
+                let err = new Error('Failed to recognize speech');
+                this.onError?.call(this, err);
+                reject(err);
+            });
+        }
+        tryReco(recoStart) {
+            return new Promise((resolve, reject) => {
+                this.recognizer.recognizing = (s, e) => {
+                    this.onRecognizing?.call(this, e.result.text);
+                };
+                this.recognizer.recognized = (s, e) => {
+                    let recoResult = this.convertResults(recoStart, e.result);
+                    this.onRecognized?.call(this, recoResult);
+                    resolve(recoResult);
+                };
+                this.recognizer.canceled = (s, e) => {
+                    this.isListening = false;
+                    reject(new Error(SpeechSDK__namespace.CancellationReason[e.reason]));
+                };
+                if (!this.isListening) {
+                    this.isListening = true;
+                    this.recognizer?.recognizeOnceAsync();
+                    this.isListening = false;
+                }
+            });
+        }
+        startRecognizing() {
+            if (this.isListening) {
+                return;
+            }
+            this.initializeReco();
+            this.recoStart = new Date();
+            this.recognizer.recognizing = (s, e) => {
+                this.onRecognizing?.call(this, e.result.text);
+            };
+            this.recognizer.recognized = (s, e) => {
+                let recoResult = this.convertResults(this.recoStart, e.result);
+                this.onRecognized?.call(this, recoResult);
+            };
+            this.recognizer.canceled = (s, e) => {
+                this.isListening = false;
+                let err = new Error(SpeechSDK__namespace.CancellationReason[e.reason]);
+                if (this.onError) {
+                    this.onError.call(this, err);
+                }
+                else {
+                    this.onRecognized?.call(this, null);
+                }
+            };
+            this.isListening = true;
+            this.recognizer.startContinuousRecognitionAsync();
+        }
+        stopRecognizing(wait) {
+            if (this.recognizer) {
+                setTimeout(() => {
+                    this.recognizer?.close();
+                    this.recognizer = undefined;
+                }, wait ? wait : 0);
+            }
+            this.isListening = false;
+        }
+        convertResults(recoStart, result) {
+            if (result.reason === SpeechSDK__namespace.ResultReason.NoMatch) {
+                return null;
+            }
+            let recoResult = new SpeechRecoResult();
+            recoResult.startTime = this.addTicksToDate(recoStart, result.offset);
+            recoResult.endTime = this.addTicksToDate(recoResult.startTime, result.duration);
+            let jsonDetails = result.properties.getProperty(SpeechSDK__namespace.PropertyId.SpeechServiceResponse_JsonResult);
+            let detailedProperties = Object.assign(new AzureSpeechDetailedResults(), JSON.parse(jsonDetails));
+            const basicConversion = detailedProperties.NBest.map((item) => new SpeechRecoItem(item.Lexical, item.Confidence));
+            let resultsArray = Array.from(basicConversion);
+            for (let i = 0; i < basicConversion.length; i++) {
+                const item = basicConversion[i];
+                if (item.text.search(/^([a-zA-Z]\s)+[a-zA-Z]$/) >= 0) {
+                    const acronym = item.text.replace(/\s/g, '');
+                    const conf = item.confidence * 0.9;
+                    resultsArray.push(new SpeechRecoItem(acronym, conf));
+                }
+                else if (item.text.search(/^([a-zA-Z]\s)+[a-zA-Z][a-zA-Z]+$/) >= 0) {
+                    let parts = item.text.match(/^(([a-zA-Z]\s)+)([a-zA-Z][a-zA-Z]+)$/);
+                    if (parts && parts.length == 4) {
+                        const acronym = parts[1].replace(/\s/g, '');
+                        const designator = parts[3];
+                        const conf = item.confidence * 0.85;
+                        resultsArray.push(new SpeechRecoItem(acronym + ' ' + designator, conf));
+                    }
+                }
+            }
+            recoResult.results = resultsArray.sort((a, b) => b.confidence - a.confidence);
+            return recoResult;
+        }
+        addTicksToDate(date, ticksToAdd) {
+            let dateTicks = date.getTime() * 10000 + 621355968000000000;
+            let totalTicks = dateTicks + ticksToAdd;
+            let jsMilli = (totalTicks - 621355968000000000) / 10000;
+            let res = new Date(jsMilli);
+            return res;
+        }
+    }
+    class SpeechRecoResult {
+        constructor() {
+            this.results = [];
+            this.startTime = new Date();
+            this.endTime = new Date();
+        }
+    }
+    class SpeechRecoItem {
+        constructor(text, confidence) {
+            this.text = text;
+            this.confidence = confidence;
+        }
+    }
+    class AzureSpeechDetailedResults {
+        constructor() {
+            this.RecognitionStatus = '';
+            this.Offset = 0;
+            this.Duration = 0;
+            this.DisplayText = '';
+            this.NBest = [];
+        }
+    }
 
     class BasicRenderer {
         constructor(symbol, pointSize = 50) {
@@ -596,7 +1346,7 @@
         }
     }
 
-    /*! *****************************************************************************
+    /******************************************************************************
     Copyright (c) Microsoft Corporation.
 
     Permission to use, copy, modify, and/or distribute this software for any
@@ -610,6 +1360,8 @@
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
 
     function __awaiter(thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -617,54 +1369,75 @@
             function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
             function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
             function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
+            step((generator = generator.apply(thisArg, [])).next());
         });
     }
 
-    // do not edit .js files directly - edit src/index.jst
-
-
-
-    var fastDeepEqual = function equal(a, b) {
-      if (a === b) return true;
-
-      if (a && b && typeof a == 'object' && typeof b == 'object') {
-        if (a.constructor !== b.constructor) return false;
-
-        var length, i, keys;
-        if (Array.isArray(a)) {
-          length = a.length;
-          if (length != b.length) return false;
-          for (i = length; i-- !== 0;)
-            if (!equal(a[i], b[i])) return false;
-          return true;
-        }
-
-
-
-        if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
-        if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
-        if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
-
-        keys = Object.keys(a);
-        length = keys.length;
-        if (length !== Object.keys(b).length) return false;
-
-        for (i = length; i-- !== 0;)
-          if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
-
-        for (i = length; i-- !== 0;) {
-          var key = keys[i];
-
-          if (!equal(a[key], b[key])) return false;
-        }
-
-        return true;
-      }
-
-      // true if both NaN, false otherwise
-      return a!==a && b!==b;
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
+
+    function getDefaultExportFromCjs (x) {
+    	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+    }
+
+    var fastDeepEqual;
+    var hasRequiredFastDeepEqual;
+
+    function requireFastDeepEqual () {
+    	if (hasRequiredFastDeepEqual) return fastDeepEqual;
+    	hasRequiredFastDeepEqual = 1;
+
+    	// do not edit .js files directly - edit src/index.jst
+
+
+
+    	fastDeepEqual = function equal(a, b) {
+    	  if (a === b) return true;
+
+    	  if (a && b && typeof a == 'object' && typeof b == 'object') {
+    	    if (a.constructor !== b.constructor) return false;
+
+    	    var length, i, keys;
+    	    if (Array.isArray(a)) {
+    	      length = a.length;
+    	      if (length != b.length) return false;
+    	      for (i = length; i-- !== 0;)
+    	        if (!equal(a[i], b[i])) return false;
+    	      return true;
+    	    }
+
+
+
+    	    if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
+    	    if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
+    	    if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
+
+    	    keys = Object.keys(a);
+    	    length = keys.length;
+    	    if (length !== Object.keys(b).length) return false;
+
+    	    for (i = length; i-- !== 0;)
+    	      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
+
+    	    for (i = length; i-- !== 0;) {
+    	      var key = keys[i];
+
+    	      if (!equal(a[key], b[key])) return false;
+    	    }
+
+    	    return true;
+    	  }
+
+    	  // true if both NaN, false otherwise
+    	  return a!==a && b!==b;
+    	};
+    	return fastDeepEqual;
+    }
+
+    var fastDeepEqualExports = requireFastDeepEqual();
+    var isEqual = /*@__PURE__*/getDefaultExportFromCjs(fastDeepEqualExports);
 
     /**
      * Copyright 2019 Google LLC. All Rights Reserved.
@@ -740,7 +1513,7 @@
             this.url = url;
             this.version = version;
             if (Loader.instance) {
-                if (!fastDeepEqual(this.options, Loader.instance.options)) {
+                if (!isEqual(this.options, Loader.instance.options)) {
                     throw new Error(`Loader must not be called again with different options. ${JSON.stringify(this.options)} !== ${JSON.stringify(Loader.instance.options)}`);
                 }
                 return Loader.instance;
@@ -786,7 +1559,7 @@
          */
         createUrl() {
             let url = this.url;
-            url += `?callback=__googleMapsCallback`;
+            url += `?callback=__googleMapsCallback&loading=async`;
             if (this.apiKey) {
                 url += `&key=${this.apiKey}`;
             }
@@ -970,22 +1743,23 @@
         }
         execute() {
             this.resetIfRetryingFailed();
+            if (this.loading) {
+                // do nothing but wait
+                return;
+            }
             if (this.done) {
                 this.callback();
             }
             else {
                 // short circuit and warn if google.maps is already loaded
                 if (window.google && window.google.maps && window.google.maps.version) {
-                    console.warn("Google Maps already loaded outside @googlemaps/js-api-loader." +
+                    console.warn("Google Maps already loaded outside @googlemaps/js-api-loader. " +
                         "This may result in undesirable behavior as options and script parameters may not match.");
                     this.callback();
                     return;
                 }
-                if (this.loading) ;
-                else {
-                    this.loading = true;
-                    this.setScript();
-                }
+                this.loading = true;
+                this.setScript();
             }
         }
     }
@@ -1020,7 +1794,6 @@
                 throw new Error("Html page must contain a 'map' div");
             }
             const { Map } = await google.maps.importLibrary("maps");
-            await google.maps.importLibrary("marker");
             this.map = new Map(mapDiv, {
                 zoom: this.zoomLevel,
                 center: { lat: this.mapCenter.lat, lng: this.mapCenter.lon },
@@ -1032,16 +1805,20 @@
                 let rend = feature.getProperty('rendering');
                 if (rend) {
                     for (let i = 0; i < rend.length; i++) {
-                        const img = document.createElement('img');
-                        img.src = 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg;
-                        img.style.transform = `translate(${-rend[i].anchor.x}px, ${-rend[i].anchor.y}px)`;
-                        img.style.transformOrigin = 'top left';
-                        const marker = new google.maps.marker.AdvancedMarkerElement({
+                        const shape = rend[i].shape.flatMap(item => [item.x, item.y]);
+                        const iconShape = { type: 'poly', coords: shape };
+                        let marker = new google.maps.Marker({
                             map: this.map,
+                            icon: {
+                                url: 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg,
+                                anchor: new google.maps.Point(rend[i].anchor.x, rend[i].anchor.y)
+                            },
+                            shape: iconShape,
                             position: { lat: rend[i].position.lat, lng: rend[i].position.lon },
-                            content: img,
-                            title: rend[i].title ?? undefined,
                         });
+                        if (rend[i].title) {
+                            marker.setTitle(rend[i].title);
+                        }
                         marker.addListener("click", () => {
                             this.onSelection?.call(this, feature.getProperty('symbol'));
                         });
@@ -1130,9 +1907,9 @@
             let feature = this.map.data.getFeatureById(poid);
             if (feature) {
                 if (this.assets.has(poid)) {
-                    const markers = this.assets.get(poid);
+                    let markers = this.assets.get(poid);
                     for (let i = 0; i < markers.length; i++) {
-                        markers[i].map = null;
+                        markers[i].setMap(null);
                     }
                 }
                 this.map.data.remove(feature);
@@ -1267,7 +2044,7 @@
     }
     async function recognizeSpeech() {
         try {
-            const speechreco = new stpazurespeechBundleMinExports.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
+            const speechreco = new AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
             let recoResult = await speechreco.recognizeOnce();
             if (recoResult) {
                 stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
