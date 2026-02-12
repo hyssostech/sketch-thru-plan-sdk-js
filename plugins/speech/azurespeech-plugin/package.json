@@ -10,7 +10,10 @@
     "registry": "https://registry.npmjs.org/"
   },
   "overrides": {
-    "rimraf": "^6.1.2"
+    "rimraf": "^6.1.2",
+    "cpx2": {
+      "glob": "^13.0.2"
+    }
   },
   "scripts": {
     "clean": "rimraf dist build",
@@ -18,18 +21,15 @@
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
     "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts && npm run bundle:min",
     "bundle:umd": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
-    "bundle:umd:y": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle.js --format umd --name StpAS  --plugin '@rollup/plugin-node-resolve={mainFields:[`browser`,`main`,`module`]}' --plugin @rollup/plugin-commonjs ",
-    "bundle:umd:x": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle.js --format umd --name StpAS --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
     "bundle:esm": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle.esm.js --format esm  --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
-    "bundle:esm:x": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle.esm.js --format esm   --plugin '@rollup/plugin-node-resolve={preferBuiltins: true}' --plugin @rollup/plugin-commonjs --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
     "bundle:dts": "rollup build/azurespeech-plugin/src/stpazurespeech.d.ts --file dist/stpazurespeech-bundle.d.ts --format es --plugin rollup-plugin-dts",
     "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/stpazurespeech-bundle-min.js -- dist/stpazurespeech-bundle.js",
-    "copy:dts": "copyfiles --flat ./src/*.d.ts ./build/azurespeech-plugin/src/",
+    "copy:dts": "npx cpx2 \"./src/*.d.ts\" \"./build/azurespeech-plugin/src/\"",
     "fix:format": "prettier --config ../../.prettierrc src --write",
     "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
     "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
     "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
-    "bundle:umd:dev": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle-min.js --format umd --name StpAS --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs",
+    "bundle:umd:dev": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle-min.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
     "publish": "npm publish",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack"
@@ -41,14 +41,11 @@
   "author": "Hyssos Tech",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^29.0.0",
-    "@rollup/plugin-node-resolve": "^16.0.3",
-    "copyfiles": "^2.4.1",
+    "cpx2": "^8.0.0",
     "prettier": "^3.8.1",
     "rimraf": "^6.1.2",
     "rollup": "^4.57.1",
     "rollup-plugin-dts": "^6.3.0",
-    "rollup-plugin-node-polyfills": "^0.2.1",
     "terser": "^5.46.0",
     "typedoc": "^0.28.16",
     "typescript": "^5.9.3"
