@@ -14,25 +14,28 @@
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle && npm run bundle:min && npm run copyhtml",
     "bundle": "rollup ./dist/index.js --file ./dist/index.js --format iife   --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs",
     "bundle:min": "terser --ecma 6 --compress --mangle --module -o ./dist/index.min.js -- ./dist/index.js",
-    "copyhtml": "copyfiles --flat ./src/*.css ./src/*.html ./dist"
+    "copyhtml": "npx cpx2 \"src/*.css\" \"dist\" && npx cpx2 \"src/*.html\" \"dist\""
   },
   "keywords": [],
   "author": "Hyssos Tech",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.4",
-    "@rollup/plugin-node-resolve": "^15.2.1",
-    "@types/google.maps": "^3.54.1",
-    "copyfiles": "^2.4.1",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@types/google.maps": "3.54.1",
+    "cpx2": "^8.0.0",
     "gzip": "^0.1.0",
     "rimraf": "^6.1.2",
-    "rollup": "^3.29.3",
-    "terser": "^5.20.0",
-    "typescript": "^5.2.2"
+    "rollup": "^4.57.1",
+    "terser": "^5.46.0",
+    "typescript": "^5.9.3"
   },
   "overrides": {
     "rimraf": "^6.1.2",
-    "brace-expansion": "^2.0.1"
+    "brace-expansion": "^2.0.1",
+    "cpx2": {
+      "glob": "^13.0.2"
+    }
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.2",
