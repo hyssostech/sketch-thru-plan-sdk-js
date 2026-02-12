@@ -30,9 +30,10 @@
     "terser": "^5.20.0",
     "typescript": "^5.2.2"
   },
-    "overrides": {
-      "rimraf": "^6.1.2"
-    },
+  "overrides": {
+    "rimraf": "^6.1.2",
+    "brace-expansion": "^2.0.1"
+  },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.2",
     "@hyssostech/azurespeech-plugin": "^0.3.2",
