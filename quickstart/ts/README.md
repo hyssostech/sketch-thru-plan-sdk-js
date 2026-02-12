@@ -12,13 +12,14 @@ Speech services SDK is referenced in [`index.html`](src/index.html):
     <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
 ```
 
-The quickstart project already makes reference to the Sketch-thru-plan SDK npm package and the speech plugin. Install dependencies with npm:
+The quickstart project already makes reference to the Sketch-thru-plan SDK npm package and the speech plugin. Install dependencies with npm and build - generated results are under `dist`:
 
 ```
-npm install 
+npm install
+npm run build 
 ```
 
-For *new projects*, add `sketch-thru-plan-sdk` and `@hyssostech/azurespeech-plugin`:
+For *new projects*, add `sketch-thru-plan-sdk` and `@hyssostech/azurespeech-plugin` to a project:
 
 ```
 npm install --save sketch-thru-plan-sdk
