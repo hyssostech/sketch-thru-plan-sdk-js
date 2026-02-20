@@ -1,15 +1,18 @@
-# Quickstart: Add military symbols to Google Maps via Speech and Sketch
+# Quickstart: Add military symbols to Leaflet via Speech and Sketch
 
 For a general description and code walkthrough, see the top level [README](../README.md).
 
 ## External references
 
-Speech services SDK is referenced in [`index.html`](src/index.html):
+Leaflet and the Speech SDK are referenced in [`index.html`](src/index.html):
 
-* Microsoft's Cognitive Services Speech SDK - used by the speech plugin
+* Leaflet CSS/JS
+* Microsoft's Cognitive Services Speech SDK – used by the speech plugin
 
 ```html
-    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
 ```
 
 The quickstart project already makes reference to the Sketch-thru-plan SDK npm package and the speech plugin. Install dependencies with npm and build - generated results are under `dist`:
@@ -29,8 +32,8 @@ npm install --save @hyssostech/azurespeech-plugin
 
 ## Source code organization
 
-1. [`index.ts'](src/index.ts) contains the main STP code
-1. [`googlemaps.ts`](src/googlemaps.ts) contains the mapping code
+1. [`index.ts`](src/index.ts) contains the main STP code
+1. [`leaflet.ts`](src/leaflet.ts) contains the minimal Leaflet mapping code
 1. [`basicrenderer.ts`](src/basicrenderer.ts) contains the bare bones placeholder renderer code
 
 ## Building the typescript project

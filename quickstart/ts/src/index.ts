@@ -1,7 +1,8 @@
 import { LatLon, Size, StpMessageLevel, StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-plan-sdk";
 import { AzureSpeechRecognizer} from "@hyssostech/azurespeech-plugin";
 import { BasicRenderer } from "./basicrenderer";
-import { GoogleMap } from "./googlemap";
+import { LeafletMap } from "./leaflet";
+import { MockRecognizer } from "./mockstp";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 let azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
@@ -22,8 +23,8 @@ window.onload = () => start();
 /**
  * Script-wide map object that gets updated as user sketches and stp responds with symbols
  */
-let stpsdk: StpRecognizer;
-let map: GoogleMap;
+let stpsdk: StpRecognizer | MockRecognizer;
+let map: LeafletMap;
 
 async function start(){
     // Retrieve (optional) querystring parameters
@@ -100,18 +101,19 @@ async function start(){
         log(msg, level, true);
     }
 
-    // Attempt to connect to STP
+    // Attempt to connect to STP; if unavailable, fallback to a mock recognizer
+    const forceMock = urlParams.get('mock') !== null;
     try {
-        await stpsdk.connect("GoogleMapsSample", 10);
+        if (forceMock) throw new Error('Mock requested');
+        await (stpsdk as StpRecognizer).connect("LeafletSampleTS", 10);
     } catch (error) {
-        let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
-        log(msg, StpMessageLevel.Error, true);
-        // Nothing else we can do
-        return;
+        stpsdk = new MockRecognizer();
+        await (stpsdk as MockRecognizer).connect("LeafletSampleTS-Mock", 1);
+        log("Using mock STP locally (no backend)");
     }
 
     // Create map instance and subscribe to sketching events
-    map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
+    map = new LeafletMap(null, 'map', mapCenter, zoomLevel);
 
     // Notify STP of the start of a stroke and activate speech recognition
     map.onStrokeStart = (location: LatLon, timestamp: string) => {
@@ -180,7 +182,9 @@ async function recognizeSpeech()  {
         let recoResult = await speechreco.recognizeOnce();
         if (recoResult) {
             // Send recognized speech over to STP
-            stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
+            const startIso = (recoResult.startTime as any)?.toISOString?.() ?? String(recoResult.startTime);
+            const endIso = (recoResult.endTime as any)?.toISOString?.() ?? String(recoResult.endTime);
+            (stpsdk as any).sendSpeechRecognition(recoResult.results, startIso, endIso);
             // Display the best hypothesis
             if (recoResult.results && recoResult.results.length > 0) {
                 log(recoResult.results[0].text);

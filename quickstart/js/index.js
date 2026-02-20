@@ -95,18 +95,19 @@ async function start(){
         log(msg, level, true);
     }
 
-    // Attempt to connect to STP
+    // Attempt to connect to STP; if unavailable, fallback to mock recognizer
+    const forceMock = urlParams.get('mock') !== null;
     try {
-        await stpsdk.connect("GoogleMapsSample", 10);
+        if (forceMock) throw new Error('Mock requested');
+        await stpsdk.connect("LeafletSample", 10);
     } catch (error) {
-        let msg = "Failed to connect to STP at " + webSocketUrl +". \nSymbols will not be recognized. Please reload to try again";
-        log(msg, "Error", true);
-        // Nothing else we can do
-        return;
+        log("Using mock STP locally (no backend)", "Info", false);
+        stpsdk = new MockRecognizer();
+        await stpsdk.connect("LeafletSample-Mock", 1);
     }
 
     // Create map instance and subscribe to sketching events
-    map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
+    map = new LeafletMap(null, 'map', mapCenter, zoomLevel);
 
     // Notify STP of the start of a stroke and activate speech recognition
     map.onStrokeStart = (location, timestamp) => {

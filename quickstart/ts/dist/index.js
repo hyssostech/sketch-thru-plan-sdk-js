@@ -1346,614 +1346,174 @@
         }
     }
 
-    /******************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, [])).next());
-        });
-    }
-
-    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
-
-    function getDefaultExportFromCjs (x) {
-    	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-    }
-
-    var fastDeepEqual;
-    var hasRequiredFastDeepEqual;
-
-    function requireFastDeepEqual () {
-    	if (hasRequiredFastDeepEqual) return fastDeepEqual;
-    	hasRequiredFastDeepEqual = 1;
-
-    	// do not edit .js files directly - edit src/index.jst
-
-
-
-    	fastDeepEqual = function equal(a, b) {
-    	  if (a === b) return true;
-
-    	  if (a && b && typeof a == 'object' && typeof b == 'object') {
-    	    if (a.constructor !== b.constructor) return false;
-
-    	    var length, i, keys;
-    	    if (Array.isArray(a)) {
-    	      length = a.length;
-    	      if (length != b.length) return false;
-    	      for (i = length; i-- !== 0;)
-    	        if (!equal(a[i], b[i])) return false;
-    	      return true;
-    	    }
-
-
-
-    	    if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
-    	    if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
-    	    if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
-
-    	    keys = Object.keys(a);
-    	    length = keys.length;
-    	    if (length !== Object.keys(b).length) return false;
-
-    	    for (i = length; i-- !== 0;)
-    	      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
-
-    	    for (i = length; i-- !== 0;) {
-    	      var key = keys[i];
-
-    	      if (!equal(a[key], b[key])) return false;
-    	    }
-
-    	    return true;
-    	  }
-
-    	  // true if both NaN, false otherwise
-    	  return a!==a && b!==b;
-    	};
-    	return fastDeepEqual;
-    }
-
-    var fastDeepEqualExports = requireFastDeepEqual();
-    var isEqual = /*@__PURE__*/getDefaultExportFromCjs(fastDeepEqualExports);
-
-    /**
-     * Copyright 2019 Google LLC. All Rights Reserved.
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at.
-     *
-     *      Http://www.apache.org/licenses/LICENSE-2.0.
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    const DEFAULT_ID = "__googleMapsScriptId";
-    /**
-     * The status of the [[Loader]].
-     */
-    var LoaderStatus;
-    (function (LoaderStatus) {
-        LoaderStatus[LoaderStatus["INITIALIZED"] = 0] = "INITIALIZED";
-        LoaderStatus[LoaderStatus["LOADING"] = 1] = "LOADING";
-        LoaderStatus[LoaderStatus["SUCCESS"] = 2] = "SUCCESS";
-        LoaderStatus[LoaderStatus["FAILURE"] = 3] = "FAILURE";
-    })(LoaderStatus || (LoaderStatus = {}));
-    /**
-     * [[Loader]] makes it easier to add Google Maps JavaScript API to your application
-     * dynamically using
-     * [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
-     * It works by dynamically creating and appending a script node to the the
-     * document head and wrapping the callback function so as to return a promise.
-     *
-     * ```
-     * const loader = new Loader({
-     *   apiKey: "",
-     *   version: "weekly",
-     *   libraries: ["places"]
-     * });
-     *
-     * loader.load().then((google) => {
-     *   const map = new google.maps.Map(...)
-     * })
-     * ```
-     */
-    class Loader {
-        /**
-         * Creates an instance of Loader using [[LoaderOptions]]. No defaults are set
-         * using this library, instead the defaults are set by the Google Maps
-         * JavaScript API server.
-         *
-         * ```
-         * const loader = Loader({apiKey, version: 'weekly', libraries: ['places']});
-         * ```
-         */
-        constructor({ apiKey, authReferrerPolicy, channel, client, id = DEFAULT_ID, language, libraries = [], mapIds, nonce, region, retries = 3, url = "https://maps.googleapis.com/maps/api/js", version, }) {
-            this.callbacks = [];
-            this.done = false;
-            this.loading = false;
-            this.errors = [];
-            this.apiKey = apiKey;
-            this.authReferrerPolicy = authReferrerPolicy;
-            this.channel = channel;
-            this.client = client;
-            this.id = id || DEFAULT_ID; // Do not allow empty string
-            this.language = language;
-            this.libraries = libraries;
-            this.mapIds = mapIds;
-            this.nonce = nonce;
-            this.region = region;
-            this.retries = retries;
-            this.url = url;
-            this.version = version;
-            if (Loader.instance) {
-                if (!isEqual(this.options, Loader.instance.options)) {
-                    throw new Error(`Loader must not be called again with different options. ${JSON.stringify(this.options)} !== ${JSON.stringify(Loader.instance.options)}`);
-                }
-                return Loader.instance;
-            }
-            Loader.instance = this;
-        }
-        get options() {
-            return {
-                version: this.version,
-                apiKey: this.apiKey,
-                channel: this.channel,
-                client: this.client,
-                id: this.id,
-                libraries: this.libraries,
-                language: this.language,
-                region: this.region,
-                mapIds: this.mapIds,
-                nonce: this.nonce,
-                url: this.url,
-                authReferrerPolicy: this.authReferrerPolicy,
-            };
-        }
-        get status() {
-            if (this.errors.length) {
-                return LoaderStatus.FAILURE;
-            }
-            if (this.done) {
-                return LoaderStatus.SUCCESS;
-            }
-            if (this.loading) {
-                return LoaderStatus.LOADING;
-            }
-            return LoaderStatus.INITIALIZED;
-        }
-        get failed() {
-            return this.done && !this.loading && this.errors.length >= this.retries + 1;
-        }
-        /**
-         * CreateUrl returns the Google Maps JavaScript API script url given the [[LoaderOptions]].
-         *
-         * @ignore
-         * @deprecated
-         */
-        createUrl() {
-            let url = this.url;
-            url += `?callback=__googleMapsCallback&loading=async`;
-            if (this.apiKey) {
-                url += `&key=${this.apiKey}`;
-            }
-            if (this.channel) {
-                url += `&channel=${this.channel}`;
-            }
-            if (this.client) {
-                url += `&client=${this.client}`;
-            }
-            if (this.libraries.length > 0) {
-                url += `&libraries=${this.libraries.join(",")}`;
-            }
-            if (this.language) {
-                url += `&language=${this.language}`;
-            }
-            if (this.region) {
-                url += `&region=${this.region}`;
-            }
-            if (this.version) {
-                url += `&v=${this.version}`;
-            }
-            if (this.mapIds) {
-                url += `&map_ids=${this.mapIds.join(",")}`;
-            }
-            if (this.authReferrerPolicy) {
-                url += `&auth_referrer_policy=${this.authReferrerPolicy}`;
-            }
-            return url;
-        }
-        deleteScript() {
-            const script = document.getElementById(this.id);
-            if (script) {
-                script.remove();
-            }
-        }
-        /**
-         * Load the Google Maps JavaScript API script and return a Promise.
-         * @deprecated, use importLibrary() instead.
-         */
-        load() {
-            return this.loadPromise();
-        }
-        /**
-         * Load the Google Maps JavaScript API script and return a Promise.
-         *
-         * @ignore
-         * @deprecated, use importLibrary() instead.
-         */
-        loadPromise() {
-            return new Promise((resolve, reject) => {
-                this.loadCallback((err) => {
-                    if (!err) {
-                        resolve(window.google);
-                    }
-                    else {
-                        reject(err.error);
-                    }
-                });
-            });
-        }
-        importLibrary(name) {
-            this.execute();
-            return google.maps.importLibrary(name);
-        }
-        /**
-         * Load the Google Maps JavaScript API script with a callback.
-         * @deprecated, use importLibrary() instead.
-         */
-        loadCallback(fn) {
-            this.callbacks.push(fn);
-            this.execute();
-        }
-        /**
-         * Set the script on document.
-         */
-        setScript() {
-            var _a, _b;
-            if (document.getElementById(this.id)) {
-                // TODO wrap onerror callback for cases where the script was loaded elsewhere
-                this.callback();
-                return;
-            }
-            const params = {
-                key: this.apiKey,
-                channel: this.channel,
-                client: this.client,
-                libraries: this.libraries.length && this.libraries,
-                v: this.version,
-                mapIds: this.mapIds,
-                language: this.language,
-                region: this.region,
-                authReferrerPolicy: this.authReferrerPolicy,
-            };
-            // keep the URL minimal:
-            Object.keys(params).forEach(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (key) => !params[key] && delete params[key]);
-            if (!((_b = (_a = window === null || window === void 0 ? void 0 : window.google) === null || _a === void 0 ? void 0 : _a.maps) === null || _b === void 0 ? void 0 : _b.importLibrary)) {
-                // tweaked copy of https://developers.google.com/maps/documentation/javascript/load-maps-js-api#dynamic-library-import
-                // which also sets the base url, the id, and the nonce
-                /* eslint-disable */
-                ((g) => {
-                    // @ts-ignore
-                    let h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
-                    // @ts-ignore
-                    b = b[c] || (b[c] = {});
-                    // @ts-ignore
-                    const d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams(), u = () => 
-                    // @ts-ignore
-                    h || (h = new Promise((f, n) => __awaiter(this, void 0, void 0, function* () {
-                        var _a;
-                        yield (a = m.createElement("script"));
-                        a.id = this.id;
-                        e.set("libraries", [...r] + "");
-                        // @ts-ignore
-                        for (k in g)
-                            e.set(k.replace(/[A-Z]/g, (t) => "_" + t[0].toLowerCase()), g[k]);
-                        e.set("callback", c + ".maps." + q);
-                        a.src = this.url + `?` + e;
-                        d[q] = f;
-                        a.onerror = () => (h = n(Error(p + " could not load.")));
-                        // @ts-ignore
-                        a.nonce = this.nonce || ((_a = m.querySelector("script[nonce]")) === null || _a === void 0 ? void 0 : _a.nonce) || "";
-                        m.head.append(a);
-                    })));
-                    // @ts-ignore
-                    d[l] ? console.warn(p + " only loads once. Ignoring:", g) : (d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)));
-                })(params);
-                /* eslint-enable */
-            }
-            // While most libraries populate the global namespace when loaded via bootstrap params,
-            // this is not the case for "marker" when used with the inline bootstrap loader
-            // (and maybe others in the future). So ensure there is an importLibrary for each:
-            const libraryPromises = this.libraries.map((library) => this.importLibrary(library));
-            // ensure at least one library, to kick off loading...
-            if (!libraryPromises.length) {
-                libraryPromises.push(this.importLibrary("core"));
-            }
-            Promise.all(libraryPromises).then(() => this.callback(), (error) => {
-                const event = new ErrorEvent("error", { error }); // for backwards compat
-                this.loadErrorCallback(event);
-            });
-        }
-        /**
-         * Reset the loader state.
-         */
-        reset() {
-            this.deleteScript();
-            this.done = false;
-            this.loading = false;
-            this.errors = [];
-            this.onerrorEvent = null;
-        }
-        resetIfRetryingFailed() {
-            if (this.failed) {
-                this.reset();
-            }
-        }
-        loadErrorCallback(e) {
-            this.errors.push(e);
-            if (this.errors.length <= this.retries) {
-                const delay = this.errors.length * Math.pow(2, this.errors.length);
-                console.error(`Failed to load Google Maps script, retrying in ${delay} ms.`);
-                setTimeout(() => {
-                    this.deleteScript();
-                    this.setScript();
-                }, delay);
-            }
-            else {
-                this.onerrorEvent = e;
-                this.callback();
-            }
-        }
-        callback() {
-            this.done = true;
-            this.loading = false;
-            this.callbacks.forEach((cb) => {
-                cb(this.onerrorEvent);
-            });
-            this.callbacks = [];
-        }
-        execute() {
-            this.resetIfRetryingFailed();
-            if (this.loading) {
-                // do nothing but wait
-                return;
-            }
-            if (this.done) {
-                this.callback();
-            }
-            else {
-                // short circuit and warn if google.maps is already loaded
-                if (window.google && window.google.maps && window.google.maps.version) {
-                    console.warn("Google Maps already loaded outside @googlemaps/js-api-loader. " +
-                        "This may result in undesirable behavior as options and script parameters may not match.");
-                    this.callback();
-                    return;
-                }
-                this.loading = true;
-                this.setScript();
-            }
-        }
-    }
-
-    class GoogleMap {
+    class LeafletMap {
         constructor(apiKey, mapDivId, mapCenter, zoomLevel) {
-            this.load = async () => {
-                let loader = new Loader({
-                    apiKey: this.apiKey,
-                    version: "weekly",
-                });
-                loader.loadCallback(async (e) => {
-                    if (e) {
-                        console.log(e);
-                        throw new Error(e.message);
-                    }
-                    else {
-                        await this.initMap();
-                    }
-                });
-            };
+            this.strokeStart = '';
+            this.strokeEnd = '';
+            this.strokePoly = null;
+            this.featureLayers = new Map();
+            this.load = async () => { await this.initMap(); };
             this.apiKey = apiKey;
             this.mapDivId = mapDivId;
             this.mapCenter = mapCenter;
             this.zoomLevel = zoomLevel;
-            this.strokeStart = this.strokeEnd = '';
-            this.assets = new Map();
         }
         async initMap() {
             const mapDiv = document.getElementById(this.mapDivId);
-            if (!mapDiv) {
+            if (!mapDiv)
                 throw new Error("Html page must contain a 'map' div");
-            }
-            const { Map } = await google.maps.importLibrary("maps");
-            this.map = new Map(mapDiv, {
-                zoom: this.zoomLevel,
-                center: { lat: this.mapCenter.lat, lng: this.mapCenter.lon },
-                gestureHandling: 'cooperative',
-                draggable: true,
-                draggableCursor: 'crosshair'
-            });
-            this.map.data.setStyle((feature) => {
-                let rend = feature.getProperty('rendering');
-                if (rend) {
-                    for (let i = 0; i < rend.length; i++) {
-                        const shape = rend[i].shape.flatMap(item => [item.x, item.y]);
-                        const iconShape = { type: 'poly', coords: shape };
-                        let marker = new google.maps.Marker({
-                            map: this.map,
-                            icon: {
-                                url: 'data:image/svg+xml;charset=UTF-8;base64,' + rend[i].svg,
-                                anchor: new google.maps.Point(rend[i].anchor.x, rend[i].anchor.y)
-                            },
-                            shape: iconShape,
-                            position: { lat: rend[i].position.lat, lng: rend[i].position.lon },
-                        });
-                        if (rend[i].title) {
-                            marker.setTitle(rend[i].title);
-                        }
-                        marker.addListener("click", () => {
-                            this.onSelection?.call(this, feature.getProperty('symbol'));
-                        });
-                        let poid = feature.getProperty('symbol')?.poid;
-                        if (poid) {
-                            if (!this.assets.has(poid)) {
-                                this.assets.set(poid, [marker]);
-                            }
-                            else {
-                                this.assets.get(poid).push(marker);
-                            }
-                        }
-                    }
-                    return { visible: feature.getGeometry().getType() != 'Point' };
+            this.map = L.map(mapDiv).setView([this.mapCenter.lat, this.mapCenter.lon], this.zoomLevel);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(this.map);
+            this.map.getContainer().style.cursor = 'crosshair';
+            const style = document.createElement('style');
+            style.textContent = '.leaflet-container, .leaflet-interactive { cursor: crosshair !important; }';
+            document.head.appendChild(style);
+            this.geoJsonLayer = L.geoJSON(null, {
+                onEachFeature: (feature, layer) => {
+                    const poid = feature.id || (feature.properties && feature.properties.poid);
+                    if (poid)
+                        this.featureLayers.set(poid, layer);
+                    layer.on('click', () => {
+                        const symbol = (feature.properties && feature.properties.symbol) || feature.symbol;
+                        if (symbol)
+                            this.onSelection?.call(this, symbol);
+                    });
                 }
-                return { visible: true };
-            });
-            this.map.data.addListener('click', (event) => {
-                this.onSelection?.call(this, event.feature.getProperty('symbol'));
-            });
-            this.map.addListener('mousedown', (e) => {
-                if (e.domEvent.ctrlKey) {
+            }).addTo(this.map);
+            this.map.on('mousedown', (e) => {
+                const domEvt = e.originalEvent;
+                if (domEvt && domEvt.ctrlKey)
                     return false;
-                }
-                e.domEvent.preventDefault();
+                domEvt && domEvt.preventDefault();
                 this.enableDrawing();
-                this.onStrokeStart?.call(this, new LatLon(e.latLng.lat(), e.latLng.lng()), this.getIsoTimestamp());
-                this.drawFreeHand(e.latLng);
+                const latlng = e.latlng;
+                this.onStrokeStart?.call(this, new LatLon(latlng.lat, latlng.lng), this.getIsoTimestamp());
+                this.drawFreeHand(latlng);
             });
         }
-        drawFreeHand(latLng) {
+        drawFreeHand(latlng) {
             this.strokeStart = this.getIsoTimestamp();
             this.clearInk();
-            this.strokePoly = new google.maps.Polyline({
-                map: this.map,
-                clickable: false,
-                strokeColor: '#8B0000',
-                strokeWeight: 2,
-            });
-            this.strokePoly.getPath().push(latLng);
-            this.moveListener = google.maps.event.addListener(this.map, 'mousemove', (e) => {
-                this.strokePoly.getPath().push(e.latLng);
-            });
-            google.maps.event.addListenerOnce(this.map, 'mouseup', (e) => {
+            this.strokePoly = L.polyline([], { color: '#8B0000', weight: 2 }).addTo(this.map);
+            this.strokePoly.addLatLng(latlng);
+            const moveHandler = (e) => { this.strokePoly.addLatLng(e.latlng); };
+            const upHandler = () => {
                 this.strokeEnd = this.getIsoTimestamp();
-                if (this.moveListener) {
-                    google.maps.event.removeListener(this.moveListener);
-                }
-                this.enableDragZoom();
-                let path = this.strokePoly.getPath();
-                if (path.getLength() == 1)
-                    path.push(path.getAt(0));
-                let strokeLatLng = path.getArray().map(item => { let o = new LatLon(item.lat(), item.lng()); return o; });
-                let sizePixels = { width: document.getElementById('map').clientWidth, height: document.getElementById('map').clientHeight };
-                let mapBounds = this.map.getBounds();
-                if (!mapBounds) {
-                    throw new Error("Failed to retrieve the map bounds - unable to send ink to STP");
-                }
-                if (this.onStrokeCompleted) {
-                    this.onStrokeCompleted(new Size(sizePixels.width, sizePixels.height), new LatLon(mapBounds.getNorthEast().lat(), mapBounds.getSouthWest().lng()), new LatLon(mapBounds.getSouthWest().lat(), mapBounds.getNorthEast().lng()), strokeLatLng, this.strokeStart, this.strokeEnd, []);
-                }
-            });
+                this.disableDrawing();
+                this.map.off('mousemove', moveHandler);
+                this.map.off('mouseup', upHandler);
+                const pts = this.strokePoly.getLatLngs();
+                if (pts.length === 1)
+                    pts.push(pts[0]);
+                const strokeLatLng = pts.map((p) => new LatLon(p.lat, p.lng));
+                const sizePixels = { width: document.getElementById('map').clientWidth, height: document.getElementById('map').clientHeight };
+                const b = this.map.getBounds();
+                this.onStrokeCompleted?.call(this, new Size(sizePixels.width, sizePixels.height), new LatLon(b.getNorthEast().lat, b.getSouthWest().lng), new LatLon(b.getSouthWest().lat, b.getNorthEast().lng), strokeLatLng, this.strokeStart, this.strokeEnd, []);
+            };
+            this.map.on('mousemove', moveHandler);
+            this.map.on('mouseup', upHandler);
         }
         enableDrawing() {
-            this.map.setOptions({
-                draggable: false,
-                zoomControl: false,
-                scrollwheel: false,
-                disableDoubleClickZoom: false
-            });
+            this.map.dragging.disable();
+            this.map.scrollWheelZoom.disable();
+            this.map.doubleClickZoom.disable();
+            this.map.getContainer().style.cursor = 'crosshair';
         }
-        enableDragZoom() {
-            this.map.setOptions({
-                draggable: true,
-                zoomControl: true,
-                scrollwheel: true,
-                disableDoubleClickZoom: true
-            });
+        disableDrawing() {
+            this.map.dragging.enable();
+            this.map.scrollWheelZoom.enable();
+            this.map.doubleClickZoom.enable();
+            this.map.getContainer().style.cursor = 'crosshair';
         }
-        addFeature(symbolGeoJSON) {
-            if (symbolGeoJSON) {
-                this.map.data.addGeoJson(symbolGeoJSON);
-            }
-        }
+        addFeature(symbolGeoJSON) { if (symbolGeoJSON)
+            this.geoJsonLayer.addData(symbolGeoJSON); }
         removeFeature(poid) {
-            let feature = this.map.data.getFeatureById(poid);
-            if (feature) {
-                if (this.assets.has(poid)) {
-                    let markers = this.assets.get(poid);
-                    for (let i = 0; i < markers.length; i++) {
-                        markers[i].setMap(null);
-                    }
-                }
-                this.map.data.remove(feature);
+            const layer = this.featureLayers.get(poid);
+            if (layer) {
+                this.geoJsonLayer.removeLayer(layer);
+                this.featureLayers.delete(poid);
             }
         }
         displayInfo(content, location, handlers) {
-            let node = document.createElement('div');
+            const node = document.createElement('div');
             node.innerHTML = content;
-            let centroid = { lat: location.lat, lng: location.lon };
-            let infoWindow = new google.maps.InfoWindow({
-                content: node,
-                position: centroid,
-            });
-            if (infoWindow && handlers && handlers.length) {
+            const popup = L.popup({ closeButton: true })
+                .setLatLng([location.lat, location.lon])
+                .setContent(node)
+                .openOn(this.map);
+            if (popup && handlers && handlers.length) {
                 for (let i = 0; i < handlers.length; i++) {
-                    let instance = node.querySelector(handlers[i].selector);
+                    const instance = node.querySelector(handlers[i].selector);
                     if (instance && handlers[i].handler) {
                         instance.addEventListener('click', (event) => {
-                            if (handlers[i].closeInfo) {
-                                infoWindow.close();
-                            }
+                            if (handlers[i].closeInfo)
+                                popup.remove();
                             handlers[i].handler(event);
                         });
                     }
                 }
             }
-            infoWindow.open(this.map);
         }
-        clearInk() {
-            this.strokePoly?.setMap(null);
+        clearInk() { if (this.strokePoly) {
+            this.map.removeLayer(this.strokePoly);
+            this.strokePoly = null;
+        } }
+        getBounds() { return this.map.getBounds(); }
+        getIsoTimestamp() { return new Date().toISOString(); }
+    }
+
+    class MockRecognizer {
+        async connect(serviceName, timeout, machineId) {
+            this.onStpMessage?.(`Connected to mock STP (${serviceName || "Mock"})`, "Info");
         }
-        getBounds() {
-            return this.map.getBounds();
+        async disconnect(timeout) {
+            this.onStpMessage?.("Disconnected from mock STP", "Info");
         }
-        getIsoTimestamp() {
-            let timestamp = new Date();
-            return timestamp.toISOString();
+        sendPenDown(location, timestamp) { }
+        sendInk(pixelBoundsWindow, topLeftGeoMap, bottomRightGeoMap, strokePoints, timeStrokeStart, timeStrokeEnd, intersectedPoids) {
+            this.onInkProcessed?.();
+            const poid = `mock-${Date.now()}`;
+            const isPoint = strokePoints && strokePoints.length <= 2;
+            const centroid = isPoint ? strokePoints[0] : strokePoints[Math.floor(strokePoints.length / 2)];
+            const symbol = new MockSymbol(poid, centroid, strokePoints, isPoint ? "point" : "line");
+            symbol.affiliation = "friend";
+            symbol.fullDescription = isPoint ? "Mock Point" : "Mock Graphic";
+            symbol.description = symbol.fullDescription;
+            this.onSymbolAdded?.([symbol], false);
+        }
+        sendSpeechRecognition(results, startTime, endTime) {
+            const phrases = (results || []).map(r => r.text);
+            this.onSpeechRecognized?.(phrases);
+        }
+        deleteSymbol(poid) { this.onSymbolDeleted?.(poid, false); }
+    }
+    class MockSymbol {
+        constructor(poid, centroid, coords, shape) {
+            this.poid = poid;
+            this.location = { fsTYPE: shape === "point" ? "point" : "line", shape, centroid, coords: coords || [] };
+            this.affiliation = "unknown";
+            this.fullDescription = "Mock Symbol";
+            this.description = this.fullDescription;
+            this.sidc = {};
+        }
+        asGeoJSON() {
+            const isPoint = this.location.fsTYPE === "point";
+            return {
+                type: "Feature",
+                id: this.poid,
+                properties: { poid: this.poid, symbol: this, description: this.description, affiliation: this.affiliation },
+                geometry: isPoint
+                    ? { type: "Point", coordinates: [this.location.centroid.lon, this.location.centroid.lat] }
+                    : { type: "LineString", coordinates: (this.location.coords || []).map(p => [p.lon, p.lat]) }
+            };
         }
     }
 
     let azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
     let azureServiceRegion = "<Enter Azure's subscription region>";
     let azureEndPoint = null;
-    let googleMapsKey = "<Enter your Google Maps API key here>";
     let mapCenter = new LatLon(58.967774948, 11.196062412);
     let zoomLevel = 13;
     let webSocketUrl = "ws://<STP server>:<STP port>";
@@ -1962,9 +1522,7 @@
     let map;
     async function start() {
         const urlParams = new URLSearchParams(window.location.search);
-        const mapKey = urlParams.get('mapkey');
-        if (mapKey)
-            googleMapsKey = mapKey;
+        urlParams.get('mapkey');
         const latParm = urlParams.get('lat');
         const lonParm = urlParams.get('lon');
         if (latParm && lonParm)
@@ -2012,15 +1570,18 @@
         stpsdk.onStpMessage = (msg, level) => {
             log(msg, level, true);
         };
+        const forceMock = urlParams.get('mock') !== null;
         try {
-            await stpsdk.connect("GoogleMapsSample", 10);
+            if (forceMock)
+                throw new Error('Mock requested');
+            await stpsdk.connect("LeafletSampleTS", 10);
         }
         catch (error) {
-            let msg = "Failed to connect to STP at " + webSocketUrl + ". \nSymbols will not be recognized. Please reload to try again";
-            log(msg, StpMessageLevel.Error, true);
-            return;
+            stpsdk = new MockRecognizer();
+            await stpsdk.connect("LeafletSampleTS-Mock", 1);
+            log("Using mock STP locally (no backend)");
         }
-        map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
+        map = new LeafletMap(null, 'map', mapCenter, zoomLevel);
         map.onStrokeStart = (location, timestamp) => {
             stpsdk.sendPenDown(location, timestamp);
             recognizeSpeech();
@@ -2047,7 +1608,9 @@
             const speechreco = new AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint);
             let recoResult = await speechreco.recognizeOnce();
             if (recoResult) {
-                stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
+                const startIso = recoResult.startTime?.toISOString?.() ?? String(recoResult.startTime);
+                const endIso = recoResult.endTime?.toISOString?.() ?? String(recoResult.endTime);
+                stpsdk.sendSpeechRecognition(recoResult.results, startIso, endIso);
                 if (recoResult.results && recoResult.results.length > 0) {
                     log(recoResult.results[0].text);
                 }
