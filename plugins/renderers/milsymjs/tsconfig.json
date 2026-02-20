@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ES2015",
+    "strict": false,
+    "declaration": true,
+    "outDir": "build",
+    "skipLibCheck": true,
+    "lib": ["ES2019", "DOM"],
+    "moduleResolution": "Node"
+  },
+  "include": ["src/**/*.ts"]
+}
