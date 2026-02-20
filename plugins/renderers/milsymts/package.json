@@ -1,0 +1,26 @@
+{
+  "name": "milsymts-renderer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Side-by-side renderer using mil-sym-ts WebRenderer",
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf build dist",
+    "build:ts": "tsc -p tsconfig.json",
+    "build:umd": "rollup -c",
+    "build": "npm run clean && npm run build:ts && npm run build:umd"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.57.1",
+    "rollup-plugin-dts": "^6.3.0",
+    "rimraf": "^6.1.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@armyc2.c5isr.renderer/mil-sym-ts-web": "2.6.6"
+  }
+  
+}
