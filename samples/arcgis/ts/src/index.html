@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>C2SIM ArcGIS (TS)</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+    <!-- ArcGIS adapter bundle (global ArcGISMap) -->
+    <script src="../../../../plugins/maps/arcgis/dist/arcgis-bundle-min.js"></script>
+    <!-- STP SDK and Azure Speech plugin as globals -->
+    <!-- Microsoft Cognitive Services Speech SDK (required by AzureSpeech plugin) -->
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.min.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>-->
+    <script type="application/javascript" src="../../../../../stp-js/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@latest/dist/stpazurespeech-bundle-min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div id="actions">
+      <label for="sessionId" id="sessionGroup" class="group">Session:</label>
+      <input type="text" id="sessionId" placeholder="auto">
+      <input type="button" id="connect" value="Connect" />
+      <span id="status">Disconnected</span>
+      <br>
+      <label id="scenarioGroup" class="group">Scenario:</label>
+      <input type="button" id="new" value="New" />
+      <input type="button" id="join" value="Join" />
+      <input type="button" id="save" value="Save" />
+      <input type="button" id="load" value="Load" />
+      <input type="button" id="sync" value="Sync" />
+      <br>
+      <label id="toGroup" class="group">TO/ORBAT:</label>
+      <input type="button" id="friend" value="Load Friend" />
+      <input type="button" id="hostile" value="Load Hostile" />
+      <br>
+      <label>Active:</label>
+      <br>
+      <label id="toName">none</label>
+      <input type="button" id="getto" value="Save" />
+      <br>
+      <label id="roleGroup" class="group" for="roles">Role:</label>
+      <select name="roles" id="roles">
+        <option value="none">None</option>
+        <option value="s2">S2</option>
+        <option value="s3">S3</option>
+        <option value="s4">S4</option>
+        <option value="fso">FSO</option>
+        <option value="eng">ENG</option>
+      </select>
+      <br>
+      <label id="c2simGroup" class="group">C2SIM:</label>
+      <input type="button" id="export" value="Export" />
+      <select name="affiliation" id="affiliation">
+        <option value="all">all</option>
+        <option value="friend">friend</option>
+        <option value="hostile">hostile</option>
+      </select>
+      <select name="types" id="types">
+        <option value="Initialization">Initialization</option>
+        <option value="Order">Order</option>
+      </select>
+      <input type="button" id="import" value="Import" />
+      <label id="importGroup" for="import">Initialization</label>
+    </div>
+    <div id="messages">Connect to load map</div>
+    <div id="map"></div>
+
+    <!-- ArcGIS JS API (AMD loader) -->
+    <script src="https://js.arcgis.com/4.29/"></script>
+    <!-- Our bundled app -->
+    <script src="index.min.js"></script>
+  </body>
+  </html>

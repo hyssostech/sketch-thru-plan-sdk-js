@@ -1,0 +1,42 @@
+{
+  "name": "c2sim-arcgis-ts",
+  "version": "1.0.0",
+  "description": "C2SIM ArcGIS sample (TypeScript) built as static files",
+  "main": "./dist/index.js",
+  "module": "./dist/index.min.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./dist",
+    "!./dist/**/*.js.map"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "npm run clean && tsc --project tsconfig.json && npm run bundle && npm run bundle:min && npm run copyhtml",
+    "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle && npm run copyhtml",
+    "bundle": "rollup ./dist/index.js --file ./dist/index.js --format iife --plugin @rollup/plugin-node-resolve={browser:true,preferBuiltins:false} --plugin @rollup/plugin-commonjs --external sketch-thru-plan-sdk,@hyssostech/azurespeech-plugin --globals sketch-thru-plan-sdk=StpSDK,@hyssostech/azurespeech-plugin=StpAS",
+    "bundle:min": "terser --ecma 6 --compress --mangle --module -o ./dist/index.min.js -- ./dist/index.js",
+    "copyhtml": "npx cpx2 \"src/*.css\" \"dist\" && npx cpx2 \"src/*.html\" \"dist\""
+  },
+  "author": "Hyssos Tech",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "cpx2": "^8.0.0",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.57.1",
+    "terser": "^5.46.0",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "rimraf": "^6.1.2",
+    "brace-expansion": "^2.0.1",
+    "cpx2": {
+      "glob": "^13.0.2"
+    }
+  },
+  "dependencies": {
+    "sketch-thru-plan-sdk": "^0.6.12",
+    "@hyssostech/azurespeech-plugin": "^0.3.2"
+  }
+}
