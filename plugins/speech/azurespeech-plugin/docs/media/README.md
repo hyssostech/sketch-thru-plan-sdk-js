@@ -1,6 +1,6 @@
 # Quickstart Overview
 
-Language-specific Google Maps samples are included:
+Leaflet-based quickstarts are included:
 
 * [js](js) folder - Vanilla javascript introductory example
 * [ts](ts) folder - Typescript example
@@ -38,7 +38,7 @@ npm install --save sketch-thru-plan-sdk
 
 Or embed it directly as a script using jsdelivr. As always, it is recommended that a specific version be used rather than @latest to prevent breaking changes from affecting existing code
 
-```javascript
+* A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 <!-- Include _after_ the external services such as the Microsoft Cognitive Services Speech -->
 <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
 ```
@@ -64,14 +64,12 @@ Parameters:
 
 Example:
 
-```
+https://your-host/quickstart/ts/dist/index.html?stpurl=ws://localhost:9599&lat=58.96777&lon=11.19606&zoom=13&azkey=YOUR_AZURE_KEY&azregion=eastus&azlang=en-US
 https://your-host/quickstart/ts/dist/index.html?mapkey=YOUR_GOOGLE_KEY&stpurl=ws://localhost:9599&lat=58.96777&lon=11.19606&zoom=13&azkey=YOUR_AZURE_KEY&azregion=eastus&azlang=en-US
 ```
-
-### Provide via Code
-
+// Mapping service: Leaflet is loaded via CSS/JS in index.html (no API key)
 Alternatively, define the parameters directly in code by editing 
-[ts/src/index.ts](ts/src/index.ts) or [js/index.js](js/index.js):
+* A connection to the STP server is established and a Leaflet map is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 
 ```javascript
 // STP engine connection: WebSockets endpoint (hostname:port or reverse-proxy URL)

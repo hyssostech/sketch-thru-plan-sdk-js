@@ -1,6 +1,6 @@
 # Quickstart Overview
 
-Language-specific Google Maps samples are included:
+Leaflet-based quickstarts are included:
 
 * [js](js) folder - Vanilla javascript introductory example
 * [ts](ts) folder - Typescript example
@@ -11,7 +11,7 @@ Both versions have similar code structures. We overview the code here using the 
 These examples have bare bones, placeholder rendering capabilities, meant to be replaced by production quality rendering in a real application. The [samples](../samples) include in these resources demonstrate the use of actual military symbol rendering.
 
 
-# Adding military symbols to Google Maps via Speech and Sketch
+# Adding military symbols to Leaflet via Speech and Sketch
 
 The quickstarts demonstrate the how sketches (and optionally speech) collected by a typescript browser app can be sent for processing by Sketch-thru-Plan (STP) for interpretation. If successfully interpreted, the combined/fused speech and sketch are turned into military symbols by STP, and sent back to the app for rendering.
 
@@ -23,7 +23,6 @@ The connection to STP and the speech recognizer that is used are configurable vi
 
 ## Prerequisites
 * Sketch-thru-Plan (STP) Engine (v5.8.7+) running on an accessible server
-* A Google Maps [API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
 * A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
 * Means to serve a page over https
@@ -65,7 +64,7 @@ Parameters:
 Example:
 
 ```
-https://your-host/quickstart/ts/dist/index.html?mapkey=YOUR_GOOGLE_KEY&stpurl=ws://localhost:9599&lat=58.96777&lon=11.19606&zoom=13&azkey=YOUR_AZURE_KEY&azregion=eastus&azlang=en-US
+https://your-host/quickstart/ts/dist/index.html?stpurl=ws://localhost:9599&lat=58.96777&lon=11.19606&zoom=13&azkey=YOUR_AZURE_KEY&azregion=eastus&azlang=en-US
 ```
 
 ### Provide via Code
@@ -78,9 +77,7 @@ Alternatively, define the parameters directly in code by editing
 // Ensure the port is reachable and not blocked by a firewall
 const webSocketUrl = "ws://<STP server>:<STP port>"; // e.g., ws://localhost:9599
 
-// Mapping service: Google Maps API key and script URL
-const googleMapsKey = "<YOUR_GOOGLE_MAPS_API_KEY>";
-const googleMapsUrl = "https://maps.googleapis.com/maps/api/js?key=" + googleMapsKey;
+// Mapping service: Leaflet is loaded via CSS/JS in index.html (no API key)
 
 // Speech recognition: Azure Cognitive Services Speech config
 const azureSubscriptionKey = "<YOUR_AZURE_SPEECH_SUBSCRIPTION_KEY>"; 
@@ -96,7 +93,7 @@ const zoomLevel = 13;
 
 * Load the `quicktstart/ts/dist/index.html` or `quickstart/js/index.html` on a browser. You may need to serve the page from a proper https location (rather than file:) to avoid browser microphone access restrictions
 
-* A connection to the STP server is established and Google Maps is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
+* A connection to the STP server is established and a Leaflet map is displayed. If an error message is displayed, verify that STP is running on the server at the address and port configured above, and that the port is not being blocked by a firewall
 * Enter symbols by sketching and speaking, for example:
     * Sketch a point (or small line) and speak "Infantry Company", or "Recon Platoon", or "Stryker Brigade"
     * Sketch a line and speak "Phase Line Blue", or "Company Boundary", or "Main Attack Boston"
