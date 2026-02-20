@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sketch-thru-Plan Edit Sample</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <!-- Speech recognition -->
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <!-- STP SDK and plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@latest/dist/stpazurespeech-bundle-min.js"></script>
+    <!-- JMS renderer (bundles milsymbol + multipoint) -->
+    <script src="../../plugins/renderers/milsymjs/dist/jmsrenderer-bundle-min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <header class="toolbar">
+      <div>
+        <label for="mapSelector">Map:</label>
+        <select id="mapSelector">
+          <option value="gmaps">Google Maps</option>
+          <option value="leaflet">Leaflet</option>
+        </select>
+      </div>
+      <div class="spacer"></div>
+      <div id="status"></div>
+    </header>
+
+    <div id="messages"></div>
+    <div id="map">Loading app...</div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
