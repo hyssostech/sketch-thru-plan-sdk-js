@@ -100,8 +100,107 @@ map.addFeature(gj);
 ```
 
 The references to these renderers are included through the local JMS bundle.
+## Symbol manipulation
 
+The SDK exposes methods that let applications programmatically add, update, and delete symbols outside of the normal sketch‑and‑speech flow.
+All of these are *requests* – the application should wait for the corresponding STP event before updating its own state.
+
+| Method | Description |
+|---|---|
+| `addSymbol(symbol)` | Request that a new symbol be added. STP responds with `onSymbolAdded`. |
+| `updateSymbol(poid, symbol)` | Request that an existing symbol be modified. STP responds with `onSymbolModified`. |
+| `deleteSymbol(poid)` | Request that a symbol be removed. STP responds with `onSymbolDeleted`. |
+| `chooseAlternate(poid, nBestIndex)` | Select a different recognition alternate for a symbol. |
+
+### Symbol events
+
+Wire these handlers to keep the map display in sync with STP:
+
+```javascript
+// A new symbol has been recognized – render the top alternate
+stpsdk.onSymbolAdded = (alternates, isUndo) => {
+  const gj = new JmsRenderer(alternates[0], map.getBounds()).asGeoJSON();
+  map.addFeature(gj);
+};
+
+// An existing symbol was modified – replace it on the map
+stpsdk.onSymbolModified = (poid, symbol, isUndo) => {
+  map.removeFeature(poid);
+  const gj = new JmsRenderer(symbol, map.getBounds()).asGeoJSON();
+  map.addFeature(gj);
+};
+
+// A symbol was deleted – remove it from the map
+stpsdk.onSymbolDeleted = (poid, isUndo) => {
+  map.removeFeature(poid);
+};
+```
+
+Each handler receives an `isUndo` flag that is `true` when the event is the result of an undo/redo operation, allowing the UI to distinguish user‑initiated changes from history‑based ones.
+
+### Deleting a symbol on selection
+
+In this sample, clicking a rendered symbol opens an info popup that includes a **Delete** button.
+The button calls `deleteSymbol` with the symbol's unique identifier; the actual removal happens when STP fires `onSymbolDeleted`:
+
+```javascript
+map.onSelection = (symbol) => {
+  map.displayInfo(
+    buildInfo(symbol),
+    symbol.location.centroid,
+    [{ selector: '#delButton',
+       handler: () => { stpsdk.deleteSymbol(symbol.poid); },
+       closeInfo: true }]
+  );
+};
+```
 ## Symbol properties
 
-STP provides a rich set of properties on each symbol and its location. If you switch to a different renderer, map STP properties to your renderer’s inputs. See the single‑adapter readmes for detailed property tables.
+STP provides a rich set of properties on each symbol and its location. If you switch to a different renderer, map STP properties to your renderer's inputs. See also the [renderers README](../../plugins/renderers/README.md) for additional context.
+
+| Property          | Description                                                                   |
+| ---------------   | ----------------------------------------------------------------------------- |
+| fsTYPE            | Symbol type: unit, mootw, equipment, tg, task                                |
+| poid              | STP unique identifier                                                        |
+| parentCoa         | Unique id of the COA this symbol belongs to                                  |
+| creatorRole       | Role that created the symbol: S2, S3, S4, Eng, FSO                          |
+| interval          | Symbol creation time interval                                                |
+| confidence        | Confidence score of the recognition (1.0 is 100%)                            |
+| alt               | Rank of this symbol interpretation amongst the interpretation hypotheses     |
+| sidc.partA        | Part A of the 2525D id                                                       |
+| sidc.partB        | Part B of the 2525D id                                                       |
+| sidc.partC        | Part C of the 2525D id                                                       |
+| sidc.symbolSet    | 2525D Symbol Set                                                             |
+| sidc.legacy       | 2525C SIDC                                                                   |
+| location          | Location of the symbol (see sub‑properties below)                            |
+| shortDescription  | Just the essential distinguishing elements, e.g. designators                 |
+| description       | Name/type of the symbol plus designators, but may omit "friendly", "present" and other assumed decorators |
+| fullDescription   | Complete description, including affiliation, status and all decorators        |
+| affiliation       | pending, unknown, assumedfriend, friend, neutral, suspected, hostile         |
+| echelon           | none, team, squad, section, platoon, company, battalion, regiment, brigade, division, corps, army, armygroup, region, command |
+| parent            | Parent unit designator                                                       |
+| designator1       | Main symbol designator                                                       |
+| designator2       | Additional designator, e.g. in a company boundary, indicating the designator of the company to the S or E |
+| status            | present, anticipated                                                         |
+| modifier          | HQ and Task Force modifier: none, dummy, hq, dummy_hq, task_force, dummy_task_force, task_force_hq, dummy_task_force_hq |
+| strength          | none, reduced, reinforced, reduced_reinforced                                |
+| branch            | weapon, ground_unit, civilian_air, special_operations, vstol, equipment, installation, military_air, military_sea, military_submarine |
+| timeFrom          | Start time, e.g. of a Restricted Operations Zone                            |
+| timeTo            | End time, e.g. of a Restricted Operations Zone                              |
+| altitude          | Altitude parameter, if applicable                                            |
+| minAltitude       | Symbol minimal altitude if a range is supported                              |
+| maxAltitude       | Symbol maximal altitude if a range is supported                              |
+| toUnitPoid        | For symbols created from a Task Org, the unique id of the Task Org Unit that this symbol was created from |
+
+### Location properties
+
+| Property          | Description                                                                   |
+| ---------------   | ----------------------------------------------------------------------------- |
+| fsTYPE            | Location type: point, line, area                                             |
+| width             | Location width, if applicable                                                |
+| shape             | Gesture type, normally point, line or area. Other types include straightline, arrowthin, arrowfat, hook, ubend, ubendthreepoints, vee, opencircle, multipoint |
+| radius            | Radius of the area containing the symbol, if applicable (zero for point locations) |
+| coords            | Array of `{ lat, lon }` coordinates                                          |
+| centroid          | Coordinates of the location centroid `{ lat, lon }`                          |
+| candidatePoids    | Unique Ids of the symbols intersected by coords (used for editing operations that use sketches to select objects) |
 
