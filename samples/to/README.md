@@ -457,7 +457,7 @@ export enum CommandRelationship {
 };
 ```
 
-### Communicating TO edits to STP
+### Programmatic TO manipulation - Communicating TO edits to STP
 
 Task Org edits performed via a client interface, for example in a Task Org Editor, need to be communicated to STP, so that the internal state is consistent, and  actions performed by a client can be propagated to other clients that may be connected to the same collaboration session.
 
