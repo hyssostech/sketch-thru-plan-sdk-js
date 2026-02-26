@@ -22,7 +22,7 @@ The connection to STP and the speech recognizer that is used are configurable vi
 
 
 ## Prerequisites
-* Sketch-thru-Plan (STP) Engine (v5.8.7+) running on an accessible server
+* Sketch-thru-Plan (STP) Engine (v5.9.9+) running on an accessible server
 * A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
 * Means to serve a page over https
