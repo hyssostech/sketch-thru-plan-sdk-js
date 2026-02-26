@@ -36,6 +36,8 @@ Components that can be swapped and/or reused are described in [plugins](plugins)
 
 ## Reference
 
-[Sketch-Thru-Plan SDK Reference](https://hyssostech.github.io/stp-docs/sdk/index.html)
+[Sketch-Thru-Plan SDK Documentation](https://hyssostech.github.io/stp-docs/)
+
+[API Reference](https://hyssostech.github.io/stp-docs/docs/api/)
 
 [MIL-STD-2525D Joint Military Symbology](https://www.jcs.mil/Portals/36/Documents/Doctrine/Other_Pubs/ms_2525d.pdf)

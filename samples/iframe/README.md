@@ -21,9 +21,7 @@ If a message indicating an error recognizing speech is displayed once a stroke i
 
 ## Live sample
 
-A sample of an iframe that is cross-origin, with a working microphone can be found here:
- 
-https://hyssostech.github.io/stp-docs/live/index.html
+See the [iframe embedding guide](https://hyssostech.github.io/stp-docs/docs/guides/iframe-embedding) for cross-origin setup and microphone permissions.
  
  
 The `iframe` in that page points to an installed version of the STP sample app. Follow the [link](../gmaps) for details on capabilities, implementation and parameters.   

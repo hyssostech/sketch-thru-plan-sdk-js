@@ -71,6 +71,12 @@ Optional querystring parameters:
 - `azregion` – MS Cognitive Services Speech instance region
 - `azlang` – MS Cognitive Services Speech language (default is en‑US)
 - `azendp` – Optional MS Cognitive Services Speech custom language model endpoint
+- `awskey` – AWS Access Key ID
+- `awssecret` – AWS Secret Access Key
+- `awstoken` – Optional AWS session token (for temporary credentials)
+- `awsregion` – AWS region (default `us-east-1`)
+- `awslang` – AWS Transcribe language (default `en-US`)
+- `speech` – Speech provider: `azure` or `aws` (default `azure`)
 - `stpurl` – STP WebSockets URL
 - `inkonly` – prevents browser speech recognition (only ink is sent)
 - `machineid` – pairs ink with an external speech recognizer on the same machine
