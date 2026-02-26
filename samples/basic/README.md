@@ -100,7 +100,8 @@ map.addFeature(gj);
 ```
 
 The references to these renderers are included through the local JMS bundle.
-## Symbol manipulation
+
+## Programmatic symbol manipulation
 
 The SDK exposes methods that let applications programmatically add, update, and delete symbols outside of the normal sketch‑and‑speech flow.
 All of these are *requests* – the application should wait for the corresponding STP event before updating its own state.
