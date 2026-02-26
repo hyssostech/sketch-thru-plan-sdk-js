@@ -1,0 +1,33 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+      "target": "es2020", 
+      "module": "es2020",
+        "rootDirs": ["src", "../../interfaces"],
+        "outDir": "build",
+        "experimentalDecorators": true,
+        "skipLibCheck": true
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "dist",
+      "build",
+      "test"
+    ],
+    "typedocOptions": {  
+      "entryPoints": [
+        "./src/stpawsspeech.ts",
+        "../interfaces/ISpeechRecognizer.ts"
+      ],
+      "readme": "README.md",
+      "out": "docs",
+      "excludePrivate": "true",
+      "theme": "default",
+      "includeVersion": "true", 
+      "name": "Sketch-thru-Plan AWS Speech Connector"
+    }
+}
+  

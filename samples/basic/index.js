@@ -5,6 +5,14 @@ let azureServiceRegion = "<Enter Azure's subscription region>";
 let azureLanguage = "en-US";
 let azureEndPoint = null;
 
+let awsAccessKeyId = "<Enter your AWS Access Key ID here>";
+let awsSecretAccessKey = "<Enter your AWS Secret Access Key here>";
+let awsSessionToken = null;
+let awsRegion = "us-east-1";
+let awsLanguage = "en-US";
+
+let speechProvider = "azure"; // "azure" | "aws"
+
 let googleMapsKey = "<Enter your Google Maps API key here>";
 let mapCenter = { lat: 58.967774948, lon: 11.196062412 };
 let zoomLevel = 13;
@@ -45,6 +53,14 @@ async function start(){
   const azLang = urlParams.get('azlang'); if (azLang) azureLanguage = azLang;
   const azEndp = urlParams.get('azendp'); if (azEndp) azureEndPoint = azEndp;
 
+  const awsKeyParm = urlParams.get('awskey'); if (awsKeyParm) awsAccessKeyId = awsKeyParm;
+  const awsSecretParm = urlParams.get('awssecret'); if (awsSecretParm) awsSecretAccessKey = awsSecretParm;
+  const awsTokenParm = urlParams.get('awstoken'); if (awsTokenParm) awsSessionToken = awsTokenParm;
+  const awsRegionParm = urlParams.get('awsregion'); if (awsRegionParm) awsRegion = awsRegionParm;
+  const awsLangParm = urlParams.get('awslang'); if (awsLangParm) awsLanguage = awsLangParm;
+
+  const speechParm = urlParams.get('speech'); if (speechParm) speechProvider = speechParm.toLowerCase();
+
   const inkOnly = urlParams.get('inkonly');
   const machineId = urlParams.get('machineid');
 
@@ -59,6 +75,15 @@ async function start(){
     // Rebuild page to ensure clean adapter load
     const next = new URL(window.location.href);
     next.searchParams.set('map', chosen);
+    window.location.href = next.toString();
+  });
+
+  const speechSelector = document.getElementById('speechSelector');
+  speechSelector.value = speechProvider;
+  speechSelector.addEventListener('change', () => {
+    const chosen = speechSelector.value;
+    const next = new URL(window.location.href);
+    next.searchParams.set('speech', chosen);
     window.location.href = next.toString();
   });
 
@@ -104,6 +129,18 @@ async function start(){
   let speechreco;
   if (inkOnly != null) {
     speechreco = null;
+  } else if (speechProvider === 'aws') {
+    speechreco = new StpAWS.AwsSpeechRecognizer(awsAccessKeyId, awsSecretAccessKey, awsRegion, awsSessionToken, awsLanguage);
+    speechreco.onRecognized = (recoResult) => {
+      if (recoResult && recoResult.results && recoResult.results.length > 0) {
+        speechreco.stopRecognizing();
+        stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
+        const concat = recoResult.results.map((item) => item.text).join(' | ');
+        log(concat);
+      }
+    };
+    speechreco.onRecognizing = (snippet) => { log(snippet); };
+    speechreco.onError = (e) => { log("Failed to process speech: " + e.message); };
   } else {
     speechreco = new StpAS.AzureSpeechRecognizer(azureSubscriptionKey, azureServiceRegion, azureEndPoint, null, azureLanguage);
     speechreco.onRecognized = (recoResult) => {

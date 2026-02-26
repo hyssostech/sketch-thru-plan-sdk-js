@@ -4,8 +4,10 @@
     <title>Sketch-thru-Plan Edit Sample</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
-    <!-- Speech recognition -->
+    <!-- Speech recognition: Azure -->
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <!-- Speech recognition: AWS (bundles the AWS SDK) -->
+    <script src="../../plugins/speech/awsspeech-plugin/dist/stpawsspeech-bundle-min.js"></script>
     <!-- STP SDK and plugins -->
     <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@latest/dist/stpazurespeech-bundle-min.js"></script>
@@ -22,6 +24,13 @@
         <select id="mapSelector">
           <option value="gmaps">Google Maps</option>
           <option value="leaflet">Leaflet</option>
+        </select>
+      </div>
+      <div>
+        <label for="speechSelector">Speech:</label>
+        <select id="speechSelector">
+          <option value="azure">Azure</option>
+          <option value="aws">AWS</option>
         </select>
       </div>
       <div class="spacer"></div>
