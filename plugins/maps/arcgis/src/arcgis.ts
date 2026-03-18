@@ -242,9 +242,11 @@ export class ArcGISMap implements IMapAdapter {
             projection.load();
             // Symbol layers
             this.mapRef.addMany([this.symbolLayerPoint, this.symbolLayerMultipoint, this.symbolLayerLine, this.symbolLayerPolygon]);
-            // Suppress panning during drags
+            // Suppress panning during drags — except when Ctrl is held (Ctrl+drag pans)
             this.viewRef.on("drag", (event: any) => {
-              event.stopPropagation();
+              if (!event.native?.ctrlKey) {
+                event.stopPropagation();
+              }
             });
           });
 
@@ -268,6 +270,8 @@ export class ArcGISMap implements IMapAdapter {
           // Freehand drawing
           this.viewRef.on('pointer-down', (e: any) => {
             if (e.button !== 0) return; // left button only
+            // Ctrl+click: let the default pan behaviour through
+            if (e.native?.ctrlKey) return;
             // Prevent the default pan/zoom behavior
             e.stopPropagation();
             e.preventDefault();         // often both are needed for reliability
@@ -312,7 +316,7 @@ export class ArcGISMap implements IMapAdapter {
             console.debug('Stroke move, path length:', updatedPaths[0].length);
           });
 
-          const finish = (e: any) => {
+          const finish = async (e: any) => {
             if (!this.drawing) return;
             this.drawing = false;
             const strokeEnd = this.getIsoTimestamp();
@@ -330,7 +334,8 @@ export class ArcGISMap implements IMapAdapter {
             
             const { topLeft, bottomRight } = this.convertExtentToWGS84(extent, Point, SpatialReference, projection);
 
-            this.onStrokeCompleted?.call(this, sizePixels, topLeft, bottomRight, coords, this.strokeStartTs, strokeEnd, []);
+            const intersectedPoids = await this.getIntersectedPoids(geom);
+            this.onStrokeCompleted?.call(this, sizePixels, topLeft, bottomRight, coords, this.strokeStartTs, strokeEnd, intersectedPoids);
           };
           this.viewRef.on('pointer-up', finish);
           document.addEventListener('mouseup', finish);
@@ -460,6 +465,27 @@ export class ArcGISMap implements IMapAdapter {
       default:
         return null;
     }
+  };
+
+  private getIntersectedPoids = async (strokeGeom: any): Promise<string[]> => {
+    const poids: string[] = [];
+    if (!strokeGeom) return poids;
+    const layers = [this.symbolLayerPoint, this.symbolLayerMultipoint, this.symbolLayerLine, this.symbolLayerPolygon].filter(Boolean);
+    for (const lyr of layers) {
+      try {
+        const query = lyr.createQuery();
+        query.geometry = strokeGeom;
+        query.spatialRelationship = 'intersects';
+        const result = await lyr.queryFeatures(query);
+        for (const feat of result.features) {
+          const poid = feat.attributes?.poid;
+          if (poid && !poids.includes(poid)) poids.push(poid);
+        }
+      } catch (e) {
+        console.warn('Intersect query failed on layer:', e);
+      }
+    }
+    return poids;
   };
 
   private convertExtentToWGS84 = (extent: any, Point: any, SpatialReference: any, projection: any) => {

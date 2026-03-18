@@ -175,9 +175,12 @@ export class ArcGISMap {
                             projection.load();
                             // Symbol layers
                             this.mapRef.addMany([this.symbolLayerPoint, this.symbolLayerMultipoint, this.symbolLayerLine, this.symbolLayerPolygon]);
-                            // Suppress panning during drags
+                            // Suppress panning during drags — except when Ctrl is held (Ctrl+drag pans)
                             this.viewRef.on("drag", (event) => {
-                                event.stopPropagation();
+                                var _a;
+                                if (!((_a = event.native) === null || _a === void 0 ? void 0 : _a.ctrlKey)) {
+                                    event.stopPropagation();
+                                }
                             });
                         });
                         // Basic click selection support via hitTest
@@ -201,9 +204,12 @@ export class ArcGISMap {
                         });
                         // Freehand drawing
                         this.viewRef.on('pointer-down', (e) => {
-                            var _a;
+                            var _a, _b;
                             if (e.button !== 0)
                                 return; // left button only
+                            // Ctrl+click: let the default pan behaviour through
+                            if ((_a = e.native) === null || _a === void 0 ? void 0 : _a.ctrlKey)
+                                return;
                             // Prevent the default pan/zoom behavior
                             e.stopPropagation();
                             e.preventDefault(); // often both are needed for reliability
@@ -211,7 +217,7 @@ export class ArcGISMap {
                             this.strokeStartTs = this.getIsoTimestamp();
                             const mapPoint = this.viewRef.toMap({ x: e.x, y: e.y });
                             const start = { lat: mapPoint.latitude, lon: mapPoint.longitude };
-                            (_a = this.onStrokeStart) === null || _a === void 0 ? void 0 : _a.call(this, start, this.strokeStartTs);
+                            (_b = this.onStrokeStart) === null || _b === void 0 ? void 0 : _b.call(this, start, this.strokeStartTs);
                             //this.clearInk();
                             const polyline = new Polyline({
                                 paths: [[[mapPoint.longitude, mapPoint.latitude]]], // Initial path with first point
@@ -243,7 +249,7 @@ export class ArcGISMap {
                             this.strokeGraphic.geometry = newGeometry;
                             console.debug('Stroke move, path length:', updatedPaths[0].length);
                         });
-                        const finish = (e) => {
+                        const finish = async (e) => {
                             var _a, _b, _c, _d, _e;
                             if (!this.drawing)
                                 return;
@@ -260,7 +266,8 @@ export class ArcGISMap {
                             const mapDivEl = document.getElementById(this.mapDivId);
                             const sizePixels = { width: mapDivEl.clientWidth, height: mapDivEl.clientHeight };
                             const { topLeft, bottomRight } = this.convertExtentToWGS84(extent, Point, SpatialReference, projection);
-                            (_e = this.onStrokeCompleted) === null || _e === void 0 ? void 0 : _e.call(this, sizePixels, topLeft, bottomRight, coords, this.strokeStartTs, strokeEnd, []);
+                            const intersectedPoids = await this.getIntersectedPoids(geom);
+                            (_e = this.onStrokeCompleted) === null || _e === void 0 ? void 0 : _e.call(this, sizePixels, topLeft, bottomRight, coords, this.strokeStartTs, strokeEnd, intersectedPoids);
                         };
                         this.viewRef.on('pointer-up', finish);
                         document.addEventListener('mouseup', finish);
@@ -385,6 +392,30 @@ export class ArcGISMap {
                 default:
                     return null;
             }
+        };
+        this.getIntersectedPoids = async (strokeGeom) => {
+            var _a;
+            const poids = [];
+            if (!strokeGeom)
+                return poids;
+            const layers = [this.symbolLayerPoint, this.symbolLayerMultipoint, this.symbolLayerLine, this.symbolLayerPolygon].filter(Boolean);
+            for (const lyr of layers) {
+                try {
+                    const query = lyr.createQuery();
+                    query.geometry = strokeGeom;
+                    query.spatialRelationship = 'intersects';
+                    const result = await lyr.queryFeatures(query);
+                    for (const feat of result.features) {
+                        const poid = (_a = feat.attributes) === null || _a === void 0 ? void 0 : _a.poid;
+                        if (poid && !poids.includes(poid))
+                            poids.push(poid);
+                    }
+                }
+                catch (e) {
+                    console.warn('Intersect query failed on layer:', e);
+                }
+            }
+            return poids;
         };
         this.convertExtentToWGS84 = (extent, Point, SpatialReference, projection) => {
             if (extent.spatialReference.wkid === 4326) {

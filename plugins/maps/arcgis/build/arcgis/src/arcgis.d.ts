@@ -66,5 +66,6 @@ export declare class ArcGISMap implements IMapAdapter {
     clearInk: () => void;
     private getIsoTimestamp;
     private geoJSONToEsriGeometry;
+    private getIntersectedPoids;
     private convertExtentToWGS84;
 }

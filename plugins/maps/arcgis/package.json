@@ -1,8 +1,12 @@
 {
   "name": "@hyssostech/arcgis-plugin",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "clean": "rimraf dist build",
     "clean:docs": "rimraf docs",
@@ -17,7 +21,7 @@
     "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
     "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
     "bundle:umd:dev": "rollup build/arcgis/src/arcgis.js --file dist/arcgis-bundle.js --format umd --name ArcGISMap",
-    "publish": "npm publish",
+    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack"
   },
