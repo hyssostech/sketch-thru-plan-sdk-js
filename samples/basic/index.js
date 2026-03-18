@@ -14,6 +14,7 @@ let awsLanguage = "en-US";
 let speechProvider = "azure"; // "azure" | "aws"
 
 let googleMapsKey = "<Enter your Google Maps API key here>";
+let arcgisApiKey = null; // ArcGIS API key (null for public basemaps)
 let mapCenter = { lat: 58.967774948, lon: 11.196062412 };
 let zoomLevel = 13;
 
@@ -22,7 +23,7 @@ let webSocketUrl  = "ws://<STP server>:<STP port>"; // or wss://<STP server/prox
 
 let stpsdk;
 let map; // IMapAdapter instance
-let currentAdapter = null; // 'gmaps' | 'leaflet'
+let currentAdapter = null; // 'gmaps' | 'leaflet' | 'arcgis'
 
 window.onload = () => start();
 
@@ -66,10 +67,11 @@ async function start(){
 
   const stpParm = urlParams.get('stpurl'); if (stpParm) webSocketUrl =  stpParm;
   const mapKey = urlParams.get('mapkey'); if (mapKey) googleMapsKey = mapKey;
+  const arcgisKey = urlParams.get('arcgiskey'); if (arcgisKey) arcgisApiKey = arcgisKey;
 
   // UI selector initialization
   const selector = document.getElementById('mapSelector');
-  selector.value = (mapSel === 'leaflet' ? 'leaflet' : 'gmaps');
+  selector.value = (mapSel === 'leaflet' ? 'leaflet' : (mapSel === 'arcgis' ? 'arcgis' : 'gmaps'));
   selector.addEventListener('change', () => {
     const chosen = selector.value;
     // Rebuild page to ensure clean adapter load
@@ -93,12 +95,16 @@ async function start(){
 
   // Wire STP events (independent of adapter)
   stpsdk.onSymbolAdded = (alternates, isUndo) => {
-    const gj = new JmsRenderer(alternates[0], map.getBounds()).asGeoJSON();
+    const gj = (currentAdapter === 'arcgis')
+      ? alternates[0].asGeoJSON()
+      : new JmsRenderer(alternates[0], map.getBounds()).asGeoJSON();
     map.addFeature(gj);
   };
   stpsdk.onSymbolModified = (poid, symbol, isUndo) => {
     map.removeFeature(poid);
-    const gj = new JmsRenderer(symbol, map.getBounds()).asGeoJSON();
+    const gj = (currentAdapter === 'arcgis')
+      ? symbol.asGeoJSON()
+      : new JmsRenderer(symbol, map.getBounds()).asGeoJSON();
     map.addFeature(gj);
   };
   stpsdk.onSymbolDeleted = (poid, isUndo) => { map.removeFeature(poid); };
@@ -165,11 +171,17 @@ async function start(){
 }
 
 async function loadAdapterAndInit(target, speechreco) {
-  currentAdapter = target === 'leaflet' ? 'leaflet' : 'gmaps';
+  currentAdapter = (target === 'leaflet') ? 'leaflet' : (target === 'arcgis' ? 'arcgis' : 'gmaps');
   // Show status
   setStatus("Loading " + currentAdapter + "...");
 
-  if (currentAdapter === 'leaflet') {
+  if (currentAdapter === 'arcgis') {
+    // Load ArcGIS CSS, JS API (AMD loader), then adapter bundle
+    await loadCss("https://js.arcgis.com/4.29/esri/themes/light/main.css");
+    await loadScript("https://js.arcgis.com/4.29/");
+    await loadScript("../../plugins/maps/arcgis/dist/arcgis-bundle-min.js");
+    map = new ArcGISMap(arcgisApiKey, 'map', mapCenter, zoomLevel);
+  } else if (currentAdapter === 'leaflet') {
     // Load Leaflet CSS/JS via CDN, then adapter bundle
     await loadCss("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
     await loadScript("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js");
