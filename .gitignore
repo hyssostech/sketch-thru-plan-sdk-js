@@ -2,3 +2,6 @@ node_modules
 **/.DS_Store
 */launch.json
 
+plugins/maps/googlemaps/hyssostech-googlemaps-plugin-0.1.0.tgz
+plugins/maps/leaflet/hyssostech-leaflet-plugin-0.1.0.tgz
+plugins/speech/awsspeech-plugin/hyssostech-awsspeech-plugin-0.1.0-alpha.0.tgz
