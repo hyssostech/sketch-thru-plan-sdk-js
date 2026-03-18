@@ -122,6 +122,27 @@
       ]
     },
     {
+      "name": "SendSimulatedSpeechRecognition",
+      "description": "Send typed text to STP that will be treated as simulated speech recognition. Numbers and letters are converted server-side to speech-like transcriptions (e.g. 'A 3 1' becomes 'alpha three one').",
+      "params": [
+        {
+          "name": "text",
+          "description": "Text to send as simulated speech.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "startTime",
+          "description": "Optional ISO 8601 timestamp (UTC) when speech started. Defaults to current time if not provided.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      ]
+    },
+    {
       "name": "CreateNewScenario",
       "description": "Create and load a new scenario, replacing any previous content.",
       "params": [
