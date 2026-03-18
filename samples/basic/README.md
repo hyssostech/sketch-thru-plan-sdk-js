@@ -1,10 +1,11 @@
-# Adding military symbols to Google Maps or Leaflet via Speech and Sketch (Edit Sample)
+# Adding military symbols to Google Maps, Leaflet, or ArcGIS via Speech and Sketch (Edit Sample)
 
-This unified sample extends the quickstart demonstration of Sketch‑Thru‑Plan sketch and speech creation of military plans, replacing the generic placeholder rendering with standard 2525 symbology. Unlike the single‑adapter samples, this page lets you choose between Google Maps and Leaflet at load time.
+This unified sample extends the quickstart demonstration of Sketch‑Thru‑Plan sketch and speech creation of military plans, replacing the generic placeholder rendering with standard 2525 symbology. Unlike the single‑adapter samples, this page lets you choose between Google Maps, Leaflet, and ArcGIS at load time.
 
 ## Prerequisites
-* Sketch‑thru‑Plan (STP) Engine (v5.9.9+) running on an accessible server
+* Sketch‑thru‑Plan (STP) Engine (v5.10+) running on an accessible server
 * For Google Maps: a [Maps API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
+* For ArcGIS: optionally an [ArcGIS API key](https://developers.arcgis.com/documentation/security-and-authentication/api-key-authentication/) (public basemaps work without one)
 * A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
 * A PC or Mac with a working microphone
 
@@ -54,17 +55,18 @@ const zoomLevel = 13;
 You can select the adapter in two ways:
 
 - Dropdown at the top of the page (reloads with your choice)
-- Querystring parameter `map=gmaps|leaflet`
+- Querystring parameter `map=gmaps|leaflet|arcgis`
 
-When `gmaps` is selected, the Google Maps loader and the Google Maps adapter bundle are loaded. When `leaflet` is selected, Leaflet CSS/JS and the Leaflet adapter bundle are loaded. Only the chosen adapter’s scripts are injected to keep the page light.
+When `gmaps` is selected, the Google Maps loader and the Google Maps adapter bundle are loaded. When `leaflet` is selected, Leaflet CSS/JS and the Leaflet adapter bundle are loaded. When `arcgis` is selected, the ArcGIS JS API 4.29, its CSS, and the ArcGIS adapter bundle are loaded. Only the chosen adapter's scripts are injected to keep the page light.
 
 ## Run the sample
 Open the page in a browser. You may need to serve the page from an HTTP server (rather than `file:`) to avoid browser restrictions.
 
 Optional querystring parameters:
 
-- `map` – `gmaps` or `leaflet` (default `gmaps`)
+- `map` – `gmaps`, `leaflet`, or `arcgis` (default `gmaps`)
 - `mapkey` – Google Maps API key (required for `gmaps` in some environments)
+- `arcgiskey` – ArcGIS API key (optional; public basemaps work without one)
 - `lat`, `lon` – coordinates of the center of the map (decimal degrees)
 - `zoom` – initial map zoom level
 - `azkey` – MS Cognitive Services Speech API key
@@ -87,6 +89,12 @@ Example:
 edit/index.html?map=leaflet&lat=58.9&lon=11.19&zoom=13&stpurl=ws://localhost:3000
 ```
 
+ArcGIS example:
+
+```
+edit/index.html?map=arcgis&lat=58.9&lon=11.19&zoom=13&stpurl=ws://localhost:3000
+```
+
 ## Speech
 
 This sample uses a “while sketching” speech approach. Recognition is enabled at the beginning of a user sketch and deactivated 5 seconds after the sketch ends. See [index.js](index.js) for event wiring (`onRecognized`, `onRecognizing`, `onError`).
@@ -106,6 +114,8 @@ map.addFeature(gj);
 ```
 
 The references to these renderers are included through the local JMS bundle.
+
+**ArcGIS note:** When using the ArcGIS adapter, the `JmsRenderer` is bypassed. The ArcGIS plugin uses its own `DictionaryRenderer` with MIL‑STD‑2525D to render symbols natively, so `symbol.asGeoJSON()` is passed directly to `map.addFeature()`.
 
 ## Programmatic symbol manipulation
 
