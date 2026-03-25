@@ -1,6 +1,9 @@
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 export class AzureSpeechRecognizer {
     constructor(speechSubscriptionKey, serviceRegion, endPoint, audioConfig, recoLanguage) {
+        this._pendingResults = [];
+        this._graceTimer = null;
+        this._gracePeriodMs = 1500;
         this.speechSubscriptionKey = speechSubscriptionKey;
         this.serviceRegion = serviceRegion;
         this.speechConfig = SpeechSDK.SpeechConfig.fromSubscription(this.speechSubscriptionKey, this.serviceRegion);
@@ -81,7 +84,14 @@ export class AzureSpeechRecognizer {
         };
         this.recognizer.recognized = (s, e) => {
             let recoResult = this.convertResults(this.recoStart, e.result);
-            this.onRecognized?.call(this, recoResult);
+            if (!recoResult)
+                return;
+            this._pendingResults.push(recoResult);
+            if (this._graceTimer)
+                clearTimeout(this._graceTimer);
+            this._graceTimer = setTimeout(() => {
+                this._flushPendingResults();
+            }, this._gracePeriodMs);
         };
         this.recognizer.canceled = (s, e) => {
             this.isListening = false;
@@ -97,6 +107,7 @@ export class AzureSpeechRecognizer {
         this.recognizer.startContinuousRecognitionAsync();
     }
     stopRecognizing(wait) {
+        this._flushPendingResults();
         if (this.recognizer) {
             setTimeout(() => {
                 this.recognizer?.close();
@@ -104,6 +115,24 @@ export class AzureSpeechRecognizer {
             }, wait ? wait : 0);
         }
         this.isListening = false;
+    }
+    setGracePeriod(ms) {
+        this._gracePeriodMs = ms;
+    }
+    _flushPendingResults() {
+        if (this._graceTimer) {
+            clearTimeout(this._graceTimer);
+            this._graceTimer = null;
+        }
+        const segments = this._pendingResults.splice(0);
+        if (segments.length === 0)
+            return;
+        const merged = new SpeechRecoResult();
+        merged.results = segments.flatMap(s => s.results)
+            .sort((a, b) => b.confidence - a.confidence);
+        merged.startTime = segments[0].startTime;
+        merged.endTime = segments[segments.length - 1].endTime;
+        this.onRecognized?.call(this, merged);
     }
     convertResults(recoStart, result) {
         if (result.reason === SpeechSDK.ResultReason.NoMatch) {

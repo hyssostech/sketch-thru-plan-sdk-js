@@ -18,6 +18,14 @@
     recognizer: SpeechSDK.SpeechRecognizer | undefined;
     recoStart: Date;
     isListening: boolean;
+
+    // Buffering state for continuous recognition: Azure may split a single
+    // utterance (e.g. "infantry company alpha") into multiple recognized
+    // events at natural micro-pauses.  We accumulate segments and deliver
+    // them as a single merged result after a short grace period.
+    private _pendingResults: SpeechRecoResult[] = [];
+    private _graceTimer: ReturnType<typeof setTimeout> | null = null;
+    private _gracePeriodMs: number = 1500;
   
     //#region Construction / initialization
     /**
@@ -221,12 +229,24 @@
       }
 
       // The event recognized signals that a final recognition result is received.
-      // This is the final event that a phrase has been recognized.
-      // For continuous recognition, you will get one recognized event for each phrase recognized.       
+      // For continuous recognition, you will get one recognized event for each phrase recognized.
+      // Azure may split a single utterance across multiple events at micro-pauses,
+      // so we buffer segments and merge them after a grace period.
       this.recognizer!.recognized = (s, e) => {
-          // Pack into sdk-friendly result (can also be null) and return
+          // Pack into sdk-friendly result (null for NoMatch / silence)
           let recoResult = this.convertResults(this.recoStart, e.result);
-          this.onRecognized?.call(this, recoResult);
+          // Ignore NoMatch / silence — the grace timer or stopRecognizing
+          // will eventually deliver whatever was buffered.
+          if (!recoResult) return;
+
+          this._pendingResults.push(recoResult);
+
+          // Reset the grace timer: if no new segment arrives within the
+          // grace window, flush everything and fire onRecognized once.
+          if (this._graceTimer) clearTimeout(this._graceTimer);
+          this._graceTimer = setTimeout(() => {
+            this._flushPendingResults();
+          }, this._gracePeriodMs);
       }
 
       // The event signals that the service has stopped processing speech.
@@ -258,7 +278,10 @@
      * @param wait Time in milliseconds to wait before stopping recognition
      */
     stopRecognizing(wait?: number): void {
-      // If the recognizer is still active, set it to be wrapped in the many 'wait' seconds
+      // Deliver any buffered segments before tearing down
+      this._flushPendingResults();
+
+      // If the recognizer is still active, schedule close
       if (this.recognizer) {
         setTimeout(() => {
             this.recognizer?.close();
@@ -268,6 +291,37 @@
         );
       }
       this.isListening = false;
+    }
+
+    /**
+     * Set the grace period used to accumulate speech segments during
+     * continuous recognition before delivering a merged result.
+     * @param ms - Grace period in milliseconds (default 1500)
+     */
+    setGracePeriod(ms: number): void {
+      this._gracePeriodMs = ms;
+    }
+
+    /**
+     * Merge all buffered recognition segments into a single result and
+     * deliver it via onRecognized.  Clears the buffer and grace timer.
+     */
+    private _flushPendingResults(): void {
+      if (this._graceTimer) {
+        clearTimeout(this._graceTimer);
+        this._graceTimer = null;
+      }
+      const segments = this._pendingResults.splice(0);
+      if (segments.length === 0) return;
+
+      // Merge: concatenate result arrays, use earliest start / latest end
+      const merged = new SpeechRecoResult();
+      merged.results = segments.flatMap(s => s.results)
+        .sort((a, b) => b.confidence - a.confidence);
+      merged.startTime = segments[0].startTime;
+      merged.endTime = segments[segments.length - 1].endTime;
+
+      this.onRecognized?.call(this, merged);
     }
     //#endregion "Continuous" recognition
 
