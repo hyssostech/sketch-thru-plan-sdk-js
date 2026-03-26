@@ -11,7 +11,9 @@ let awsSessionToken = null;
 let awsRegion = "us-east-1";
 let awsLanguage = "en-US";
 
-let speechProvider = "azure"; // "azure" | "aws"
+let speechProvider = "azure"; // "azure" | "aws" | "vosk"
+
+let voskModelPath = './model'; // Path to extracted Vosk model directory
 
 let googleMapsKey = "<Enter your Google Maps API key here>";
 let arcgisApiKey = null; // ArcGIS API key (null for public basemaps)
@@ -60,6 +62,8 @@ async function start(){
   const awsRegionParm = urlParams.get('awsregion'); if (awsRegionParm) awsRegion = awsRegionParm;
   const awsLangParm = urlParams.get('awslang'); if (awsLangParm) awsLanguage = awsLangParm;
 
+  const voskModelParm = urlParams.get('voskmodel'); if (voskModelParm) voskModelPath = voskModelParm;
+
   const speechParm = urlParams.get('speech'); if (speechParm) speechProvider = speechParm.toLowerCase();
 
   const inkOnly = urlParams.get('inkonly');
@@ -88,6 +92,23 @@ async function start(){
     next.searchParams.set('speech', chosen);
     window.location.href = next.toString();
   });
+
+  // Pre-check Vosk model availability and disable option if not deployed
+  const voskOption = speechSelector.querySelector('option[value="vosk"]');
+  try {
+    const probe = await fetch(voskModelPath.replace(/\/$/, '') + '/conf/model.conf', { method: 'HEAD' });
+    if (!probe.ok) throw new Error('not found');
+  } catch {
+    if (voskOption) {
+      voskOption.disabled = true;
+      voskOption.textContent = 'Vosk (offline — model not found)';
+    }
+    if (speechProvider === 'vosk') {
+      log('Vosk model not found at "' + voskModelPath + '". Extract the model zip first — see README.', 'Error', true);
+      speechProvider = 'azure';
+      speechSelector.value = speechProvider;
+    }
+  }
 
   // Create STP connector/recognizer
   const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
@@ -137,6 +158,18 @@ async function start(){
     speechreco = null;
   } else if (speechProvider === 'aws') {
     speechreco = new StpAWS.AwsSpeechRecognizer(awsAccessKeyId, awsSecretAccessKey, awsRegion, awsSessionToken, awsLanguage);
+    speechreco.onRecognized = (recoResult) => {
+      if (recoResult && recoResult.results && recoResult.results.length > 0) {
+        speechreco.stopRecognizing();
+        stpsdk.sendSpeechRecognition(recoResult.results, recoResult.startTime, recoResult.endTime);
+        const concat = recoResult.results.map((item) => item.text).join(' | ');
+        log(concat);
+      }
+    };
+    speechreco.onRecognizing = (snippet) => { log(snippet); };
+    speechreco.onError = (e) => { log("Failed to process speech: " + e.message); };
+  } else if (speechProvider === 'vosk') {
+    speechreco = new StpVS.VoskSpeechRecognizer(voskModelPath, undefined, '../../plugins/speech/voskspeech-plugin/vosk-processor.js');
     speechreco.onRecognized = (recoResult) => {
       if (recoResult && recoResult.results && recoResult.results.length > 0) {
         speechreco.stopRecognizing();

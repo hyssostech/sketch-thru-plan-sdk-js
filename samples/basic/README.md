@@ -6,16 +6,19 @@ This unified sample extends the quickstart demonstration of Sketch‑Thru‑Plan
 * Sketch‑thru‑Plan (STP) Engine (v5.10+) running on an accessible server
 * For Google Maps: a [Maps API key](https://developers.google.com/maps/documentation/javascript/get-api-key)
 * For ArcGIS: optionally an [ArcGIS API key](https://developers.arcgis.com/documentation/security-and-authentication/api-key-authentication/) (public basemaps work without one)
-* A subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
+* For Azure speech: a subscription key for Microsoft's Azure [Speech service](https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started)
+* For Vosk speech (offline): extract the included model (see [Vosk setup](#vosk-offline-speech-setup) below)
 * A PC or Mac with a working microphone
 
 ## Script external references
 
 Three cdn libraries are referenced in [index.html](index.html):
 
-1. Microsoft's Cognitive Services Speech SDK – used by the speech plugin
+1. Microsoft's Cognitive Services Speech SDK – used by the Azure speech plugin
 1. STP SDK itself – available on jsDelivr
 1. The Azure Speech plugin
+
+The Vosk speech plugin and its WASM runtime (`vosk.js`) are loaded from the local plugin build output. The AWS speech plugin bundle is also loaded locally.
 
 The `JmsRenderer` bundle is included locally and provides single‑point SVG and multipoint rendering.
 
@@ -78,7 +81,8 @@ Optional querystring parameters:
 - `awstoken` – Optional AWS session token (for temporary credentials)
 - `awsregion` – AWS region (default `us-east-1`)
 - `awslang` – AWS Transcribe language (default `en-US`)
-- `speech` – Speech provider: `azure` or `aws` (default `azure`)
+- `speech` – Speech provider: `azure`, `aws`, or `vosk` (default `azure`)
+- `voskmodel` – Path to the extracted Vosk model directory (default `./model`)
 - `stpurl` – STP WebSockets URL
 - `inkonly` – prevents browser speech recognition (only ink is sent)
 - `machineid` – pairs ink with an external speech recognizer on the same machine
@@ -97,8 +101,27 @@ edit/index.html?map=arcgis&lat=58.9&lon=11.19&zoom=13&stpurl=ws://localhost:3000
 
 ## Speech
 
-This sample uses a “while sketching” speech approach. Recognition is enabled at the beginning of a user sketch and deactivated 5 seconds after the sketch ends. See [index.js](index.js) for event wiring (`onRecognized`, `onRecognizing`, `onError`).
+This sample uses a “while sketching” speech approach. Recognition is enabled at the beginning of a user sketch and deactivated 5 seconds after the sketch ends. See [index.js](index.js) for event wiring (`onRecognized`, `onRecognizing`, `onError`).### Vosk (offline) speech setup
 
+The Vosk plugin uses a domain-adapted speech model that runs entirely in the browser via WebAssembly. No cloud service or API keys are needed.
+
+**One-time setup**: extract the model from the included zip into this sample's directory:
+
+```powershell
+# PowerShell (from the repo root)
+Expand-Archive -Path plugins/speech/voskspeech-plugin/model/vosk-model-la-domain.zip -DestinationPath samples/basic/model
+```
+
+```bash
+# bash / macOS / Linux (from the repo root)
+unzip plugins/speech/voskspeech-plugin/model/vosk-model-la-domain.zip -d samples/basic/model
+```
+
+After extraction, `samples/basic/model/` should contain the `am/`, `conf/`, `graph/`, and `ivector/` subdirectories (~50 MB total).
+
+Then select **Vosk (offline)** from the Speech dropdown, or use `?speech=vosk` in the querystring.
+
+> **Note**: The page must be served over HTTPS for microphone access. The Vosk plugin also requires the `vosk-processor.js` AudioWorklet, which is loaded automatically from the plugin directory.
 ## Rendering
 
 Rendering code is provided by the `JmsRenderer` bundle, which enriches the base GeoJSON from STP (`symbol.asGeoJSON()`) with:

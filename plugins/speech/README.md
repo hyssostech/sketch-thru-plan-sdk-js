@@ -22,7 +22,8 @@ Two plugins implementing these strategies are provided, supporting 1) "sketch-to
 
 
 . The [`azurespeech-plugin`](azurespeech-plugin) is an implementation using the Microsoft Cognitive Services Speech to Text.
-. The [`awsspeech-plugin](awsspeech-plugin) uses the Amazon Transcribe service.
+. The [`awsspeech-plugin`](awsspeech-plugin) uses the Amazon Transcribe service.
+. The [`voskspeech-plugin`](voskspeech-plugin) provides offline speech recognition using Vosk WebAssembly — no cloud service or API keys required.
 
 ## Samples
 

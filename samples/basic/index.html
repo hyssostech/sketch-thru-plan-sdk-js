@@ -8,6 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
     <!-- Speech recognition: AWS (bundles the AWS SDK) -->
     <script src="../../plugins/speech/awsspeech-plugin/dist/stpawsspeech-bundle-min.js"></script>
+    <!-- Speech recognition: Vosk (offline, WASM) -->
+    <script src="../../plugins/speech/voskspeech-plugin/node_modules/vosk-browser/dist/vosk.js"></script>
+    <script src="../../plugins/speech/voskspeech-plugin/dist/stpvoskspeech-bundle.js"></script>
     <!-- STP SDK and plugins -->
     <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@latest/dist/stpazurespeech-bundle-min.js"></script>
@@ -32,6 +35,7 @@
         <select id="speechSelector">
           <option value="azure">Azure</option>
           <option value="aws">AWS</option>
+          <option value="vosk">Vosk (offline)</option>
         </select>
       </div>
       <div class="spacer"></div>

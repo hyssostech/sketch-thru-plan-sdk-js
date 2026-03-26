@@ -1,0 +1,44 @@
+{
+  "name": "@hyssostech/voskspeech-plugin",
+  "version": "0.1.0-alpha.0",
+  "description": "Vosk offline speech recognition plugin for Sketch-thru-Plan. Runs entirely in-browser via WebAssembly using a domain-adapted Kaldi model.",
+  "main": "dist/stpvoskspeech-bundle-min.js",
+  "types": "dist/stpvoskspeech-bundle.d.ts",
+  "module": "dist/stpvoskspeech-bundle.esm.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "clean": "rimraf dist build",
+    "clean:docs": "rimraf docs",
+    "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
+    "bundle": "rollup --config rollup.config.mjs && npm run bundle:min",
+    "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/stpvoskspeech-bundle-min.js -- dist/stpvoskspeech-bundle.js",
+    "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
+    "bundle:dev": "rollup --config rollup.config.mjs",
+    "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
+    "publish": "npm publish --access public",
+    "prepublishOnly": "npm run build",
+    "publish:dry": "npm run build && npm pack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/plugins/speech/voskspeech-plugin"
+  },
+  "author": "Hyssos Tech",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.57.1",
+    "rollup-plugin-dts": "^6.3.0",
+    "terser": "^5.46.0",
+    "typedoc": "^0.28.16",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "vosk-browser": "^0.0.8"
+  }
+}
