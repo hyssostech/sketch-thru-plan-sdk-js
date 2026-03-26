@@ -5,6 +5,14 @@
   "main": "dist/stpvoskspeech-bundle-min.js",
   "types": "dist/stpvoskspeech-bundle.d.ts",
   "module": "dist/stpvoskspeech-bundle.esm.js",
+  "files": [
+    "dist/",
+    "model/",
+    "vosk-processor.js",
+    "LICENSE",
+    "NOTICES.md",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -18,7 +26,6 @@
     "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
     "bundle:dev": "rollup --config rollup.config.mjs",
     "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack"
   },

@@ -19,7 +19,6 @@
         "bundle:dts": "rollup build/websockets-plugin/src/stpconnector.d.ts --file dist/stpconnector.d.ts --format es --plugin rollup-plugin-dts",
         "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/stpconnector-bundle-min.js -- dist/stpconnector-bundle.js",
         "fix:format": "prettier --config ../../.prettierrc src --write",
-        "publish": "npm publish --access public",
         "prepublishOnly": "npm run build",
         "publish:dry": "npm run build && npm pack"
     },

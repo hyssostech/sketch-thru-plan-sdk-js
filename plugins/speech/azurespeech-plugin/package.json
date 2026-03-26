@@ -30,7 +30,6 @@
     "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
     "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
     "bundle:umd:dev": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle-min.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack"
   },
