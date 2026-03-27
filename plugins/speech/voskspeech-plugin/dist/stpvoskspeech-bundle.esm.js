@@ -16,20 +16,21 @@ class VoskSpeechRecognizer {
         this._pendingResults = [];
         this._graceTimer = null;
         this._gracePeriodMs = 1500;
-        this._modelPath = modelPath ?? './model';
+        this._lastPartial = '';
+        this._modelPath = modelPath ?? './model.tar.gz';
         this._sampleRate = sampleRate ?? 16000;
         this._workletPath = workletPath ?? 'vosk-processor.js';
         this._modelReady = this.initializeModel();
     }
     async initializeModel() {
         try {
-            const probeUrl = this._modelPath.replace(/\/$/, '') + '/conf/model.conf';
-            const probe = await fetch(probeUrl, { method: 'HEAD' });
+            const absoluteModelUrl = new URL(this._modelPath, window.location.href).href;
+            const probe = await fetch(absoluteModelUrl, { method: 'HEAD' });
             if (!probe.ok) {
-                throw new Error(`Model directory not found at '${this._modelPath}'. ` +
-                    `Extract the model zip first — see the plugin README for instructions.`);
+                throw new Error(`Model archive not found at '${this._modelPath}'. ` +
+                    `Deploy the model .tar.gz file — see the plugin README for instructions.`);
             }
-            this._model = await createModel(this._modelPath, -1);
+            this._model = await createModel(absoluteModelUrl, -1);
             this._model.setLogLevel(-1);
             this._modelLoaded = true;
         }
@@ -115,14 +116,33 @@ class VoskSpeechRecognizer {
         await this.startAudioCapture();
     }
     stopRecognizing(wait) {
-        this.flushPendingResults();
         if (wait && wait > 0) {
-            setTimeout(() => {
-                this.teardownAudio();
-            }, wait);
+            setTimeout(() => this.finalizeAndTeardown(), wait);
         }
         else {
-            this.teardownAudio();
+            this.finalizeAndTeardown();
+        }
+    }
+    finalizeAndTeardown() {
+        this._isListening = false;
+        if (this._recognizer) {
+            const timeoutId = setTimeout(() => {
+                this.flushPendingResults();
+                this.cleanupResources();
+            }, 1000);
+            const onFinal = (_message) => {
+                clearTimeout(timeoutId);
+                setTimeout(() => {
+                    this.flushPendingResults();
+                    this.cleanupResources();
+                }, 0);
+            };
+            this._recognizer.on('result', onFinal);
+            this._recognizer.retrieveFinalResult();
+        }
+        else {
+            this.flushPendingResults();
+            this.cleanupResources();
         }
     }
     async startAudioCapture() {
@@ -149,11 +169,7 @@ class VoskSpeechRecognizer {
         this._sourceNode.connect(this._processorNode);
         this._processorNode.connect(this._audioContext.destination);
     }
-    teardownAudio() {
-        this._isListening = false;
-        if (this._recognizer) {
-            this._recognizer.retrieveFinalResult();
-        }
+    cleanupResources() {
         if (this._processorNode) {
             this._processorNode.disconnect();
             this._processorNode = null;
@@ -175,6 +191,7 @@ class VoskSpeechRecognizer {
             this._recognizer.remove();
             this._recognizer = null;
         }
+        this._lastPartial = '';
     }
     handleResult(message) {
         const text = message.result?.text;
@@ -195,7 +212,8 @@ class VoskSpeechRecognizer {
     }
     handlePartialResult(message) {
         const partial = message.result?.partial;
-        if (partial && partial.trim().length > 0) {
+        if (partial && partial.trim().length > 0 && partial !== this._lastPartial) {
+            this._lastPartial = partial;
             this.onRecognizing?.call(this, partial);
         }
     }

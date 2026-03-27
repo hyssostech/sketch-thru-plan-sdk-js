@@ -13,7 +13,7 @@ let awsLanguage = "en-US";
 
 let speechProvider = "azure"; // "azure" | "aws" | "vosk"
 
-let voskModelPath = './model'; // Path to extracted Vosk model directory
+let voskModelPath = './model-vosk.tar.gz'; // Path to Vosk model archive (.tar.gz)
 
 let googleMapsKey = "<Enter your Google Maps API key here>";
 let arcgisApiKey = null; // ArcGIS API key (null for public basemaps)
@@ -96,7 +96,7 @@ async function start(){
   // Pre-check Vosk model availability and disable option if not deployed
   const voskOption = speechSelector.querySelector('option[value="vosk"]');
   try {
-    const probe = await fetch(voskModelPath.replace(/\/$/, '') + '/conf/model.conf', { method: 'HEAD' });
+    const probe = await fetch(voskModelPath, { method: 'HEAD' });
     if (!probe.ok) throw new Error('not found');
   } catch {
     if (voskOption) {
@@ -104,7 +104,7 @@ async function start(){
       voskOption.textContent = 'Vosk (offline — model not found)';
     }
     if (speechProvider === 'vosk') {
-      log('Vosk model not found at "' + voskModelPath + '". Extract the model zip first — see README.', 'Error', true);
+      log('Vosk model not found at "' + voskModelPath + '". Deploy the model .tar.gz file — see README.', 'Error', true);
       speechProvider = 'azure';
       speechSelector.value = speechProvider;
     }

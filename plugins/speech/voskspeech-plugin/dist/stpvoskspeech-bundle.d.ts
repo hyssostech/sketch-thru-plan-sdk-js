@@ -35,6 +35,7 @@ declare class VoskSpeechRecognizer implements ISpeechRecognizer {
     private _pendingResults;
     private _graceTimer;
     private _gracePeriodMs;
+    private _lastPartial;
     constructor(modelPath?: string, sampleRate?: number, workletPath?: string);
     private initializeModel;
     private ensureModelReady;
@@ -46,8 +47,9 @@ declare class VoskSpeechRecognizer implements ISpeechRecognizer {
     startRecognizing(): void;
     private startRecognizingAsync;
     stopRecognizing(wait?: number): void;
+    private finalizeAndTeardown;
     private startAudioCapture;
-    private teardownAudio;
+    private cleanupResources;
     private handleResult;
     private handlePartialResult;
     private convertResult;

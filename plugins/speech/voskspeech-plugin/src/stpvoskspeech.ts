@@ -45,21 +45,22 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
   private _pendingResults: SpeechRecoResult[] = [];
   private _graceTimer: ReturnType<typeof setTimeout> | null = null;
   private _gracePeriodMs: number = 1500;
+  private _lastPartial: string = '';
 
   //#region Construction / initialization
   /**
    * Constructs a Vosk browser speech recognizer.
    * Model loading begins immediately in the background.
    *
-   * @param modelPath - Relative or absolute URL to the Vosk model directory.
-   *                    Defaults to `'./model'`. The directory must contain the
+   * @param modelPath - Relative or absolute URL to the Vosk model archive (.tar.gz).
+   *                    Defaults to `'./model.tar.gz'`. The archive must contain the
    *                    standard Vosk model structure (am/, conf/, graph/, ivector/).
    * @param sampleRate - Sample rate for recognition. Defaults to 16000.
    * @param workletPath - URL to the vosk-processor.js AudioWorklet file.
    *                      Defaults to `'vosk-processor.js'` (relative to the page).
    */
   constructor(modelPath?: string, sampleRate?: number, workletPath?: string) {
-    this._modelPath = modelPath ?? './model';
+    this._modelPath = modelPath ?? './model.tar.gz';
     this._sampleRate = sampleRate ?? 16000;
     this._workletPath = workletPath ?? 'vosk-processor.js';
 
@@ -72,18 +73,22 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
    */
   private async initializeModel(): Promise<void> {
     try {
-      // Quick check: probe a known model file to give a clear error before
+      // Resolve relative model path to an absolute URL.
+      // vosk-browser loads the model inside a Web Worker (blob: origin),
+      // so relative URLs would resolve against the blob, not the page.
+      const absoluteModelUrl = new URL(this._modelPath, window.location.href).href;
+
+      // Quick check: probe the model archive to give a clear error before
       // vosk-browser produces a cryptic WASM/fetch failure
-      const probeUrl = this._modelPath.replace(/\/$/, '') + '/conf/model.conf';
-      const probe = await fetch(probeUrl, { method: 'HEAD' });
+      const probe = await fetch(absoluteModelUrl, { method: 'HEAD' });
       if (!probe.ok) {
         throw new Error(
-          `Model directory not found at '${this._modelPath}'. ` +
-          `Extract the model zip first — see the plugin README for instructions.`
+          `Model archive not found at '${this._modelPath}'. ` +
+          `Deploy the model .tar.gz file — see the plugin README for instructions.`
         );
       }
 
-      this._model = await createModel(this._modelPath, -1);
+      this._model = await createModel(absoluteModelUrl, -1);
       this._model.setLogLevel(-1);
       this._modelLoaded = true;
     } catch (e: any) {
@@ -205,7 +210,6 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
    */
   private async startRecognizingAsync(): Promise<void> {
     await this.ensureModelReady();
-
     // Create a new KaldiRecognizer for this session
     const RecognizerClass = this._model!.KaldiRecognizer;
     this._recognizer = new RecognizerClass(this._sampleRate);
@@ -233,15 +237,47 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
    * @param wait - Time in milliseconds to wait before stopping recognition
    */
   stopRecognizing(wait?: number): void {
-    // Flush any buffered segments
-    this.flushPendingResults();
-
     if (wait && wait > 0) {
-      setTimeout(() => {
-        this.teardownAudio();
-      }, wait);
+      // Keep listening for `wait` ms more, then finalize
+      setTimeout(() => this.finalizeAndTeardown(), wait);
     } else {
-      this.teardownAudio();
+      this.finalizeAndTeardown();
+    }
+  }
+
+  /**
+   * Stop audio capture, retrieve the final recognition result, then clean up.
+   * retrieveFinalResult() is async (sends a message to the WASM worker),
+   * so we must wait for the 'result' event before destroying the recognizer.
+   */
+  private finalizeAndTeardown(): void {
+    this._isListening = false;
+
+    if (this._recognizer) {
+      // Timeout fallback: if retrieveFinalResult never fires, flush and clean up anyway
+      const timeoutId = setTimeout(() => {
+        this.flushPendingResults();
+        this.cleanupResources();
+      }, 1000);
+
+      // One-shot listener for the final result that retrieveFinalResult() will produce.
+      // The original handler from startRecognizingAsync fires first (adds to _pendingResults),
+      // then this fires to flush and clean up.
+      const onFinal = (_message: any) => {
+        clearTimeout(timeoutId);
+        // Give the original handler a tick to add to _pendingResults
+        setTimeout(() => {
+          this.flushPendingResults();
+          this.cleanupResources();
+        }, 0);
+      };
+      this._recognizer.on('result', onFinal);
+
+      // Ask the recognizer to finalize whatever it has
+      this._recognizer.retrieveFinalResult();
+    } else {
+      this.flushPendingResults();
+      this.cleanupResources();
     }
   }
   //#endregion Continuous recognition
@@ -288,16 +324,10 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
   }
 
   /**
-   * Stop audio capture and release resources.
+   * Release audio and recognizer resources.
+   * Called only after the final result has been captured.
    */
-  private teardownAudio(): void {
-    this._isListening = false;
-
-    // Retrieve any final result from the recognizer
-    if (this._recognizer) {
-      this._recognizer.retrieveFinalResult();
-    }
-
+  private cleanupResources(): void {
     // Disconnect audio nodes
     if (this._processorNode) {
       this._processorNode.disconnect();
@@ -326,6 +356,8 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
       this._recognizer.remove();
       this._recognizer = null;
     }
+
+    this._lastPartial = '';
   }
   //#endregion Audio capture
 
@@ -359,10 +391,12 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
 
   /**
    * Handle a partial recognition result from Vosk.
+   * Deduplicates identical consecutive partials to avoid flooding.
    */
   private handlePartialResult(message: ServerMessagePartialResult): void {
     const partial = message.result?.partial;
-    if (partial && partial.trim().length > 0) {
+    if (partial && partial.trim().length > 0 && partial !== this._lastPartial) {
+      this._lastPartial = partial;
       this.onRecognizing?.call(this, partial);
     }
   }
