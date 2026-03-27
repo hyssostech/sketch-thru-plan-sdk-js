@@ -1,6 +1,6 @@
 {
   "name": "@hyssostech/voskspeech-plugin",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "Vosk offline speech recognition plugin for Sketch-thru-Plan. Runs entirely in-browser via WebAssembly using a domain-adapted Kaldi model.",
   "main": "dist/stpvoskspeech-bundle-min.js",
   "types": "dist/stpvoskspeech-bundle.d.ts",
