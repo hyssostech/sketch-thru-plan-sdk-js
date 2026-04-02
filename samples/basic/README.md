@@ -99,6 +99,42 @@ ArcGIS example:
 edit/index.html?map=arcgis&lat=58.9&lon=11.19&zoom=13&stpurl=ws://localhost:3000
 ```
 
+## Simulated Speech Recognition
+
+The SDK provides `sendSimulatedSpeechRecognition()` for sending typed text as if it came from a speech recognizer. This is useful for testing and automation scenarios where a microphone is not available.
+
+```javascript
+// Send text that STP will process as speech input.
+// Numbers and letters are converted server-side to equivalent words
+// (e.g. "A 3 1" becomes "alpha three one").
+stpsdk.sendSimulatedSpeechRecognition("friendly infantry platoon");
+
+// An optional start time can be provided (defaults to current time)
+stpsdk.sendSimulatedSpeechRecognition("hostile armor company", new Date());
+```
+
+Pair with a pen stroke to create a symbol: call `sendPenDown()` and `sendInk()` as usual, and use `sendSimulatedSpeechRecognition()` instead of (or in addition to) a live speech recognizer.
+
+## Extension Properties
+
+`StpItem` (the base for symbols, tasks, task orgs, and relationships) supports an `extensions` property — an open-ended key/value map for client-defined data. Extensions are roundtripped through STP: values set when adding or updating an item are persisted and returned on subsequent events.
+
+```javascript
+// Set extensions when adding a symbol programmatically
+const symbol = { /* ... core properties ... */, extensions: { source: "import", priority: 3 } };
+await stpsdk.addSymbol(symbol);
+
+// Read extensions from received symbols
+stpsdk.onSymbolAdded = (alternates, isUndo) => {
+  const sym = alternates[0];
+  if (sym.extensions) {
+    console.log("Extensions:", JSON.stringify(sym.extensions));
+  }
+};
+```
+
+Extension values can be primitives, arrays, or nested objects.
+
 ## Speech
 
 This sample uses a “while sketching” speech approach. Recognition is enabled at the beginning of a user sketch and deactivated 5 seconds after the sketch ends. See [index.js](index.js) for event wiring (`onRecognized`, `onRecognizing`, `onError`).### Vosk (offline) speech setup
