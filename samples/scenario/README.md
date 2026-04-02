@@ -278,6 +278,30 @@ buttonLoad.onclick = async () => {
 };
 ```
 
+### Importing additional data into an existing scenario
+
+The `importPlanData(content: string, timeout?: number)` method loads additional data into the 
+current scenario without replacing existing content.
+
+In contrast to `loadNewScenario()`, which discards the current scenario and replaces it entirely, 
+`importPlanData()` merges the provided content into the active scenario. 
+This is useful for incrementally building up a plan — for example, importing symbols or task 
+organizations from an external source into an ongoing planning session.
+
+The `content` parameter uses the same serialized format as `getScenarioContent()` / `loadNewScenario()`.
+As with other scenario operations, entity creation events are propagated to all connected clients.
+
+```javascript
+// Import additional plan data into the current scenario
+const additionalData = /* retrieved from external source */;
+try {
+    await stpsdk.importPlanData(additionalData);
+    log("Additional plan data imported");
+} catch (error) {
+    console.error(error);
+}
+```
+
 For testing purposes the suggestion is to use the following sequence of steps:
 
 1. Create a new scenario and add a few symbols
