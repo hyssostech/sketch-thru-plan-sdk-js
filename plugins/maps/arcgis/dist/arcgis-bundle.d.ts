@@ -84,12 +84,14 @@ declare class ArcGISMap implements IMapAdapter {
     private nextObjectId;
     private milDictionaryStyleUrl;
     private milDictionaryPortalItemId;
+    private basemap;
     constructor(apiKey: string | null, mapDivId: string, mapCenter: {
         lat: number;
         lon: number;
     }, zoomLevel: number, options?: {
         mil2525StyleUrl?: string;
         mil2525PortalItemId?: string;
+        basemap?: string;
     });
     load: () => Promise<void>;
     addFeature: (symbolGeoJSON: any) => void;

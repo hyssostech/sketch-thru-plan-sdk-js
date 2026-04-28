@@ -43,8 +43,9 @@ export class ArcGISMap implements IMapAdapter {
   // Optional: allow overriding the military dictionary via portal item id
   private milDictionaryStyleUrl: string | null;
   private milDictionaryPortalItemId: string | null;
+  private basemap: string;
 
-  constructor(apiKey: string | null, mapDivId: string, mapCenter: { lat: number; lon: number }, zoomLevel: number, options?: { mil2525StyleUrl?: string; mil2525PortalItemId?: string }) {
+  constructor(apiKey: string | null, mapDivId: string, mapCenter: { lat: number; lon: number }, zoomLevel: number, options?: { mil2525StyleUrl?: string; mil2525PortalItemId?: string; basemap?: string }) {
     this.apiKey = apiKey ?? null;
     this.mapDivId = mapDivId;
     this.mapCenter = mapCenter;
@@ -52,6 +53,7 @@ export class ArcGISMap implements IMapAdapter {
     // Renderer source can be provided as styleUrl or portalItem id; allow override via options and leave null by default to avoid bad URLs
     this.milDictionaryStyleUrl = options?.mil2525StyleUrl ?? null;
     this.milDictionaryPortalItemId = options?.mil2525PortalItemId ?? null;
+    this.basemap = options?.basemap ?? 'topo-vector';
   }
 
   load = async () => {
@@ -212,7 +214,7 @@ export class ArcGISMap implements IMapAdapter {
           });
 
           // Create map + view
-          this.mapRef = new Map({ basemap: 'topo-vector' });
+          this.mapRef = new Map({ basemap: this.basemap });
           this.viewRef = new MapView({
             container: mapDiv,
             map: this.mapRef,

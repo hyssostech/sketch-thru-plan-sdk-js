@@ -9,7 +9,7 @@
     // Example: <script src="https://js.arcgis.com/4.29/"></script>
     class ArcGISMap {
         constructor(apiKey, mapDivId, mapCenter, zoomLevel, options) {
-            var _a, _b;
+            var _a, _b, _c;
             this.drawing = false;
             this.strokeStartTs = '';
             this.assets = new Map();
@@ -152,7 +152,7 @@
                                 renderer: renderer
                             });
                             // Create map + view
-                            this.mapRef = new Map({ basemap: 'topo-vector' });
+                            this.mapRef = new Map({ basemap: this.basemap });
                             this.viewRef = new MapView({
                                 container: mapDiv,
                                 map: this.mapRef,
@@ -458,6 +458,7 @@
             // Renderer source can be provided as styleUrl or portalItem id; allow override via options and leave null by default to avoid bad URLs
             this.milDictionaryStyleUrl = (_a = options === null || options === void 0 ? void 0 : options.mil2525StyleUrl) !== null && _a !== void 0 ? _a : null;
             this.milDictionaryPortalItemId = (_b = options === null || options === void 0 ? void 0 : options.mil2525PortalItemId) !== null && _b !== void 0 ? _b : null;
+            this.basemap = (_c = options === null || options === void 0 ? void 0 : options.basemap) !== null && _c !== void 0 ? _c : 'topo-vector';
         }
     }
     window.ArcGISMap = ArcGISMap;
