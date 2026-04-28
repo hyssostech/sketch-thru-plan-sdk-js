@@ -1092,6 +1092,11 @@
               "$ref": "#/components/schemas/Resource"
             },
             "description": "Associated C2SIM resources for this symbol."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },
@@ -1120,6 +1125,11 @@
             "type": "string",
             "format": "date-time",
             "description": "Version timestamp (UTC)."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },
@@ -1214,6 +1224,11 @@
           "parentTO": {
             "type": "string",
             "description": "Unique id of the Task Org this relationship belongs to."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },
@@ -1361,6 +1376,11 @@
           },
           "movementFeatures": {
             "$ref": "#/components/schemas/MovementFeatures"
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },

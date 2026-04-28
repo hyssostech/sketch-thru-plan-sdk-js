@@ -142,6 +142,11 @@ stpsdk.onSymbolAdded = (alternates: StpSymbol[], isUndo: boolean) => {
     // Add the best recognition to the map - better if alternates were displayed, could be chosen
     let gj = new BasicRenderer(alternates[0]).asGeoJSON();
     map.addFeature(gj);
+
+    // Access client-defined extension properties (if set)
+    if (alternates[0].extensions) {
+        console.log("Extensions:", alternates[0].extensions);
+    }
 };
 // The properties of a symbol were modified
 stpsdk.onSymbolModified = (poid: string, symbol: StpSymbol, isUndo: boolean) => {
@@ -337,6 +342,36 @@ async function recognizeSpeech()  {
     }
 }
 ```
+
+### Extension properties
+
+STP objects support an optional `extensions` property — an open-ended dictionary that client applications can use to attach arbitrary additional data. Extension values can be primitives, arrays, or nested objects.
+
+Extensions are round-tripped through STP: values set when an object is created or updated are persisted internally and returned on all subsequent events. When no extensions are present, the property is omitted from the JSON payload.
+
+```javascript
+// Set extensions when updating an existing symbol
+let symbol = ...; // existing StpSymbol
+symbol.extensions = {
+    appId: "coaEditor",
+    priority: 3,
+    metadata: { color: "#FF0000", tags: ["urgent", "reviewed"] }
+};
+stpsdk.updateSymbol(symbol.poid, symbol);
+```
+
+Extensions are received back on event handlers:
+
+```javascript
+stpsdk.onSymbolAdded = (alternates, isUndo) => {
+    const sym = alternates[0];
+    if (sym.extensions?.appId === "coaEditor") {
+        console.log("Priority:", sym.extensions.priority);
+    }
+};
+```
+
+See the [JSON API](../json-api) documentation for the wire format details.
 
 ### Symbol rendering
 
