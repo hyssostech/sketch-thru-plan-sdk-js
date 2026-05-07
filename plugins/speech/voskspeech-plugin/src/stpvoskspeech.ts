@@ -54,15 +54,15 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
    * Constructs a Vosk browser speech recognizer.
    * Model loading begins immediately in the background.
    *
-   * @param modelPath - Relative or absolute URL to the Vosk model archive (.tar.gz).
-   *                    Defaults to `'./model.tar.gz'`. The archive must contain the
-   *                    standard Vosk model structure (am/, conf/, graph/, ivector/).
+   * @param modelPath - Relative or absolute URL to the directory containing the unpacked
+   *                    Vosk model files (am/, conf/, graph/, ivector/ and manifest.json).
+   *                    Defaults to `'./model'`. The directory must be served as static files.
    * @param sampleRate - Sample rate for recognition. Defaults to 16000.
    * @param workletPath - URL to the vosk-processor.js AudioWorklet file.
    *                      Defaults to `'vosk-processor.js'` (relative to the page).
    */
   constructor(modelPath?: string, sampleRate?: number, workletPath?: string) {
-    this._modelPath = modelPath ?? './model.tar.gz';
+    this._modelPath = modelPath ?? './model';
     this._sampleRate = sampleRate ?? 16000;
     this._workletPath = workletPath ?? 'vosk-processor.js';
 
@@ -80,13 +80,14 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
       // so relative URLs would resolve against the blob, not the page.
       const absoluteModelUrl = new URL(this._modelPath, window.location.href).href;
 
-      // Quick check: probe the model archive to give a clear error before
+      // Quick check: probe manifest.json to give a clear error before
       // vosk-browser produces a cryptic WASM/fetch failure
-      const probe = await fetch(absoluteModelUrl, { method: 'HEAD' });
+      const manifestUrl = absoluteModelUrl.replace(/\/$/, '') + '/manifest.json';
+      const probe = await fetch(manifestUrl, { method: 'HEAD' });
       if (!probe.ok) {
         throw new Error(
-          `Model archive not found at '${this._modelPath}'. ` +
-          `Deploy the model .tar.gz file — see the plugin README for instructions.`
+          `Model not found at '${this._modelPath}'. ` +
+          `Extract vosk-model-la-domain.zip into that directory — see the plugin README for instructions.`
         );
       }
 

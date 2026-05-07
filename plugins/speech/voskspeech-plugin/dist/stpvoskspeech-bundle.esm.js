@@ -18,7 +18,7 @@ class VoskSpeechRecognizer {
         this._graceTimer = null;
         this._gracePeriodMs = 1500;
         this._lastPartial = '';
-        this._modelPath = modelPath ?? './model.tar.gz';
+        this._modelPath = modelPath ?? './model';
         this._sampleRate = sampleRate ?? 16000;
         this._workletPath = workletPath ?? 'vosk-processor.js';
         this._modelReady = this.initializeModel();
@@ -26,10 +26,11 @@ class VoskSpeechRecognizer {
     async initializeModel() {
         try {
             const absoluteModelUrl = new URL(this._modelPath, window.location.href).href;
-            const probe = await fetch(absoluteModelUrl, { method: 'HEAD' });
+            const manifestUrl = absoluteModelUrl.replace(/\/$/, '') + '/manifest.json';
+            const probe = await fetch(manifestUrl, { method: 'HEAD' });
             if (!probe.ok) {
-                throw new Error(`Model archive not found at '${this._modelPath}'. ` +
-                    `Deploy the model .tar.gz file — see the plugin README for instructions.`);
+                throw new Error(`Model not found at '${this._modelPath}'. ` +
+                    `Extract vosk-model-la-domain.zip into that directory — see the plugin README for instructions.`);
             }
             this._model = await createModel(absoluteModelUrl, -1);
             this._model.setLogLevel(-1);
