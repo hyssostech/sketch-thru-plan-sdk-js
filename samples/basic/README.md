@@ -137,20 +137,24 @@ Extension values can be primitives, arrays, or nested objects.
 
 ## Speech
 
-This sample uses a “while sketching” speech approach. Recognition is enabled at the beginning of a user sketch and deactivated 5 seconds after the sketch ends. See [index.js](index.js) for event wiring (`onRecognized`, `onRecognizing`, `onError`).### Vosk (offline) speech setup
+This sample uses a “while sketching” speech approach. Recognition is enabled at the beginning of a user sketch and deactivated 5 seconds after the sketch ends. See [index.js](index.js) for event wiring (`onRecognized`, `onRecognizing`, `onError`).
+
+### Vosk (offline) speech setup
 
 The Vosk plugin uses a domain-adapted speech model that runs entirely in the browser via WebAssembly. No cloud service or API keys are needed.
 
-**One-time setup**: extract the model from the included zip into this sample's directory:
+**One-time setup**: the Vosk plugin fetches model files individually from a static directory, so the model must be placed as **unpacked files** in `samples/basic/model/` — do not place a zip or archive in that folder.
+
+Extract the model from the included zip into this sample's directory:
 
 ```powershell
-# PowerShell (from the repo root)
-Expand-Archive -Path plugins/speech/voskspeech-plugin/model/vosk-model-la-domain.zip -DestinationPath samples/basic/model
+# PowerShell (from samples/basic/)
+Expand-Archive -Path vosk-model-la-domain.zip -DestinationPath model
 ```
 
 ```bash
-# bash / macOS / Linux (from the repo root)
-unzip plugins/speech/voskspeech-plugin/model/vosk-model-la-domain.zip -d samples/basic/model
+# bash / macOS / Linux (from samples/basic/)
+unzip vosk-model-la-domain.zip -d model
 ```
 
 After extraction, `samples/basic/model/` should contain the `am/`, `conf/`, `graph/`, and `ivector/` subdirectories (~50 MB total).

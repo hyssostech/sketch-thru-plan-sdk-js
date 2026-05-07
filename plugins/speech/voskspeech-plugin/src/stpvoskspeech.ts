@@ -40,6 +40,8 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
   private _isListening: boolean = false;
   private _recoStart: Date = new Date();
 
+  onModelReady: (() => void) | null = null;
+
   // vosk-browser results include a single "text" field per result event.
   // We accumulate partial and final results similarly to the Azure plugin.
   private _pendingResults: SpeechRecoResult[] = [];
@@ -91,6 +93,7 @@ export class VoskSpeechRecognizer implements ISpeechRecognizer {
       this._model = await createModel(absoluteModelUrl, -1);
       this._model.setLogLevel(-1);
       this._modelLoaded = true;
+      this.onModelReady?.call(this);
     } catch (e: any) {
       this._modelError = new Error(`Failed to load Vosk model from '${this._modelPath}': ${e.message || e}`);
       this.onError?.call(this, this._modelError);

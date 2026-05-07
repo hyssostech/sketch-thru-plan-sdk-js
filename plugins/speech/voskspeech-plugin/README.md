@@ -6,11 +6,11 @@ This plugin is implemented based on [Vosk](https://alphacephei.com/vosk/) WebAss
 
 ## Prerequisites
 
-This plugin requires a Vosk speech model to be served as static files alongside your application. A domain-adapted model is included at `model/vosk-model-la-domain.zip` (~28 MB).
+This plugin requires a Vosk speech model to be served as static files alongside your application. A domain-adapted model is included at `model/vosk-model-la-domain.zip` (~28 MB). The model must be deployed as **unpacked files** in a directory accessible to the web server — the plugin fetches each model file individually at runtime and cannot load a zip or archive directly.
 
 ### Setting up the model
 
-Extract the model into your application's directory:
+Extract the model into your application's static directory:
 
 ```bash
 # PowerShell (Windows)
@@ -20,7 +20,7 @@ Expand-Archive -Path plugins/speech/voskspeech-plugin/model/vosk-model-la-domain
 unzip plugins/speech/voskspeech-plugin/model/vosk-model-la-domain.zip -d your-app/model
 ```
 
-The resulting `model/` directory (~50 MB on disk) contains the acoustic model, decoding graph, and configuration files required by the Vosk WASM runtime.
+The resulting `model/` directory (~50 MB on disk) must contain the unpacked `am/`, `conf/`, `graph/`, and `ivector/` subdirectories — the acoustic model, decoding graph, and configuration files required by the Vosk WASM runtime.
 
 > **Note:** The page must be served over **HTTPS** for microphone access. Modern browsers also require **AudioWorklet** (Chrome 66+, Firefox 76+, Safari 14.1+, Edge 79+) and **WebAssembly** support.
 

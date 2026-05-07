@@ -17,6 +17,7 @@
             this._workletRegistered = false;
             this._isListening = false;
             this._recoStart = new Date();
+            this.onModelReady = null;
             this._pendingResults = [];
             this._graceTimer = null;
             this._gracePeriodMs = 1500;
@@ -37,6 +38,7 @@
                 this._model = await voskBrowser.createModel(absoluteModelUrl, -1);
                 this._model.setLogLevel(-1);
                 this._modelLoaded = true;
+                this.onModelReady?.call(this);
             }
             catch (e) {
                 this._modelError = new Error(`Failed to load Vosk model from '${this._modelPath}': ${e.message || e}`);

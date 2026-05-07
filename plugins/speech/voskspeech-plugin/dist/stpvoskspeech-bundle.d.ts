@@ -32,6 +32,7 @@ declare class VoskSpeechRecognizer implements ISpeechRecognizer {
     private _workletRegistered;
     private _isListening;
     private _recoStart;
+    onModelReady: (() => void) | null;
     private _pendingResults;
     private _graceTimer;
     private _gracePeriodMs;

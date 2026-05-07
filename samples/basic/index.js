@@ -13,7 +13,7 @@ let awsLanguage = "en-US";
 
 let speechProvider = "azure"; // "azure" | "aws" | "vosk"
 
-let voskModelPath = './model-vosk.tar.gz'; // Path to Vosk model archive (.tar.gz)
+let voskModelPath = './model'; // Vosk model directory (served as static files)
 
 let googleMapsKey = "<Enter your Google Maps API key here>";
 let arcgisApiKey = null; // ArcGIS API key (null for public basemaps)
@@ -170,6 +170,8 @@ async function start(){
     speechreco.onError = (e) => { log("Failed to process speech: " + e.message); };
   } else if (speechProvider === 'vosk') {
     speechreco = new StpVS.VoskSpeechRecognizer(voskModelPath, undefined, '../../plugins/speech/voskspeech-plugin/vosk-processor.js');
+    setStatus('Vosk: loading model...');
+    speechreco.onModelReady = () => { setStatus('Vosk: model ready — draw to speak'); };
     speechreco.onRecognized = (recoResult) => {
       if (recoResult && recoResult.results && recoResult.results.length > 0) {
         speechreco.stopRecognizing();
