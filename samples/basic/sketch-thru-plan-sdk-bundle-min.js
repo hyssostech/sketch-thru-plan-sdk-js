@@ -732,6 +732,44 @@
         async hasActiveScenario(timeout) {
             return this.requestStp('HasActiveScenario', null, timeout);
         }
+        async loadNewScenarioFromObjectSet(objects, timeout) {
+            return this.requestStp('LoadNewScenarioFromObjectSet', {
+                objects: arguments[0],
+            }, timeout);
+        }
+        async importPlanDataFromObjectSet(objects, timeout) {
+            return this.requestStp('ImportPlanDataFromObjectSet', {
+                objects: arguments[0],
+            }, timeout);
+        }
+        async getScenarioObjectSet(timeout) {
+            return this.requestStp('GetScenarioObjectSet', null, timeout);
+        }
+        async syncScenarioSessionFromObjectSet(objects, timeout) {
+            return this.requestStp('SyncScenarioSessionFromObjectSet', {
+                objects: arguments[0],
+            }, timeout);
+        }
+        async importTaskOrgFromObjectSet(objects, timeout) {
+            return this.requestStp('ImportTaskOrgFromObjectSet', {
+                objects: arguments[0],
+            }, timeout);
+        }
+        async getTaskOrgObjectSet(poid, timeout) {
+            return this.requestStp('GetTaskOrgObjectSet', {
+                poid: arguments[0],
+            }, timeout);
+        }
+        async importCoaFromObjectSet(objects, timeout) {
+            return this.requestStp('ImportCoaFromObjectSet', {
+                objects: arguments[0],
+            }, timeout);
+        }
+        async getCoaObjectSet(poid, timeout) {
+            return this.requestStp('GetCoaObjectSet', {
+                poid: arguments[0],
+            }, timeout);
+        }
         createC2SIMProxy(options) {
             return new StpC2SIMProxy(this, options);
         }
@@ -931,7 +969,6 @@
                 }
                 this.serviceName = serviceName;
                 this.solvables = solvables;
-                this.timeout = timeout;
                 if (machineId != null) {
                     this.machineId = machineId;
                 }
@@ -1007,7 +1044,7 @@
                     serviceName: this.serviceName,
                     language: 'javascript',
                     solvables: this.solvables,
-                    machineId: this.machineId || this.getUniqueId(9),
+                    machineId: this.machineId || null,
                     sessionId: this.sessionId
                 }
             };
@@ -1075,11 +1112,6 @@
                     }, timeout * 1000);
                 })
             ]);
-        }
-        getUniqueId(numChars) {
-            if (!numChars)
-                numChars = 9;
-            return Math.random().toString(36).substr(2, numChars);
         }
     }
     class Tracker {

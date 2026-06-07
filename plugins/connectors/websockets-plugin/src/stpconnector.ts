@@ -57,11 +57,10 @@ export class StpWebSocketsConnector implements IStpConnector {
    * @param serviceName - Name of the service that is connecting
    * @param solvables - Array of messages that this service handles
    * @param timeout - Optional number of seconds to wait for a connection before failing
-   * @param machineId - Optional machine Id to use. If not provided, it is set to some unique Id.
+   * @param machineId - Optional machine Id to use. If not provided, no id is sent and STP uses the host's id.
    * @param sessionId - Optional session Id to use. If not provided:
    *  1. the suffix to the WebSocket connection string is used 
-   *  2. if no WebSocket suffix was provided, the machineId is used
-   *  3. If machineId is not provided, a unique random Id is used.
+   *  2. otherwise STP assigns its default session (the host's id)
    * @returns The actual sessionId used - the one provided here or a default set by STP
    */
   async connect(
@@ -191,7 +190,7 @@ export class StpWebSocketsConnector implements IStpConnector {
         serviceName: this.serviceName,
         language: 'javascript',
         solvables: this.solvables,
-        machineId: this.machineId || this.getUniqueId(9),
+        machineId: this.machineId || null,
         sessionId: this.sessionId
       }
     });
@@ -325,15 +324,6 @@ export class StpWebSocketsConnector implements IStpConnector {
         }, timeout * 1000);
       })
     ]);
-  }
-
-  /**
-   * Generates a unique/random id
-   * @param numChars Number of characters to return - max [default] 9
-   */
-  private getUniqueId(numChars?: number): string {
-    if (!numChars) numChars = 9;
-    return Math.random().toString(36).substr(2, numChars);
   }
 
   //#endregion
