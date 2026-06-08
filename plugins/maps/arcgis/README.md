@@ -331,10 +331,86 @@ Bundles will be generated in `dist/`:
 - `arcgis-bundle-min.js` - Minified UMD bundle
 - `index.d.ts` - TypeScript definitions
 
+## Air-gapped / disconnected operation
+
+The plugin depends on several online resources at runtime. All of them can be redirected to locally-hosted equivalents for environments with no internet access.
+
+### External resource inventory
+
+| Resource | Default source | Purpose |
+|---|---|---|
+| ArcGIS Maps SDK for JavaScript | `https://js.arcgis.com/4.29/` (JS + CSS) | Core map engine, loaded by the host page via `<script>` tag |
+| MIL-STD-2525 dictionary style | `https://www.arcgis.com/sharing/rest/content/items/d815f3bdf6e6452bb8fd153b654c94ca` | Symbol renderer style fetched by `DictionaryRenderer` at runtime |
+| Basemap tiles | Esri online tile services | Map background imagery/vectors |
+| Projection engine | Bundled with the ArcGIS JS API CDN | WASM module for coordinate transformations (`projection.load()`) |
+
+### 1. Self-host the ArcGIS Maps SDK for JavaScript
+
+The host application loads the SDK via a `<script>` tag that normally points to the Esri CDN. For offline use, download and deploy the SDK locally, then update the page references:
+
+```html
+<!-- Replace CDN references with local paths -->
+<link rel="stylesheet" href="/local/arcgis-sdk/esri/themes/light/main.css" />
+<script src="/local/arcgis-sdk/init.js"></script>
+```
+
+This also covers the projection engine WASM module, which is distributed as part of the SDK.
+
+See the Esri documentation for full instructions: [Install and set up locally](https://developers.arcgis.com/javascript/latest/install-and-set-up/).
+
+### 2. Host the MIL-STD-2525 dictionary style locally
+
+By default, the plugin fetches the MIL-STD-2525D dictionary style from ArcGIS Online. Override this via the constructor `options`:
+
+```javascript
+const map = new ArcGISMap(null, 'map', center, zoom, {
+  mil2525StyleUrl: '/local/mil2525d-style'
+});
+```
+
+To obtain the style for local hosting:
+1. Download the dictionary style item from ArcGIS Online (item ID `d815f3bdf6e6452bb8fd153b654c94ca`) while connected
+2. Host the extracted content on a local web server
+3. Pass the local URL as `mil2525StyleUrl`
+
+Alternatively, if using ArcGIS Enterprise Portal, publish the style as a portal item and pass its ID:
+
+```javascript
+const map = new ArcGISMap(null, 'map', center, zoom, {
+  mil2525PortalItemId: 'your-enterprise-portal-item-id'
+});
+```
+
+See the Esri documentation on dictionary styles: [DictionaryRenderer](https://developers.arcgis.com/javascript/latest/api-reference/esri-renderers-DictionaryRenderer.html).
+
+### 3. Provide a local basemap
+
+The default basemap (`'topo-vector'`) loads tiles from Esri's online services. Replace it with a locally-served tile layer:
+
+```javascript
+const map = new ArcGISMap(null, 'map', center, zoom, {
+  basemap: 'your-local-basemap-id'
+});
+```
+
+For full control, create a custom `Basemap` object in application code (using the ArcGIS JS API) backed by a local `TileLayer` or `VectorTileLayer`, and pass it as the `basemap` option.
+
+See the Esri documentation for working with custom and offline basemaps:
+- [Display a custom basemap style](https://developers.arcgis.com/javascript/latest/display-a-custom-basemap-style/)
+- [Work with offline maps](https://developers.arcgis.com/javascript/latest/offline/)
+
+### 4. API key
+
+When using Esri's online basemaps and services, an API key is typically required. In air-gapped deployments backed by ArcGIS Enterprise, the API key can be set to `null` since authentication is handled by the Enterprise portal instead:
+
+```javascript
+const map = new ArcGISMap(null, 'map', center, zoom, { /* options */ });
+```
+
 ## Notes
 
 - **ArcGIS JS API Requirement**: Page must load ArcGIS JS API 4.29+ before using this plugin
 - **AMD Loader**: Plugin relies on ArcGIS AMD loader (`require` function)
 - **StpSymbol Integration**: Plugin uses StpSymbol objects directly as graphic attributes for maximum efficiency
 - **MIL-STD-2525D**: Defaults to ArcGIS Online MIL-STD-2525D dictionary if no custom style provided
-- **Field Mapping**: Uses `deltaSIDC` field computed from `sidc.partA/B/C` properties 
+- **Field Mapping**: Uses `deltaSIDC` field computed from `sidc.partA/B/C` properties
