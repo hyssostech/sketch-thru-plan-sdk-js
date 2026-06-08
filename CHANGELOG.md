@@ -1,5 +1,5 @@
 # Sketch-Thru-Plan Change Log
-npm config list
+
 ## Version 0.6.13-alpha.0
 - Added `sendSimulatedSpeechRecognition()` method to send typed text as simulated speech recognition
 - Added `extensions` property to `StpItem`, `StpTaskOrg`, and `StpTaskOrgRelationship` for roundtripping custom client data through STP
