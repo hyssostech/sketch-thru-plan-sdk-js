@@ -3,3 +3,11 @@ samples/arcgis*
 **/.DS_Store
 */launch.json
 
+# SDK build artifacts
+docs
+build
+dist
+coverage
+/interfaces
+*.d.ts
+!src/*.d.ts

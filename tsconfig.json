@@ -1,0 +1,40 @@
+{
+    "compilerOptions": {
+      "noImplicitAny": true,
+      "target": "es2020", 
+      "module": "es2020",
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "declaration": true,
+      "removeComments": true,
+      "sourceMap": true,
+      "strict": true,
+      "outDir": "build",
+      "experimentalDecorators": true,
+      "skipLibCheck": true  // To avoid TS2611 on azure speech compilation
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+    ],
+    "types": [
+        "geojson",
+    ],
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": [
+      "dist",
+      "build",
+      "test",
+      "node_modules"
+    ],
+    "typedocOptions": {  
+      "entryPoints": ["./src/index.ts"],
+      "readme": "DOCINDEX.md",
+      "out": "docs/sdk",
+      "excludePrivate": "true",
+      "theme": "default",
+      "includeVersion": "true", 
+      "name": "Sketch-thru-Plan SDK"
+    }
+}
