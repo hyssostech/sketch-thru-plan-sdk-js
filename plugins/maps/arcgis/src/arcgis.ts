@@ -408,6 +408,55 @@ export class ArcGISMap implements IMapAdapter {
     }
   };
 
+  private layerForEsriType = (t: string): any => {
+    switch (t) {
+      case 'point': return this.symbolLayerPoint;
+      case 'multipoint': return this.symbolLayerMultipoint;
+      case 'polyline': return this.symbolLayerLine;
+      case 'polygon': return this.symbolLayerPolygon;
+      default: return null;
+    }
+  };
+
+  // Update an existing feature IN PLACE (no delete + re-add). This replaces the
+  // remove-then-add "replace-in-place" pattern that churned the layers on every
+  // change and was the surface for a remove/add race that dropped line/area
+  // tactical graphics. Behavior:
+  //   - unknown poid               -> addFeature (genuinely new symbol)
+  //   - same geometry type         -> applyEdits updateFeatures (in place)
+  //   - geometry type changed      -> remove (awaited) then add (must move layers)
+  updateFeature = (symbolGeoJSON: any) => {
+    if (!symbolGeoJSON) return;
+    const stpSymbol = symbolGeoJSON.properties && symbolGeoJSON.properties.symbol;
+    const poid = stpSymbol && stpSymbol.poid;
+    const existing = poid ? this.assets.get(poid) : null;
+    if (!existing || existing.length === 0) {
+      this.addFeature(symbolGeoJSON);
+      return;
+    }
+    require(['esri/Graphic'], (Graphic: any) => {
+      const esriGeom = this.geoJSONToEsriGeometry(symbolGeoJSON.geometry);
+      if (!esriGeom) return;
+      const oldGraphic = existing[0];
+      const oldType = oldGraphic.geometry && oldGraphic.geometry.type;
+      const layer = this.layerForEsriType(esriGeom.type);
+      if (!layer) return;
+      if (oldType !== esriGeom.type) {
+        // Geometry type changed -> the feature must move FeatureLayers. Remove
+        // fully (awaited) before re-adding so the delete cannot race the add.
+        this.removeFeature(poid).then(() => this.addFeature(symbolGeoJSON));
+        return;
+      }
+      stpSymbol.objectid = oldGraphic.attributes.objectid;
+      // Resolve the computed deltaSIDC getter explicitly for the DictionaryRenderer.
+      stpSymbol.symbolId = stpSymbol.deltaSIDC;
+      const graphic = new Graphic({ geometry: esriGeom, attributes: stpSymbol });
+      layer.applyEdits({ updateFeatures: [graphic] })
+        .catch((e: any) => console.error('Failed to update feature:', e));
+      this.assets.set(poid, [graphic]);
+    });
+  };
+
   addPoly = (coords: Array<{ lat: number; lon: number }>, color = '#66cc00', weight = 2) => {
     if (!coords || coords.length === 0) return;
     require(['esri/Graphic', 'esri/geometry/Polyline'], (Graphic: any, Polyline: any) => {

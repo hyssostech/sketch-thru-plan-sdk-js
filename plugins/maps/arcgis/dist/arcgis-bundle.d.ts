@@ -96,6 +96,8 @@ declare class ArcGISMap implements IMapAdapter {
     load: () => Promise<void>;
     addFeature: (symbolGeoJSON: any) => void;
     removeFeature: (poid: string) => Promise<void>;
+    private layerForEsriType;
+    updateFeature: (symbolGeoJSON: any) => void;
     addPoly: (coords: Array<{
         lat: number;
         lon: number;
