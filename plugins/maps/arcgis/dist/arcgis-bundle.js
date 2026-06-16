@@ -9,7 +9,7 @@
     // Example: <script src="https://js.arcgis.com/4.29/"></script>
     class ArcGISMap {
         constructor(apiKey, mapDivId, mapCenter, zoomLevel, options) {
-            var _a, _b, _c;
+            var _a, _b, _c, _d;
             this.drawing = false;
             this.strokeStartTs = '';
             this.assets = new Map();
@@ -289,6 +289,7 @@
                 if (!symbolGeoJSON)
                     return;
                 require(['esri/Graphic', 'esri/geometry/Multipoint'], (Graphic, Multipoint) => {
+                    var _a;
                     const geom = symbolGeoJSON.geometry;
                     const stpSymbol = symbolGeoJSON.properties.symbol; // StpSymbol instance
                     const esriGeom = this.geoJSONToEsriGeometry(geom);
@@ -296,9 +297,12 @@
                         return;
                     // Add ArcGIS-specific properties directly to StpSymbol object
                     stpSymbol.objectid = this.nextObjectId++;
-                    // Resolve computed deltaSIDC property explicitly otherwise it is not accessible via fieldMap 
-                    // since it is a getter, and DictionaryRenderer requires a direct property for mapping
-                    stpSymbol.symbolId = stpSymbol.deltaSIDC;
+                    // Resolve the computed SIDC getter explicitly: DictionaryRenderer maps a
+                    // direct property, not a getter. Prefer 2525C (charlieSIDC) when configured,
+                    // falling back to 2525D (deltaSIDC) when a symbol has no 2525C code.
+                    stpSymbol.symbolId = this.sidcStandard === 'C'
+                        ? ((_a = stpSymbol.charlieSIDC) !== null && _a !== void 0 ? _a : stpSymbol.deltaSIDC)
+                        : stpSymbol.deltaSIDC;
                     const addGraphic = (layerRef, graphic) => {
                         layerRef.applyEdits({ addFeatures: [graphic] }).catch((e) => console.error('Failed to add feature:', e));
                         // Store reference for later removal (using poid as key if available)
@@ -371,6 +375,7 @@
                     return;
                 }
                 require(['esri/Graphic'], (Graphic) => {
+                    var _a;
                     const esriGeom = this.geoJSONToEsriGeometry(symbolGeoJSON.geometry);
                     if (!esriGeom)
                         return;
@@ -386,8 +391,11 @@
                         return;
                     }
                     stpSymbol.objectid = oldGraphic.attributes.objectid;
-                    // Resolve the computed deltaSIDC getter explicitly for the DictionaryRenderer.
-                    stpSymbol.symbolId = stpSymbol.deltaSIDC;
+                    // Resolve the computed SIDC getter explicitly for the DictionaryRenderer.
+                    // Prefer 2525C (charlieSIDC) when configured, else 2525D (deltaSIDC).
+                    stpSymbol.symbolId = this.sidcStandard === 'C'
+                        ? ((_a = stpSymbol.charlieSIDC) !== null && _a !== void 0 ? _a : stpSymbol.deltaSIDC)
+                        : stpSymbol.deltaSIDC;
                     const graphic = new Graphic({ geometry: esriGeom, attributes: stpSymbol });
                     layer.applyEdits({ updateFeatures: [graphic] })
                         .catch((e) => console.error('Failed to update feature:', e));
@@ -509,6 +517,7 @@
             this.milDictionaryStyleUrl = (_a = options === null || options === void 0 ? void 0 : options.mil2525StyleUrl) !== null && _a !== void 0 ? _a : null;
             this.milDictionaryPortalItemId = (_b = options === null || options === void 0 ? void 0 : options.mil2525PortalItemId) !== null && _b !== void 0 ? _b : null;
             this.basemap = (_c = options === null || options === void 0 ? void 0 : options.basemap) !== null && _c !== void 0 ? _c : 'topo-vector';
+            this.sidcStandard = (_d = options === null || options === void 0 ? void 0 : options.sidcStandard) !== null && _d !== void 0 ? _d : 'D';
         }
     }
     window.ArcGISMap = ArcGISMap;

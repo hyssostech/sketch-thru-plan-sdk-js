@@ -85,6 +85,7 @@ declare class ArcGISMap implements IMapAdapter {
     private milDictionaryStyleUrl;
     private milDictionaryPortalItemId;
     private basemap;
+    sidcStandard: 'C' | 'D';
     constructor(apiKey: string | null, mapDivId: string, mapCenter: {
         lat: number;
         lon: number;
@@ -92,6 +93,7 @@ declare class ArcGISMap implements IMapAdapter {
         mil2525StyleUrl?: string;
         mil2525PortalItemId?: string;
         basemap?: string;
+        sidcStandard?: 'C' | 'D';
     });
     load: () => Promise<void>;
     addFeature: (symbolGeoJSON: any) => void;

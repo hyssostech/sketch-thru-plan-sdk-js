@@ -45,7 +45,13 @@ export class ArcGISMap implements IMapAdapter {
   private milDictionaryPortalItemId: string | null;
   private basemap: string;
 
-  constructor(apiKey: string | null, mapDivId: string, mapCenter: { lat: number; lon: number }, zoomLevel: number, options?: { mil2525StyleUrl?: string; mil2525PortalItemId?: string; basemap?: string }) {
+  // MIL-STD standard for the symbolId fed to the DictionaryRenderer: 'D'
+  // (2525D / deltaSIDC, default) or 'C' (2525C / charlieSIDC, falling back to
+  // deltaSIDC when a symbol has no 2525C code). Pair 'C' with a 2525C dictionary
+  // style. Public so it can also be set after construction (map.sidcStandard = 'C').
+  public sidcStandard: 'C' | 'D';
+
+  constructor(apiKey: string | null, mapDivId: string, mapCenter: { lat: number; lon: number }, zoomLevel: number, options?: { mil2525StyleUrl?: string; mil2525PortalItemId?: string; basemap?: string; sidcStandard?: 'C' | 'D' }) {
     this.apiKey = apiKey ?? null;
     this.mapDivId = mapDivId;
     this.mapCenter = mapCenter;
@@ -54,6 +60,7 @@ export class ArcGISMap implements IMapAdapter {
     this.milDictionaryStyleUrl = options?.mil2525StyleUrl ?? null;
     this.milDictionaryPortalItemId = options?.mil2525PortalItemId ?? null;
     this.basemap = options?.basemap ?? 'topo-vector';
+    this.sidcStandard = options?.sidcStandard ?? 'D';
   }
 
   load = async () => {
@@ -361,9 +368,12 @@ export class ArcGISMap implements IMapAdapter {
 
       // Add ArcGIS-specific properties directly to StpSymbol object
       stpSymbol.objectid = this.nextObjectId++;
-      // Resolve computed deltaSIDC property explicitly otherwise it is not accessible via fieldMap 
-      // since it is a getter, and DictionaryRenderer requires a direct property for mapping
-      stpSymbol.symbolId = stpSymbol.deltaSIDC;
+      // Resolve the computed SIDC getter explicitly: DictionaryRenderer maps a
+      // direct property, not a getter. Prefer 2525C (charlieSIDC) when configured,
+      // falling back to 2525D (deltaSIDC) when a symbol has no 2525C code.
+      stpSymbol.symbolId = this.sidcStandard === 'C'
+        ? (stpSymbol.charlieSIDC ?? stpSymbol.deltaSIDC)
+        : stpSymbol.deltaSIDC;
       const addGraphic = (layerRef: any, graphic: any) => {
         layerRef.applyEdits({ addFeatures: [graphic] }).catch((e: any) => console.error('Failed to add feature:', e));
         // Store reference for later removal (using poid as key if available)
@@ -448,8 +458,11 @@ export class ArcGISMap implements IMapAdapter {
         return;
       }
       stpSymbol.objectid = oldGraphic.attributes.objectid;
-      // Resolve the computed deltaSIDC getter explicitly for the DictionaryRenderer.
-      stpSymbol.symbolId = stpSymbol.deltaSIDC;
+      // Resolve the computed SIDC getter explicitly for the DictionaryRenderer.
+      // Prefer 2525C (charlieSIDC) when configured, else 2525D (deltaSIDC).
+      stpSymbol.symbolId = this.sidcStandard === 'C'
+        ? (stpSymbol.charlieSIDC ?? stpSymbol.deltaSIDC)
+        : stpSymbol.deltaSIDC;
       const graphic = new Graphic({ geometry: esriGeom, attributes: stpSymbol });
       layer.applyEdits({ updateFeatures: [graphic] })
         .catch((e: any) => console.error('Failed to update feature:', e));

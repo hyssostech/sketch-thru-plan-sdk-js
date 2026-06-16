@@ -3,7 +3,7 @@
 // Example: <script src="https://js.arcgis.com/4.29/"></script>
 export class ArcGISMap {
     constructor(apiKey, mapDivId, mapCenter, zoomLevel, options) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         this.drawing = false;
         this.strokeStartTs = '';
         this.assets = new Map();
@@ -283,6 +283,7 @@ export class ArcGISMap {
             if (!symbolGeoJSON)
                 return;
             require(['esri/Graphic', 'esri/geometry/Multipoint'], (Graphic, Multipoint) => {
+                var _a;
                 const geom = symbolGeoJSON.geometry;
                 const stpSymbol = symbolGeoJSON.properties.symbol; // StpSymbol instance
                 const esriGeom = this.geoJSONToEsriGeometry(geom);
@@ -290,9 +291,12 @@ export class ArcGISMap {
                     return;
                 // Add ArcGIS-specific properties directly to StpSymbol object
                 stpSymbol.objectid = this.nextObjectId++;
-                // Resolve computed deltaSIDC property explicitly otherwise it is not accessible via fieldMap 
-                // since it is a getter, and DictionaryRenderer requires a direct property for mapping
-                stpSymbol.symbolId = stpSymbol.deltaSIDC;
+                // Resolve the computed SIDC getter explicitly: DictionaryRenderer maps a
+                // direct property, not a getter. Prefer 2525C (charlieSIDC) when configured,
+                // falling back to 2525D (deltaSIDC) when a symbol has no 2525C code.
+                stpSymbol.symbolId = this.sidcStandard === 'C'
+                    ? ((_a = stpSymbol.charlieSIDC) !== null && _a !== void 0 ? _a : stpSymbol.deltaSIDC)
+                    : stpSymbol.deltaSIDC;
                 const addGraphic = (layerRef, graphic) => {
                     layerRef.applyEdits({ addFeatures: [graphic] }).catch((e) => console.error('Failed to add feature:', e));
                     // Store reference for later removal (using poid as key if available)
@@ -337,6 +341,60 @@ export class ArcGISMap {
             catch (e) {
                 console.error('Failed to remove feature:', e);
             }
+        };
+        this.layerForEsriType = (t) => {
+            switch (t) {
+                case 'point': return this.symbolLayerPoint;
+                case 'multipoint': return this.symbolLayerMultipoint;
+                case 'polyline': return this.symbolLayerLine;
+                case 'polygon': return this.symbolLayerPolygon;
+                default: return null;
+            }
+        };
+        // Update an existing feature IN PLACE (no delete + re-add). This replaces the
+        // remove-then-add "replace-in-place" pattern that churned the layers on every
+        // change and was the surface for a remove/add race that dropped line/area
+        // tactical graphics. Behavior:
+        //   - unknown poid               -> addFeature (genuinely new symbol)
+        //   - same geometry type         -> applyEdits updateFeatures (in place)
+        //   - geometry type changed      -> remove (awaited) then add (must move layers)
+        this.updateFeature = (symbolGeoJSON) => {
+            if (!symbolGeoJSON)
+                return;
+            const stpSymbol = symbolGeoJSON.properties && symbolGeoJSON.properties.symbol;
+            const poid = stpSymbol && stpSymbol.poid;
+            const existing = poid ? this.assets.get(poid) : null;
+            if (!existing || existing.length === 0) {
+                this.addFeature(symbolGeoJSON);
+                return;
+            }
+            require(['esri/Graphic'], (Graphic) => {
+                var _a;
+                const esriGeom = this.geoJSONToEsriGeometry(symbolGeoJSON.geometry);
+                if (!esriGeom)
+                    return;
+                const oldGraphic = existing[0];
+                const oldType = oldGraphic.geometry && oldGraphic.geometry.type;
+                const layer = this.layerForEsriType(esriGeom.type);
+                if (!layer)
+                    return;
+                if (oldType !== esriGeom.type) {
+                    // Geometry type changed -> the feature must move FeatureLayers. Remove
+                    // fully (awaited) before re-adding so the delete cannot race the add.
+                    this.removeFeature(poid).then(() => this.addFeature(symbolGeoJSON));
+                    return;
+                }
+                stpSymbol.objectid = oldGraphic.attributes.objectid;
+                // Resolve the computed SIDC getter explicitly for the DictionaryRenderer.
+                // Prefer 2525C (charlieSIDC) when configured, else 2525D (deltaSIDC).
+                stpSymbol.symbolId = this.sidcStandard === 'C'
+                    ? ((_a = stpSymbol.charlieSIDC) !== null && _a !== void 0 ? _a : stpSymbol.deltaSIDC)
+                    : stpSymbol.deltaSIDC;
+                const graphic = new Graphic({ geometry: esriGeom, attributes: stpSymbol });
+                layer.applyEdits({ updateFeatures: [graphic] })
+                    .catch((e) => console.error('Failed to update feature:', e));
+                this.assets.set(poid, [graphic]);
+            });
         };
         this.addPoly = (coords, color = '#66cc00', weight = 2) => {
             if (!coords || coords.length === 0)
@@ -453,6 +511,7 @@ export class ArcGISMap {
         this.milDictionaryStyleUrl = (_a = options === null || options === void 0 ? void 0 : options.mil2525StyleUrl) !== null && _a !== void 0 ? _a : null;
         this.milDictionaryPortalItemId = (_b = options === null || options === void 0 ? void 0 : options.mil2525PortalItemId) !== null && _b !== void 0 ? _b : null;
         this.basemap = (_c = options === null || options === void 0 ? void 0 : options.basemap) !== null && _c !== void 0 ? _c : 'topo-vector';
+        this.sidcStandard = (_d = options === null || options === void 0 ? void 0 : options.sidcStandard) !== null && _d !== void 0 ? _d : 'D';
     }
 }
 window.ArcGISMap = ArcGISMap;
