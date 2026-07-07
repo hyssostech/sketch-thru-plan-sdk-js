@@ -884,7 +884,7 @@
         }
       },
       "Sidc": {
-        "description": "2525D/C military code identifiers.",
+        "description": "Dual-standard military symbol identifiers: STP ships BOTH the 2525D form (partA/partB/partC, symbolSet) and the 2525C form (charlie) for every symbol that has one; clients pick the standard they render.",
         "properties": {
           "partA": {
             "type": "string",
@@ -902,9 +902,14 @@
             "type": "string",
             "description": "2525D symbol set."
           },
+          "charlie": {
+            "type": "string",
+            "description": "2525C SIDC."
+          },
           "legacy": {
             "type": "string",
-            "description": "Legacy 2525C SIDC."
+            "deprecated": true,
+            "description": "DEPRECATED alias of 'charlie' (same value). Retained for existing clients; the wire ships both during the deprecation window."
           }
         }
       },
@@ -998,6 +1003,10 @@
           },
           "sidc": {
             "$ref": "#/components/schemas/Sidc"
+          },
+          "commonIdentifier": {
+            "type": "string",
+            "description": "Named-system common identifier amplifier (e.g. 'patriot', 'avenger') when the symbol is a named system; empty otherwise."
           },
           "location": {
             "$ref": "#/components/schemas/Location"

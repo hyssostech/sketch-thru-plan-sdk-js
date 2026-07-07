@@ -398,7 +398,7 @@ function buildInfo(symbol: any) {
     '<tr>' + '<td>2525D PartA</td><td>' + (symbol.sidc?.partA ?? '') + '</td>' + '</tr>' +
     '<tr>' + '<td>2525D PartB</td><td>' + (symbol.sidc?.partB ?? '') + '</td>' + '</tr>' +
     '<tr>' + '<td>Symbol Set</td><td>' + (symbol.sidc?.symbolSet ?? '') + '</td>' + '</tr>' +
-    '<tr>' + '<td>2525C SIDC</td><td>' + (symbol.sidc?.legacy ?? '') + '</td>' + '</tr>' +
+    '<tr>' + '<td>2525C SIDC</td><td>' + ((symbol.sidc?.charlie ?? symbol.sidc?.legacy) ?? '') + '</td>' + '</tr>' +
     '<tr>' + '<td>Affiliation</td><td>' + (symbol.affiliation ?? '') + '</td>' + '</tr>';
   if (symbol.fsTYPE == 'unit') {
     contentString += '<tr>' + '<td>Echelon</td><td>' + (symbol.echelon ?? '') + '</td>' + '</tr>';

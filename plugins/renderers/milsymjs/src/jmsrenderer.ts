@@ -147,7 +147,7 @@ export class JmsRenderer implements IStpRenderer {
       this.symbol.poid,
       this.symbol.shortDescription,
       this.symbol.fullDescription,
-      this.symbol.sidc.legacy,
+      (this.symbol.sidc.charlie ?? this.symbol.sidc.legacy),
       tgLatLng,
       'clampToGround',
       scale,
@@ -181,7 +181,7 @@ export class JmsRenderer implements IStpRenderer {
     renderOptions.size = 30;
 
     const MilSymbolCtor: any = (ms as any)?.Symbol || (ms as any)?.default?.Symbol || (ms as any)?.default || (ms as any);
-    const symbolRenderer = new MilSymbolCtor(this.symbol.sidc.legacy, renderOptions);
+    const symbolRenderer = new MilSymbolCtor((this.symbol.sidc.charlie ?? this.symbol.sidc.legacy), renderOptions);
     const symbolSvg = symbolRenderer.asSVG();
     if (symbolSvg) {
       const anchor = symbolRenderer.getAnchor();

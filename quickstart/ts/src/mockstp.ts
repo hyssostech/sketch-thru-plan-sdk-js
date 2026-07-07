@@ -52,7 +52,7 @@ class MockSymbol {
   affiliation: string;
   fullDescription: string;
   description: string;
-  sidc: { partA?: string; partB?: string; symbolSet?: string; legacy?: string };
+  sidc: { partA?: string; partB?: string; symbolSet?: string; charlie?: string; legacy?: string };  // legacy = deprecated alias of charlie
 
   constructor(poid: string, centroid: LatLon, coords: LatLon[], shape: string) {
     this.poid = poid;

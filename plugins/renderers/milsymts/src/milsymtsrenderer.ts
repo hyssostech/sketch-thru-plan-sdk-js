@@ -36,7 +36,7 @@ interface FeatureCollection { type: 'FeatureCollection'; features: Feature[] }
 
 function toPosition(ll: LatLonLike): Position { const lon = (ll.lon ?? ll.x ?? 0); const lat = (ll.lat ?? ll.y ?? 0); return [lon, lat]; }
 function closeRing(coords: Position[]): Position[] { if (coords.length > 0) { const f = coords[0], l = coords[coords.length - 1]; if (f[0] !== l[0] || f[1] !== l[1]) coords.push([...f]); } return coords; }
-function symbolProps(symbol: SymbolLike): Record<string, any> { return { poid: symbol.poid, sidc: symbol.sidc?.legacy ?? symbol.sidc, fullDescription: symbol.fullDescription, fsTYPE: symbol.fsTYPE, affiliation: symbol.affiliation, status: symbol.status }; }
+function symbolProps(symbol: SymbolLike): Record<string, any> { return { poid: symbol.poid, sidc: (symbol.sidc?.charlie ?? symbol.sidc?.legacy) ?? symbol.sidc, fullDescription: symbol.fullDescription, fsTYPE: symbol.fsTYPE, affiliation: symbol.affiliation, status: symbol.status }; }
 
 function renderWithWebRenderer(symbol: SymbolLike, bounds?: BoundsLike): FeatureCollection | null {
   try {
