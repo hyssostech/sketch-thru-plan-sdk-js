@@ -67,10 +67,10 @@ function main() {
   const expectedAff = [
     'pending',
     'unknown',
-    'assumedfriend',
+    'assumed_friend',
     'friend',
     'neutral',
-    'suspected',
+    'suspect',
     'hostile',
   ];
   let affOk = false;

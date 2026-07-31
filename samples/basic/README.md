@@ -256,13 +256,13 @@ STP provides a rich set of properties on each symbol and its location. If you sw
 | shortDescription  | Just the essential distinguishing elements, e.g. designators                 |
 | description       | Name/type of the symbol plus designators, but may omit "friendly", "present" and other assumed decorators |
 | fullDescription   | Complete description, including affiliation, status and all decorators        |
-| affiliation       | pending, unknown, assumedfriend, friend, neutral, suspected, hostile         |
-| echelon           | none, team, squad, section, platoon, company, battalion, regiment, brigade, division, corps, army, armygroup, region, command |
+| affiliation       | pending, unknown, assumed_friend, friend, neutral, suspect, hostile         |
+| echelon           | none, team, squad, section, platoon, company, battalion, regiment, brigade, division, corps, army, army_group, region, command |
 | parent            | Parent unit designator                                                       |
 | designator1       | Main symbol designator                                                       |
 | designator2       | Additional designator, e.g. in a company boundary, indicating the designator of the company to the S or E |
 | status            | present, anticipated                                                         |
-| modifier          | HQ and Task Force modifier: none, dummy, hq, dummy_hq, task_force, dummy_task_force, task_force_hq, dummy_task_force_hq |
+| modifier          | HQ and Task Force modifier: none, feint_dummy, hq, feint_dummy_hq, task_force, feint_dummy_task_force, task_force_hq, feint_dummy_task_force_hq |
 | strength          | none, reduced, reinforced, reduced_reinforced                                |
 | branch            | weapon, ground_unit, civilian_air, special_operations, vstol, equipment, installation, military_air, military_sea, military_submarine |
 | timeFrom          | Start time, e.g. of a Restricted Operations Zone                            |

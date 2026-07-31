@@ -1461,10 +1461,10 @@
         "enum": [
           "pending",
           "unknown",
-          "assumedfriend",
+          "assumed_friend",
           "friend",
           "neutral",
-          "suspected",
+          "suspect",
           "hostile"
         ],
         "description": "Affiliation used for Symbols, COAs and TOs."
