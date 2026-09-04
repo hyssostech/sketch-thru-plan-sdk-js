@@ -3,7 +3,9 @@ name: Publish plugins to npm
 on:
   push:
     tags:
-      - 'v*'          # triggers on version tags like v0.3.4, v1.0.0, etc.
+      # Plugins version independently of the SDK - see publish-sdk.yml.
+      # A shared 'v*' would publish both at unrelated versions.
+      - 'plugins-v*'
 
 permissions:
   id-token: write      # required for npm Trusted Publishing (OIDC)

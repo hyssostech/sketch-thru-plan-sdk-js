@@ -1,0 +1,112 @@
+# ═══════════════════════════════════════════════════════════════════════
+# Hardened CI Pipeline — Security scanning for the STP JavaScript SDK
+# ═══════════════════════════════════════════════════════════════════════
+# Runs on every push and PR to main.  Provides:
+#   • Secret scanning          — Gitleaks detects committed credentials
+#   • Dependency review        — gates PRs on new vulnerable dependencies
+#   • npm audit                — checks installed packages for known CVEs
+#   • Vulnerability scanning   — Trivy cross-checks against NVD/GHSA
+#
+# Build and test are handled by ci.yml — this workflow focuses on
+# security checks that ci.yml does not cover.
+#
+# Actions are SHA-pinned for supply chain integrity.
+# ═══════════════════════════════════════════════════════════════════════
+
+name: Hardened CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ─── Secret Scanning (Gitleaks) ────────────────────────────────────
+  secret-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - name: Install Gitleaks
+        run: |
+          GITLEAKS_VER="8.24.3"
+          curl -sL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VER}/gitleaks_${GITLEAKS_VER}_linux_x64.tar.gz" \
+            | tar xz -C /usr/local/bin gitleaks
+          gitleaks version
+      - name: Gitleaks — secret scanning
+        run: |
+          gitleaks detect \
+            --source . \
+            --verbose \
+            --report-format sarif \
+            --report-path gitleaks-report.sarif \
+            --exit-code 1
+      - name: Upload Gitleaks report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.sarif
+          if-no-files-found: ignore
+
+  # ─── Dependency Review (PR only) ───────────────────────────────────
+  # Blocks PRs that introduce dependencies with known HIGH+ CVEs.
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Dependency review
+        uses: actions/dependency-review-action@da24556b548a50705dd671f47852072ea4c105d9 # v4.7.1
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: always
+
+  # ─── Security Scan ─────────────────────────────────────────────────
+  # Installs dependencies and runs npm audit + Trivy filesystem scan.
+  # Build and test coverage are handled by ci.yml.
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── npm audit ──────────────────────────────────────────────────
+      - name: npm audit — dependency vulnerability check
+        run: npm audit --audit-level=high
+
+      # ── Trivy vulnerability scanning ───────────────────────────────
+      # Cross-references package-lock.json against NVD and GitHub
+      # Security Advisories.  Catches CVEs that npm audit may miss.
+      - name: Trivy — dependency vulnerability scan
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true

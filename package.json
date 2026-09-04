@@ -1,13 +1,79 @@
 {
-  "name": "sketch-thru-plan-sdk-js-samples",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Dev server for Sketch-thru-Plan JS SDK samples",
-  "scripts": {
-    "start": "http-server . -p 8080 -o /samples/index.html -c-1",
-    "serve": "http-server . -p 8080 -c-1"
+  "name": "sketch-thru-plan-sdk",
+  "version": "0.6.14",
+  "description": "Sketch-thru-Plan SDK for JavaScript",
+  "main": "dist/sketch-thru-plan-sdk-bundle-min.js",
+  "types": "dist/sketch-thru-plan-sdk-bundle.d.ts",
+  "module": "dist/sketch-thru-plan-sdk-bundle.esm.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
+  "scripts": {
+    "clean": "rimraf --glob dist build ./interfaces \"./*.d.ts\"",
+    "clean:docs": "rimraf docs",
+    "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
+    "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
+    "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts",
+    "bundle:umd": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle-min.js --format umd --name StpSDK --interop auto",
+    "bundle:esm": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle.esm.js --format esm  --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:dts": "rollup build/index.d.ts --file dist/sketch-thru-plan-sdk-bundle.d.ts --format es --plugin rollup-plugin-dts",
+    "build:dev": "npm run fix:format && npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
+    "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
+    "bundle:umd:dev": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle-min.js --format umd --name StpSDK --interop auto",
+    "fix:format": "prettier --config .prettierrc src --write",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "validate:schema": "node ../validation/check-openrpc.js",
+    "prepublishOnly": "npm run build",
+    "publish:dry": "npm run build && npm pack",
+    "start": "http-server . -p 8080 -o /samples/index.html -c-1",
+    "serve": "http-server . -p 8080 -c-1",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.js.map"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyssostech/stp-js.git"
+  },
+  "author": "Hyssos Tech",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-resources"
+  },
+  "homepage": "https://github.com/hyssostech/sketch-thru-plan-sdk-resources#readme",
+  "keywords": [
+    "Military Planning",
+    "Course of Action",
+    "Sketch-Thru-Plan",
+    "Speech and Sketch",
+    "Multimodal",
+    "Natural Language Processing",
+    "C2",
+    "C4ISR",
+    "Simulators",
+    "C2SIM"
+  ],
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "@types/lodash": "^4.17.23",
+    "@types/node": "^22.10.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "cross-env": "^10.1.0",
+    "http-server": "^14.1.1",
+    "mock-socket": "^9.3.1",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.57.1",
+    "rollup-plugin-dts": "^6.3.0",
+    "typedoc": "^0.28.16",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@types/geojson": "^7946.0.16",
+    "lodash": "^4.17.23"
   }
 }
