@@ -1,12 +1,14 @@
 name: Publish SDK to npm
 
-# DISARMED pending a ruling on the tag namespace.
-# .github/workflows/publish.yml ALREADY fires on 'v*' and publishes the seven
-# npm plugins. If this workflow also took 'v*', a single tag would publish both
-# the SDK and the plugins, at unrelated versions. Decide the scheme first -
-# distinct prefixes ('sdk-v*' vs 'plugins-v*'), or one workflow with two jobs -
-# then restore the push trigger. Manual-only until then.
+# Tag namespace RULED 2026-09-04: the SDK and the seven npm plugins version
+# independently, so each publish workflow owns a distinct prefix. This one is
+# 'sdk-v*'; the plugins workflow (.github/workflows/publish.yml) is 'plugins-v*'.
+# A bare 'v*' must not be used by either - it would publish both at unrelated
+# versions.
 on:
+  push:
+    tags:
+      - 'sdk-v*'
   workflow_dispatch:
 
 permissions:
