@@ -17,7 +17,7 @@ function serveLocalBundles(): Plugin {
       sdkRoot, 'plugins/maps/arcgisserver/dist/arcgisserver-bundle-min.js'
     ),
     '/local/sketch-thru-plan-sdk-bundle-min.js': path.join(
-      workspaceRoot, 'stp-js/dist/sketch-thru-plan-sdk-bundle-min.js'
+      sdkRoot, 'dist/sketch-thru-plan-sdk-bundle-min.js'
     ),
   };
 
