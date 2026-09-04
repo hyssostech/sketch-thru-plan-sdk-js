@@ -37,14 +37,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hyssostech/stp-js.git"
+    "url": "git+https://github.com/hyssostech/sketch-thru-plan-sdk-js.git"
   },
   "author": "Hyssos Tech",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-resources"
+    "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/issues"
   },
-  "homepage": "https://github.com/hyssostech/sketch-thru-plan-sdk-resources#readme",
+  "homepage": "https://github.com/hyssostech/sketch-thru-plan-sdk-js#readme",
   "keywords": [
     "Military Planning",
     "Course of Action",
