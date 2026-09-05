@@ -1,0 +1,17 @@
+# Git LFS tracking for large artifacts
+# See https://git-lfs.github.com
+# Binary / WASM files
+*.wasm filter=lfs diff=lfs merge=lfs -text
+# Kaldi model files (if model directories are committed)
+*.mdl filter=lfs diff=lfs merge=lfs -text
+*.fst filter=lfs diff=lfs merge=lfs -text
+# Archives
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+# Large generated JS bundles (mil-sym-js renderer)
+plugins/renderers/milsymjs/src/mil-sym-js.js filter=lfs diff=lfs merge=lfs -text
+plugins/renderers/milsymjs/build/milsymjs/src/mil-sym-js.js filter=lfs diff=lfs merge=lfs -text
+plugins/renderers/milsymjs/dist/jmsrenderer-bundle.js filter=lfs diff=lfs merge=lfs -text
+plugins/renderers/milsymjs/dist/jmsrenderer-bundle.esm.js filter=lfs diff=lfs merge=lfs -text
+plugins/renderers/milsymjs/dist/jmsrenderer-bundle-min.js filter=lfs diff=lfs merge=lfs -text
+plugins/speech/voskspeech-plugin/model/*.zip filter=lfs diff=lfs merge=lfs -text

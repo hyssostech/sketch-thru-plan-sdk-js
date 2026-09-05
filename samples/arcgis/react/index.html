@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>C2SIM ArcGIS (React)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+    <!-- ArcGIS JS API style sheet -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+
+    <!-- ArcGIS adapter bundle (global ArcGisServerMap) -->
+    <script src="/local/arcgisserver-bundle-min.js"></script>
+
+    <!-- Microsoft Cognitive Services Speech SDK (required by AzureSpeech plugin) -->
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.min.js"></script>
+
+    <!-- STP SDK global bundle -->
+    <!--<script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script>-->
+    <script type="application/javascript" src="/local/sketch-thru-plan-sdk-bundle-min.js"></script>
+
+    <!-- Azure Speech plugin global bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/@hyssostech/azurespeech-plugin@latest/dist/stpazurespeech-bundle-min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- ArcGIS JS API (AMD loader) -->
+    <script src="https://js.arcgis.com/4.29/"></script>
+
+    <!-- React app entry (Vite handles this) -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

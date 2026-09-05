@@ -1,0 +1,46 @@
+{
+  "name": "@hyssostech/awsspeech-plugin",
+  "version": "0.1.0-alpha.0",
+  "description": "Amazon Transcribe Streaming Speech plugin for Sketch-thru-Plan",
+  "main": "dist/stpawsspeech-bundle-min.js",
+  "types": "dist/stpawsspeech-bundle.d.ts",
+  "module": "dist/stpawsspeech-bundle.esm.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "clean": "rimraf dist build",
+    "clean:docs": "rimraf docs",
+    "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
+    "bundle": "rollup --config rollup.config.mjs && npm run bundle:min",
+    "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/stpawsspeech-bundle-min.js -- dist/stpawsspeech-bundle.js",
+    "fix:format": "prettier --config ../../.prettierrc src --write",
+    "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
+    "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
+    "bundle:dev": "rollup --config rollup.config.mjs",
+    "prepublishOnly": "npm run build",
+    "publish:dry": "npm run build && npm pack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/plugins/speech/awsspeech-plugin"
+  },
+  "author": "Hyssos Tech",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.57.1",
+    "rollup-plugin-dts": "^6.3.0",
+    "terser": "^5.46.0",
+    "typedoc": "^0.28.16",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-transcribe-streaming": "^3.998.0"
+  }
+}

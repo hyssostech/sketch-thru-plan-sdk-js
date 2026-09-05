@@ -382,13 +382,13 @@ The above properties are in addition to the `StpSymbol` properties that `StpTask
 | shortDescription  | Just the essential distinguishing elements, e.g. designators |
 | description       | Name/type of the symbol plus designators, but may omit "friendly", "present" and other assumed decorators |
 | fullDescription   | Complete description, including affiliation, status and all decorators |
-| affiliation       | pending, unknown, assumedfriend, friend, neutral, suspected, hostile |
-| echelon           | none, team, squad, section, platoon, company, battalion, regiment, brigade, division, corps, army, armygroup, region, command |
+| affiliation       | pending, unknown, assumed_friend, friend, neutral, suspect, hostile |
+| echelon           | none, team, squad, section, platoon, company, battalion, regiment, brigade, division, corps, army, army_group, region, command |
 | parent            | Parent unit designator |
 | designator1       | Main symbol designator |
 | designator2       | Additional designator, e.g. in a company boundary, indicating the designator of the company to the S or E |
 | status            | present, anticipated |
-| modifier          | HQ and Task Force modifier: none, dummy, hq, dummy_hq, task_force, dummy_task_force, task_force_hq, dummytask_force_hq |
+| modifier          | HQ and Task Force modifier: none, feint_dummy, hq, feint_dummy_hq, task_force, feint_dummy_task_force, task_force_hq, feint_dummy_task_force_hq |
 | strength          | none, reduced, reinforced, reduced_reinforced |
 | branch            | weapon, ground_unit, civilian_air, special_operations, vstol, equipment, installation, military_air, military_sea, military_submarine |
 
@@ -457,7 +457,7 @@ export enum CommandRelationship {
 };
 ```
 
-### Communicating TO edits to STP
+### Programmatic TO manipulation - Communicating TO edits to STP
 
 Task Org edits performed via a client interface, for example in a Task Org Editor, need to be communicated to STP, so that the internal state is consistent, and  actions performed by a client can be propagated to other clients that may be connected to the same collaboration session.
 

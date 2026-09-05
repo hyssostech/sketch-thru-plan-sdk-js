@@ -1,0 +1,20 @@
+declare const StpSDK: any;
+declare const StpAS: any;
+declare const ArcGISMap: any;
+declare let azureSubscriptionKey: string;
+declare let azureServiceRegion: string;
+declare let azureLanguage: string;
+declare let azureEndPoint: string | null;
+declare let mapCenter: {
+    lat: number;
+    lon: number;
+};
+declare let zoomLevel: number;
+declare let webSocketUrl: string;
+declare let stpsdk: any | null;
+declare let map: any;
+declare let toPoid: string | undefined;
+declare function start(): Promise<void>;
+declare function runApp(appName: string): Promise<void>;
+declare function buildInfo(symbol: any): string;
+declare function log(msg: string, level?: string, showAlert?: boolean): void;

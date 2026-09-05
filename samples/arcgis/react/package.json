@@ -1,0 +1,26 @@
+{
+  "name": "arcgis-react-ts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "C2SIM ArcGIS sample (React + TypeScript) – thin React shell over proven STP logic",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@hyssostech/azurespeech-plugin": "^0.3.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sketch-thru-plan-sdk": "^0.6.12"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "playwright": "^1.58.2",
+    "typescript": "^5.9.3",
+    "vite": "^6.3.5"
+  }
+}

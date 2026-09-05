@@ -273,10 +273,10 @@ async function start(){
                 let content = `object_set([
                     [fsTYPE: task_org, name: 'Hostile 1-1', affiliation: hostile, poid: idR47DS5VCGL8AB, date: '2023-05-22T13:40:00Z'],
                     [fsTYPE: task_org_unit, name: 'B/1-1', designator1: 'B', unit_parent: '1-1', sidc: 'SHGPUCIZ---E---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: company, poid: uuid7e99345a-f15a-4939-b963-0b83b1ec51a2],
-                    [fsTYPE: task_org_unit, name: '1/B/1-1', designator1: '1', unit_parent: 'B/1-1', sidc: 'SHGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: platoon, poid: uuid5336c5d5 - 9182 - 4846 - bdd8 - 5c517869d342],
+                    [fsTYPE: task_org_unit, name: '1/B/1-1', designator1: '1', unit_parent: 'B/1-1', sidc: 'SHGPUCIZ---D---', parent_poid: poid(idR47DS5VCGL8AB), affiliation: hostile, echelon: platoon, poid: uuid5336c5d5-9182-4846-bdd8-5c517869d342],
                     [fsTYPE: task_org_relationship, poid: idPNPMCKGE5TRTF, affiliation: hostile, parent: poid(uuid7e99345a-f15a-4939-b963-0b83b1ec51a2), relationship: organic, child: poid(uuid5336c5d5-9182-4846-bdd8-5c517869d342), parent_poid: poid(idR47DS5VCGL8AB)],
                 ])`;
-                toHostile = await stpsdk.importTaskOrgContent(hostile);
+                toHostile = await stpsdk.importTaskOrgContent(content);
             }
             await stpsdk.setDefaultTaskOrg(toHostile);
             //buttonGetTO.style.backgroundColor = 'red';
@@ -379,7 +379,7 @@ async function start(){
     }
 
     // Create map instance and subscribe to sketching events
-    map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
+    map = new LeafletMap(null, 'map', mapCenter, zoomLevel);
 
     // Notify STP of the start of a stroke and activate speech recognition
     map.onStrokeStart = (location, timestamp) => {

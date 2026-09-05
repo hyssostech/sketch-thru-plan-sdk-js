@@ -239,7 +239,7 @@ export enum TaskWhy {
 
 ```
 
-### Communicating task edits to STP
+### Programmatic Task manipulation - Communicating task edits to STP
 
 Task edits performed via a client interface, for example in a Task Editor, or a Sync Matrix editor, need to be communicated to STP, so that the internal state is consistent, and  actions performed by a client can be propagated to other clients that may be connected to the same collaboration session.
 

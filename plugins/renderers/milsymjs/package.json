@@ -1,0 +1,36 @@
+{
+  "name": "@hyssostech/jmsrenderer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf dist build",
+    "clean:docs": "rimraf docs",
+    "build": "npm run clean && tsc --project tsconfig.json && npm run copy:deps && npm run bundle",
+    "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts && npm run bundle:min",
+    "bundle:umd": "rollup build/milsymjs/src/jmsrenderer.js --file dist/jmsrenderer-bundle.js --format umd --name JmsRenderer --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs",
+    "bundle:esm": "rollup build/milsymjs/src/jmsrenderer.js --file dist/jmsrenderer-bundle.esm.js --format esm --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs",
+    "bundle:dts": "node -e \"require('fs').copyFileSync('build/milsymjs/src/jmsrenderer.d.ts','dist/jmsrenderer-bundle.d.ts')\"",
+    "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/jmsrenderer-bundle-min.js -- dist/jmsrenderer-bundle.js",
+    "copy:deps": "node -e \"require('fs').copyFileSync('src/mil-sym-js.js','build/milsymjs/src/mil-sym-js.js')\"",
+    "fix:format": "prettier --config ../../.prettierrc src --write",
+    "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
+    "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
+    "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
+    "bundle:umd:dev": "rollup build/milsymjs/src/jmsrenderer.js --file dist/jmsrenderer-bundle-dev.js --format umd --name JmsRenderer --plugin @rollup/plugin-node-resolve --plugin @rollup/plugin-commonjs"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.57.1",
+    "rollup-plugin-dts": "^6.3.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "terser": "^5.46.0",
+    "typedoc": "^0.28.16",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "milsymbol": "^2.0.0"
+  }
+}

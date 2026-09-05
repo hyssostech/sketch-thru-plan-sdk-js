@@ -1,0 +1,20 @@
+name: Notify docs site of SDK source changes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tsconfig.json'
+
+jobs:
+  trigger-docs-rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger stp-docs deployment
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.STP_DOCS_PAT }}
+          repository: hyssostech/stp-docs
+          event-type: sdk-source-updated
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

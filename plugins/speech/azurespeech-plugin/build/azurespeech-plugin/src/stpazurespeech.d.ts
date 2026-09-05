@@ -9,6 +9,9 @@ export declare class AzureSpeechRecognizer implements ISpeechRecognizer {
     recognizer: SpeechSDK.SpeechRecognizer | undefined;
     recoStart: Date;
     isListening: boolean;
+    private _pendingResults;
+    private _graceTimer;
+    private _gracePeriodMs;
     constructor(speechSubscriptionKey: string, serviceRegion: string, endPoint?: string, audioConfig?: SpeechSDK.AudioConfig, recoLanguage?: string);
     setPhraseList(phrases: string[]): void;
     private initializeReco;
@@ -19,6 +22,8 @@ export declare class AzureSpeechRecognizer implements ISpeechRecognizer {
     private tryReco;
     startRecognizing(): void;
     stopRecognizing(wait?: number): void;
+    setGracePeriod(ms: number): void;
+    private _flushPendingResults;
     private convertResults;
     private addTicksToDate;
 }

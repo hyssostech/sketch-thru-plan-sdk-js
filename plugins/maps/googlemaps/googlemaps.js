@@ -139,14 +139,24 @@ class GoogleMap  {
                             type: 'poly',
                             coords: shape
                         },
+                        cursor: 'default',
                         position: { lat: rend[i].position.lat, lng: rend[i].position.lon },
                     });
                     if (rend[i].title) {
                         marker.setTitle(rend[i].title);
                     }
-                    // Advertise selection event
-                    marker.addListener("click", () => {
+                    // Right-click to select
+                    marker.addListener("rightclick", () => {
                         this.onSelection?.call(this, feature.getProperty('symbol'));
+                    });
+                    // Ensure left-click starts drawing even over markers
+                    marker.addListener("mousedown", (e) => {
+                        if (e && e.domEvent && e.domEvent.button === 0) {
+                            e.domEvent.preventDefault();
+                            this.enableDrawing();
+                            this.onStrokeStart?.call(this, { lat: e.latLng.lat(), lon: e.latLng.lng() }, this.getIsoTimestamp());
+                            this.drawFreeHand(e.latLng);
+                        }
                     });
 
                     // Store as an asset associated with this feature
@@ -159,32 +169,42 @@ class GoogleMap  {
                     }
                 }
                 // Hide the standard marker that google wants to display when it sees a point
-                return { visible: feature.getGeometry().getType() != 'Point' };
+                return { visible: feature.getGeometry().getType() != 'Point', cursor: 'default' };
             }
-            return { visible: true };
+            return { visible: true, cursor: 'default' };
         });
 
-        // Advertise feature selection
-        this.#map.data.addListener('click', (event) => {
-            // Hook up selection event
-            this.onSelection?.call(this, event.feature.getProperty('symbol'));
+        // Feature selection via right-click and left-click drawing even over features
+        this.#map.data.addListener('mousedown', (event) => {
+            if (event && event.domEvent) {
+                const btn = event.domEvent.button;
+                if (btn === 2) {
+                    // Right-click selection
+                    this.onSelection?.call(this, event.feature.getProperty('symbol'));
+                } else if (btn === 0) {
+                    // Left-click drawing
+                    event.domEvent.preventDefault();
+                    this.enableDrawing();
+                    this.onStrokeStart?.call(this, { lat: event.latLng.lat(), lon: event.latLng.lng() }, this.getIsoTimestamp());
+                    this.drawFreeHand(event.latLng);
+                }
+            }
         });
 
 
-        // Set events to start sketch capture on mouse down
+        // Start sketch capture on left mouse down anywhere on the map
         this.#map.addListener('mousedown', (e) => {
-            // Skip if ctrl key is pressed - let user pan on drag 
-            if (e.domEvent.ctrlKey) {
+            // Only left button
+            if (e && e.domEvent && e.domEvent.button !== 0) {
+                return;
+            }
+            // Allow panning with Ctrl
+            if (e.domEvent && e.domEvent.ctrlKey) {
                 return false;
             }
-            // Set drawing friendly event handling
-            e.domEvent.preventDefault();
+            e.domEvent && e.domEvent.preventDefault();
             this.enableDrawing();
-
-            // Hand over to STP for processing
             this.onStrokeStart?.call(this, { lat: e.latLng.lat(), lon: e.latLng.lng() }, this.getIsoTimestamp());
-
-            // Capture the freehand sketch - pass in the initial coord to support single point clicks
             this.drawFreeHand(e.latLng);
         });
     }
@@ -216,44 +236,41 @@ class GoogleMap  {
             this.#strokePoly.getPath().push(e.latLng);
         });
 
-        // End the stroke on mouse up
-        google.maps.event.addListenerOnce(this.#map, 'mouseup', (e) => {
-            // Capture end time
+        // End the stroke on mouse up (map or anywhere in document)
+        let finished = false;
+        const finishStroke = () => {
+            if (finished) return;
+            finished = true;
             this.#strokeEnd = this.getIsoTimestamp();
-
-            // Clear the drawing events
             if (this.#moveListener) {
                 google.maps.event.removeListener(this.#moveListener);
+                this.#moveListener = undefined;
             }
             this.enableDragZoom();
 
-            // Get the path, adding the initial point twice if there is just a single point (a click)
-            // so we have a valid zero-length segment that will show as a dot 
             let path = this.#strokePoly.getPath();
-            if (path.getLength() == 1)
-                path.push(path.getAt(0));
+            if (path.getLength() == 1) path.push(path.getAt(0));
+            let strokeLatLng = path.getArray().map(item => ({ lat: item.lat(), lon: item.lng() }));
 
-            // Convert to array
-            let strokeLatLng = path.getArray().map(item => { let o = { lat: item.lat(), lon: item.lng() }; return o; });
-
-            // Notify STP of the new ink stroke
             let sizePixels = { width: document.getElementById('map').clientWidth, height: document.getElementById('map').clientHeight };
             let mapBounds = this.#map.getBounds();
             if (!mapBounds) {
                 throw new Error("Failed to retrieve the #map bounds - unable to send ink to STP");
             }
-            if (this.onStrokeCompleted) {
-                this.onStrokeCompleted(
-                    { width: sizePixels.width, height: sizePixels.height },
-                    { lat: mapBounds.getNorthEast().lat(), lon: mapBounds.getSouthWest().lng() },
-                    { lat: mapBounds.getSouthWest().lat(), lon: mapBounds.getNorthEast().lng() },
-                    strokeLatLng,
-                    this.#strokeStart,
-                    this.#strokeEnd,
-                    [] // intersectedPoids
-                );
-            }
-        });
+            this.onStrokeCompleted?.call(
+                this,
+                { width: sizePixels.width, height: sizePixels.height },
+                { lat: mapBounds.getNorthEast().lat(), lon: mapBounds.getSouthWest().lng() },
+                { lat: mapBounds.getSouthWest().lat(), lon: mapBounds.getNorthEast().lng() },
+                strokeLatLng,
+                this.#strokeStart,
+                this.#strokeEnd,
+                []
+            );
+        };
+        google.maps.event.addListenerOnce(this.#map, 'mouseup', finishStroke);
+        // Fallback in case mouseup occurs on a marker or outside the map
+        document.addEventListener('mouseup', finishStroke, { once: true });
     }
 
     /**
@@ -393,4 +410,9 @@ class GoogleMap  {
         let timestamp = new Date();
         return timestamp.toISOString();
     }
+}
+
+// Expose to browser global for script-tag consumers
+if (typeof window !== 'undefined') {
+    window.GoogleMap = GoogleMap;
 }

@@ -122,6 +122,27 @@
       ]
     },
     {
+      "name": "SendSimulatedSpeechRecognition",
+      "description": "Send typed text to STP that will be treated as simulated speech recognition. Numbers and letters are converted server-side to speech-like transcriptions (e.g. 'A 3 1' becomes 'alpha three one').",
+      "params": [
+        {
+          "name": "text",
+          "description": "Text to send as simulated speech.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "startTime",
+          "description": "Optional ISO 8601 timestamp (UTC) when speech started. Defaults to current time if not provided.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      ]
+    },
+    {
       "name": "CreateNewScenario",
       "description": "Create and load a new scenario, replacing any previous content.",
       "params": [
@@ -863,7 +884,7 @@
         }
       },
       "Sidc": {
-        "description": "2525D/C military code identifiers.",
+        "description": "Dual-standard military symbol identifiers: STP ships BOTH the 2525D form (partA/partB/partC, symbolSet) and the 2525C form (charlie) for every symbol that has one; clients pick the standard they render.",
         "properties": {
           "partA": {
             "type": "string",
@@ -881,9 +902,14 @@
             "type": "string",
             "description": "2525D symbol set."
           },
+          "charlie": {
+            "type": "string",
+            "description": "2525C SIDC."
+          },
           "legacy": {
             "type": "string",
-            "description": "Legacy 2525C SIDC."
+            "deprecated": true,
+            "description": "DEPRECATED alias of 'charlie' (same value). Retained for existing clients; the wire ships both during the deprecation window."
           }
         }
       },
@@ -978,6 +1004,10 @@
           "sidc": {
             "$ref": "#/components/schemas/Sidc"
           },
+          "commonIdentifier": {
+            "type": "string",
+            "description": "Named-system common identifier amplifier (e.g. 'patriot', 'avenger') when the symbol is a named system; empty otherwise."
+          },
           "location": {
             "$ref": "#/components/schemas/Location"
           },
@@ -1071,6 +1101,11 @@
               "$ref": "#/components/schemas/Resource"
             },
             "description": "Associated C2SIM resources for this symbol."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },
@@ -1099,6 +1134,11 @@
             "type": "string",
             "format": "date-time",
             "description": "Version timestamp (UTC)."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },
@@ -1193,6 +1233,11 @@
           "parentTO": {
             "type": "string",
             "description": "Unique id of the Task Org this relationship belongs to."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },
@@ -1340,6 +1385,11 @@
           },
           "movementFeatures": {
             "$ref": "#/components/schemas/MovementFeatures"
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
           }
         }
       },
@@ -1411,10 +1461,10 @@
         "enum": [
           "pending",
           "unknown",
-          "assumedfriend",
+          "assumed_friend",
           "friend",
           "neutral",
-          "suspected",
+          "suspect",
           "hostile"
         ],
         "description": "Affiliation used for Symbols, COAs and TOs."

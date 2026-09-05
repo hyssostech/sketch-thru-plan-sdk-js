@@ -119,12 +119,49 @@ Incoming messages follow the same format as the outgoing ones, with a `method` p
             "timeTo":null,
             "altitude":null,
             "minAltitude":null,
-            "maxAltitude":null
+            "maxAltitude":null,
+            "extensions":{
+                "appId":"coaEditor",
+                "priority":3,
+                "metadata":{"color":"#FF0000","tags":["urgent","reviewed"]}
+            }
         },
         "isUndo":false
     }
 }
 ```
+
+## Extensions
+
+All STP objects (symbols, tasks, task organizations, TO units, and TO relationships) support an optional `extensions` property that client applications can use to attach arbitrary additional data.
+
+Extension values can be primitives, arrays, or nested objects — the full JSON data model is supported. The data is round-tripped through STP: values set when an object is created or updated (via `AddSymbol`, `UpdateSymbol`, `AddTask`, etc.) are persisted internally and returned on all subsequent events (`SymbolAdded`, `SymbolModified`, `TaskAdded`, etc.).
+
+When no extensions are present, the property is omitted from the JSON payload.
+
+### Setting extensions
+
+Include the `extensions` property in the symbol or task object sent to STP:
+
+```javascript
+{
+    "jsonrpc": "2.0",
+    "method": "UpdateSymbol",
+    "params": {
+        "poid": "idDS6X03AGXT68E",
+        "symbol": {
+            "extensions": {
+                "appId": "coaEditor",
+                "priority": 3
+            }
+        }
+    }
+}
+```
+
+### Reading extensions
+
+The `extensions` property is returned as part of the object in all notification events (e.g. `SymbolAdded`, `SymbolModified`), as shown in the incoming message example above.
 
 ## Schema
 

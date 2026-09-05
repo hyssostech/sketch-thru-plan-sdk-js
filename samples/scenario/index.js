@@ -489,7 +489,7 @@ if (toPoid) {
     }
 
     // Create map instance and subscribe to sketching events
-    map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
+    map = new LeafletMap(null, 'map', mapCenter, zoomLevel);
 
     // Notify STP of the start of a stroke and activate speech recognition
     map.onStrokeStart = (location, timestamp) => {

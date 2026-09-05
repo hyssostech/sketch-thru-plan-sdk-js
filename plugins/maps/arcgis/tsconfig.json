@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ES2015",
+    "strict": false,
+    "declaration": true,
+    "outDir": "build",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "inlineSourceMap": false
+  },
+  "include": ["src/**/*.ts"]
+}

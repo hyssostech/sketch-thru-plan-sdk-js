@@ -84,3 +84,35 @@ A system handling the STP component connections is required to route to the comp
 The [`websockets`](websockets-plugin) plugin implements this interface via Websockets. The STP server provides a native publish/subscribe mechanism, based on the Open Agent Architecture (OAA) framework, but other Websockets based mechanisms could be used on the server side as well.
 
 This plugin is used in the [quicktstarts](../../quickstart) to provide the main SDK object the means to communicate with STP.  
+
+## Securing WebSocket Connections
+
+The browser `WebSocket` API does not support custom HTTP headers, so standard `Authorization` header-based authentication is not available. The recommended approach is to use a reverse proxy with authentication.
+
+### Reverse proxy with auth
+
+Place a reverse proxy between the browser and the STP WebSocket server. The proxy handles authentication at the HTTP layer and only forwards validated connections. Neither the STP server nor the connector plugin need any modifications — the server trusts connections coming from the proxy, and the client simply connects to the proxy URL instead of directly to STP.
+
+```
+Browser  ──wss://proxy.example.com/stp?token=abc──►  Reverse Proxy  ──ws://stp-server:port──►  STP Server
+                                                        │
+                                                        ├─ Validates token
+                                                        ├─ Rejects if invalid (HTTP 401/403)
+                                                        └─ Forwards if valid
+```
+
+Common proxy options include:
+
+| Proxy | Auth Mechanisms |
+|-------|-----------------|
+| **nginx** | Querystring token via Lua/njs, or `auth_request` to an external auth service |
+| **Azure API Management** | Subscription keys, OAuth 2.0, JWT validation — all built-in policies |
+| **AWS API Gateway** | IAM auth, Lambda authorizers (custom token validation), Cognito |
+| **Caddy** | JWT middleware, forward_auth |
+
+**Advantages:**
+- TLS termination at the proxy gives you `wss://` for free
+- Token validation logic can be as simple (static key check) or sophisticated (JWT, OAuth) as needed
+- Rate limiting, logging, and IP filtering come as proxy features
+- The STP server stays on a private network, not directly exposed
+

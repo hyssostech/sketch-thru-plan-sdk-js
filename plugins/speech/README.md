@@ -8,7 +8,7 @@ STP operates by combining multiple types of user input (or *modalities*) such as
 
 Taking advantage of this natural style, STP uses sketch start events as anchors points around which speech produced within a window of a few seconds is considered for combined interpretation. A few strategies for handling speech interpretation are therefore possible:
 
-1. "One-shot" recognition - activate recognition at the start of each stroke, and listen for a period of time - this is a simple, but effective strategy. Users need to be mindful in this case that whatever they speak before the stroke is started will not be captured by the system. This is the strategy used in the [quickstarts](../../quickstart/)
+1. "Sketch-to-talk" - start recognizing speech once a sketch is completed (on pen-up) . This strategy allows for long and detailed sketches (such as an MSR, or an Axis of Advance that traces over a route) without the risk of speech timing out
 
 1. "While sketching" - recognize speech while the user is sketching, activating it at the moment the sketch starts, and ending a few seconds after the sketching ends. This is the strategy used in the [samples](../../samples/)
 
@@ -18,11 +18,22 @@ Taking advantage of this natural style, STP uses sketch start events as anchors 
 
 ## Implemented Speech plugins
 
-The [`azurespeech-plugin`](azurespeech-plugin) plugin is an implementation using the Microsoft Cognitive Services Speech to Text. It implements the strategies 1, supporting recognition once at a time, as well as over a period of time that can be restricted to the duration of the sketching (strategy 2), or some other period of time determined by the client app (strategy 3). 
+Two plugins implementing these strategies are provided, supporting 1) "sketch-to-talk" one-shot recognition (strategy 1), and 2) over a period of time that can be restricted to the duration of the sketching (strategy 2), or 3) some other period of time determined by the client app (strategy 3). 
 
-### "One-shot" recognition
 
-To employ this approach, invoke the `recognizeOnce()` method whenever the user starts to sketch (usually within a mouse/pen down even handler). The results are returned (via a Promise) when the recognition has been achieved. Null is returned if there is no successful recognition within a few seconds after the method invocation.
+. The [`azurespeech-plugin`](azurespeech-plugin) is an implementation using the Microsoft Cognitive Services Speech to Text.
+. The [`awsspeech-plugin`](awsspeech-plugin) uses the Amazon Transcribe service.
+. The [`voskspeech-plugin`](voskspeech-plugin) provides offline speech recognition using Vosk WebAssembly — no cloud service or API keys required.
+
+## Samples
+
+The [`basic`](../../samples\basic) sample supports selection of one of these plugins at runtime via a dropdown control.
+
+The simpler "sketch-to-talk" strategy is used in the [quickstart](../../../quickstart/README.md), The other [samples](../../samples/README.md) use a "while sketching" strategy.
+
+### "Sketch-to-talk" recognition
+
+To employ this approach, invoke the `recognizeOnce()` method whenever the user ends a sketch (usually within a mouse/pen up even handler). The results are returned (via a Promise) when the recognition has been achieved. Null is returned if there is no successful recognition within a few seconds after the method invocation.
 
 ```javascript
 /**

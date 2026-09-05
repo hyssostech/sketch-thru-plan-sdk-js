@@ -1,5 +1,15 @@
 node_modules
-samples/arcgis*
 **/.DS_Store
 */launch.json
 
+plugins/maps/googlemaps/hyssostech-googlemaps-plugin-0.1.0.tgz
+plugins/maps/leaflet/hyssostech-leaflet-plugin-0.1.0.tgz
+plugins/speech/awsspeech-plugin/hyssostech-awsspeech-plugin-0.1.0-alpha.0.tgz
+
+# SDK build artifacts (root only; samples/plugins commit their own dist/build/docs)
+/build
+/dist
+/docs
+/coverage
+/interfaces
+/*.d.ts

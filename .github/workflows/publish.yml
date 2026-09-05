@@ -1,0 +1,54 @@
+name: Publish plugins to npm
+
+on:
+  push:
+    tags:
+      # Plugins version independently of the SDK - see publish-sdk.yml.
+      # A shared 'v*' would publish both at unrelated versions.
+      - 'plugins-v*'
+
+permissions:
+  id-token: write      # required for npm Trusted Publishing (OIDC)
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - plugins/connectors/websockets-plugin
+          - plugins/speech/azurespeech-plugin
+          - plugins/speech/awsspeech-plugin
+          - plugins/speech/voskspeech-plugin
+          - plugins/maps/leaflet
+          - plugins/maps/arcgis
+          - plugins/maps/googlemaps
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.package }}
+        run: npm install
+
+      - name: Build
+        working-directory: ${{ matrix.package }}
+        run: npm run build
+
+      - name: Publish to npm (Trusted Publishing)
+        working-directory: ${{ matrix.package }}
+        run: npm publish --access public
