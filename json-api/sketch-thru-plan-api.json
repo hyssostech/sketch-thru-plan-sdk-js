@@ -609,7 +609,7 @@
     },
     {
       "name": "SetCoaTaskOrg",
-      "description": "Associate a TO with a specific COA or set as global default (if COA unspecified).",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Associate a TO with a specific COA or set as global default (if COA unspecified).",
       "params": [
         {
           "name": "toPoid",
@@ -631,11 +631,12 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-engineDispatch": "none"
     },
     {
       "name": "ResetCoaTaskOrg",
-      "description": "Remove TO association from a COA (or global default if COA unspecified).",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Remove TO association from a COA (or global default if COA unspecified).",
       "params": [
         {
           "name": "coaPoid",
@@ -650,11 +651,12 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-engineDispatch": "none"
     },
     {
       "name": "ImportCoaContent",
-      "description": "Import a new COA from serialized content, using fresh unique IDs.",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Import a new COA from serialized content, using fresh unique IDs.",
       "params": [
         {
           "name": "content",
@@ -669,11 +671,12 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-engineDispatch": "none"
     },
     {
       "name": "GetCoaContent",
-      "description": "Return the serialized content of a COA.",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Return the serialized content of a COA.",
       "params": [
         {
           "name": "poid",
@@ -688,11 +691,12 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-engineDispatch": "none"
     },
     {
       "name": "SetCurrentCoa",
-      "description": "Select the current COA; subsequent edits and imports apply to this COA.",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Select the current COA; subsequent edits and imports apply to this COA.",
       "params": [
         {
           "name": "poid",
@@ -707,11 +711,12 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-engineDispatch": "none"
     },
     {
       "name": "AddCoa",
-      "description": "Add a COA to the scenario.",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Add a COA to the scenario.",
       "params": [
         {
           "name": "coa",
@@ -720,11 +725,12 @@
             "$ref": "#/components/schemas/StpCoa"
           }
         }
-      ]
+      ],
+      "x-engineDispatch": "none"
     },
     {
       "name": "UpdateCoa",
-      "description": "Update an existing COA.",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Update an existing COA.",
       "params": [
         {
           "name": "poid",
@@ -740,11 +746,12 @@
             "$ref": "#/components/schemas/StpCoa"
           }
         }
-      ]
+      ],
+      "x-engineDispatch": "none"
     },
     {
       "name": "DeleteCoa",
-      "description": "Delete a COA from the scenario.",
+      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Delete a COA from the scenario.",
       "params": [
         {
           "name": "poid",
@@ -753,7 +760,8 @@
             "type": "string"
           }
         }
-      ]
+      ],
+      "x-engineDispatch": "none"
     },
     {
       "name": "SetRole",
@@ -783,7 +791,7 @@
     },
     {
       "name": "ConvertC2SIMContent",
-      "description": "Convert C2SIM content (e.g. between BML/IBML formats). Note: the underlying SDK call is currently a no-op stub in the engine (removed from the new SDK); the engine returns null for this method.",
+      "description": "Convert C2SIM content (e.g. between BML/IBML formats). No SDK call is made at all: the engine's dispatcher (StpJsonClient.cs:263) assigns result = null with the comment \"removed from new SDK\" and never calls into the SDK. The result is always null, and success stays true - so a caller cannot distinguish \"not implemented\" from \"converted to nothing\".",
       "params": [
         {
           "name": "content",
@@ -801,7 +809,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
     },
     {
       "name": "GetC2SIMContent",
@@ -847,7 +861,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "content",
+        "schema": {
+          "type": "string"
+        }
+      }
     },
     {
       "name": "GetCoaObjectSet",
@@ -861,13 +881,33 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "objects",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
     },
     {
       "name": "GetScenarioObjectSet",
       "description": "Return the current scenario as an in-memory object set (array of STP objects). Object-set equivalent of GetScenarioContent. Takes no parameters.",
       "params": [],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "objects",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
     },
     {
       "name": "GetTaskOrgObjectSet",
@@ -881,7 +921,17 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "objects",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
     },
     {
       "name": "ImportCoaFromObjectSet",
@@ -899,7 +949,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "coaPoid",
+        "schema": {
+          "type": "string"
+        }
+      }
     },
     {
       "name": "ImportPlanDataFromObjectSet",
@@ -917,7 +973,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
     },
     {
       "name": "ImportTaskOrgFromObjectSet",
@@ -935,7 +997,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "toPoid",
+        "schema": {
+          "type": "string"
+        }
+      }
     },
     {
       "name": "LoadNewScenarioFromObjectSet",
@@ -953,7 +1021,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
     },
     {
       "name": "PullC2SIMInitialization",
@@ -968,7 +1042,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "content",
+        "schema": {
+          "type": "string"
+        }
+      }
     },
     {
       "name": "PushC2SIMContent",
@@ -997,7 +1077,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
     },
     {
       "name": "Register",
@@ -1042,7 +1128,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "sessionId",
+        "schema": {
+          "type": "string"
+        }
+      }
     },
     {
       "name": "Request",
@@ -1070,7 +1162,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
     },
     {
       "name": "SyncScenarioSessionFromObjectSet",
@@ -1088,7 +1186,13 @@
           }
         }
       ],
-      "x-descriptionStatus": "draft"
+      "x-descriptionStatus": "draft",
+      "result": {
+        "name": "ok",
+        "schema": {
+          "type": "null"
+        }
+      }
     }
   ],
   "components": {
@@ -1205,7 +1309,7 @@
           },
           "partC": {
             "type": "string",
-            "description": "SIDC part C (2525D)."
+            "description": "SIDC part C (2525D). Not emitted by the engine; derive from delta if needed."
           },
           "symbolSet": {
             "type": "string",
@@ -1214,6 +1318,10 @@
           "charlie": {
             "type": "string",
             "description": "2525C SIDC."
+          },
+          "delta": {
+            "type": "string",
+            "description": "Full 20-digit MIL-STD-2525D SIDC (partA + partB)."
           },
           "legacy": {
             "type": "string",
@@ -1415,6 +1523,22 @@
             "type": "object",
             "additionalProperties": true,
             "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
+          },
+          "specialC2Hq": {
+            "type": "string",
+            "description": "2525D amplifier AA (Special C2 HQ CP-type, e.g. toc/main). Optional; empty when unset."
+          },
+          "additionalInformation": {
+            "type": "string",
+            "description": "2525D amplifier H (Additional Information text). Optional; empty when unset."
+          },
+          "dbTimestamp": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects; ignored on input."
+          },
+          "dbVersion": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects; ignored on input."
           }
         }
       },
@@ -1448,6 +1572,14 @@
             "type": "object",
             "additionalProperties": true,
             "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
+          },
+          "dbTimestamp": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects; ignored on input."
+          },
+          "dbVersion": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects; ignored on input."
           }
         }
       },
@@ -1547,6 +1679,14 @@
             "type": "object",
             "additionalProperties": true,
             "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
+          },
+          "dbTimestamp": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects; ignored on input."
+          },
+          "dbVersion": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects; ignored on input."
           }
         }
       },
@@ -1653,7 +1793,7 @@
           "why": {
             "$ref": "#/components/schemas/TaskWhy"
           },
-          "rulesOfEngagement": {
+          "roe": {
             "$ref": "#/components/schemas/TaskROE"
           },
           "startTime": {
@@ -1777,13 +1917,227 @@
           "hostile"
         ],
         "description": "Affiliation used for Symbols, COAs and TOs."
+      },
+      "StpTaskEvent": {
+        "description": "Wire shape of a task as emitted by TaskAdded/TaskModified (built by JsonTask in StpJsonClient.cs), distinct from the StpTask input shape used by AddTask/UpdateTask.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "description": "Item type identifier for tasks."
+          },
+          "poid": {
+            "type": "string",
+            "description": "Unique id of the task."
+          },
+          "creator_role": {
+            "type": "string",
+            "description": "Role that created the task (S2, S3, S4, FSO, ENG)."
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Recognition confidence (0..1)."
+          },
+          "alt": {
+            "type": "number",
+            "description": "Alternate index in the set of task hypotheses."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable task description."
+          },
+          "who": {
+            "type": "string",
+            "description": "Unit executing the task (unique id)."
+          },
+          "supported": {
+            "type": "string",
+            "description": "Supported unit (unique id), if applicable."
+          },
+          "tgs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated Tactical Graphics unique ids."
+          },
+          "name": {
+            "type": "string",
+            "description": "Task type/name (e.g., 'AssaultObjectiveOnAxis')."
+          },
+          "how": {
+            "type": "string",
+            "description": "Task How."
+          },
+          "what": {
+            "type": "string",
+            "description": "Task What."
+          },
+          "why": {
+            "type": "string",
+            "description": "Task Why."
+          },
+          "roe": {
+            "type": "string",
+            "description": "Rules of engagement."
+          },
+          "startTime": {
+            "type": "integer",
+            "description": "Start time slot index."
+          },
+          "endTime": {
+            "type": "integer",
+            "description": "End time slot index."
+          },
+          "speech": {
+            "type": "string",
+            "description": "Associated speech transcript, if applicable."
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of the task description/speech."
+          },
+          "task_status": {
+            "type": "string",
+            "description": "Whether the task was generated implicitly or explicitly."
+          },
+          "uiStatus": {
+            "type": "string",
+            "description": "UI confirmation state for the task."
+          },
+          "prob": {
+            "type": "number",
+            "description": "Task interpretation likelihood (0..1)."
+          },
+          "movementFeatures": {
+            "$ref": "#/components/schemas/MovementFeatures"
+          },
+          "dbTimestamp": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects."
+          },
+          "dbVersion": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
+          }
+        }
+      },
+      "StpTaskOrgUnitEvent": {
+        "description": "Wire shape of a Task Org Unit as emitted by TaskOrgUnitAdded/TaskOrgUnitModified (built by JsonTaskOrgUnit in StpJsonClient.cs), distinct from the StpTaskOrgUnit input shape used by AddTaskOrgUnit/UpdateTaskOrgUnit.",
+        "properties": {
+          "fsTYPE": {
+            "type": "string",
+            "description": "Item type identifier."
+          },
+          "poid": {
+            "type": "string",
+            "description": "Unique id of the Task Org Unit."
+          },
+          "creatorRole": {
+            "type": "string",
+            "description": "Role that created the unit (S2, S3, S4, FSO, ENG)."
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Recognition confidence score (0..1)."
+          },
+          "sidc": {
+            "$ref": "#/components/schemas/Sidc"
+          },
+          "shortDescription": {
+            "type": "string",
+            "description": "Short unit description; essential distinguishing elements (e.g., designators)."
+          },
+          "description": {
+            "type": "string",
+            "description": "Regular description; name/type plus designators, may omit assumed decorators."
+          },
+          "fullDescription": {
+            "type": "string",
+            "description": "Full description including all relevant decorators."
+          },
+          "affiliation": {
+            "$ref": "#/components/schemas/Affiliation"
+          },
+          "echelon": {
+            "type": "string",
+            "description": "Echelon (e.g., company, battalion, brigade)."
+          },
+          "parent": {
+            "type": "string",
+            "description": "Parent unit designator."
+          },
+          "designator1": {
+            "type": "string",
+            "description": "Primary unit designator (e.g., 'A', '1')."
+          },
+          "designator2": {
+            "type": "string",
+            "description": "Additional designator (e.g., neighbor company indicator)."
+          },
+          "status": {
+            "type": "string",
+            "description": "Operational status of the unit."
+          },
+          "modifier": {
+            "type": "string",
+            "description": "HQ/Task Force/Installation modifiers."
+          },
+          "strength": {
+            "type": "string",
+            "description": "Strength modifier (reduced/reinforced/etc.)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Unit name; may include grouping/alternatives for speech."
+          },
+          "unitType": {
+            "type": "string",
+            "description": "Functional type (e.g., MECHANIZED INFANTRY)."
+          },
+          "info": {
+            "type": "string",
+            "description": "Additional notes or metadata about the unit."
+          },
+          "disCode": {
+            "$ref": "#/components/schemas/DISCode"
+          },
+          "federate": {
+            "type": "string",
+            "description": "C2SIM federate this entity is assigned to."
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            },
+            "description": "Associated C2SIM resources for this unit."
+          },
+          "dbTimestamp": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects."
+          },
+          "dbVersion": {
+            "type": "string",
+            "description": "Set by the engine on emitted objects."
+          },
+          "extensions": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional client-defined extension properties. Values can be primitives, arrays, or nested objects. Round-tripped through STP. Omitted when null."
+          }
+        }
       }
     }
   },
   "x-stpEvents": [
     {
       "name": "InkProcessed",
-      "description": "Emitted after a sketched gesture has been integrated (or discarded) by the recognizer, signaling that ink processing has completed. Carries no parameters.",
+      "description": "Emitted after a sketched gesture has been integrated (or discarded) by the recognizer, signaling that ink processing has completed. Carries no parameters. On the wire the params key is ABSENT (the engine sends null and JsonMessage omits it), not an empty array - do not index into it.",
       "x-descriptionStatus": "draft",
       "params": []
     },
@@ -1806,7 +2160,7 @@
     },
     {
       "name": "SpeechDiscarded",
-      "description": "Emitted when a speech recognition input was discarded rather than integrated. Carries no parameters.",
+      "description": "Emitted when a speech recognition input was discarded rather than integrated. Carries no parameters. On the wire the params key is ABSENT (the engine sends null and JsonMessage omits it), not an empty array - do not index into it.",
       "x-descriptionStatus": "draft",
       "params": []
     },
@@ -1829,7 +2183,7 @@
     },
     {
       "name": "NewScenario",
-      "description": "Emitted when a new scenario has been created or loaded. Carries no parameters.",
+      "description": "Emitted when a new scenario has been created or loaded. Carries no parameters. On the wire the params key is ABSENT (the engine sends null and JsonMessage omits it), not an empty array - do not index into it.",
       "x-descriptionStatus": "draft",
       "params": []
     },
@@ -2020,7 +2374,7 @@
           "name": "toUnit",
           "description": "Added Task Org Unit.",
           "schema": {
-            "$ref": "#/components/schemas/StpTaskOrgUnit"
+            "$ref": "#/components/schemas/StpTaskOrgUnitEvent"
           }
         },
         {
@@ -2048,7 +2402,7 @@
           "name": "toUnit",
           "description": "New Task Org Unit state.",
           "schema": {
-            "$ref": "#/components/schemas/StpTaskOrgUnit"
+            "$ref": "#/components/schemas/StpTaskOrgUnitEvent"
           }
         },
         {
@@ -2165,7 +2519,7 @@
       "params": [
         {
           "name": "taskOrg",
-          "description": "Newly active Task Organization.",
+          "description": "Newly active Task Organization. Payload is the raw SDK object serialised by Newtonsoft, not the projection used by TaskOrgAdded/CoaAdded-style events: expect additional fields (dbCreationTimestamp, dbTimestamp, dbVersion and, for COA, taskOrg/extensions) and a different timestamp format; the schema is approximate.",
           "schema": {
             "$ref": "#/components/schemas/StpTaskOrg"
           }
@@ -2190,7 +2544,7 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StpTask"
+              "$ref": "#/components/schemas/StpTaskEvent"
             }
           }
         },
@@ -2231,7 +2585,7 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StpTask"
+              "$ref": "#/components/schemas/StpTaskEvent"
             }
           }
         },
@@ -2345,7 +2699,7 @@
       "params": [
         {
           "name": "coa",
-          "description": "Newly active COA.",
+          "description": "Newly active COA. Payload is the raw SDK object serialised by Newtonsoft, not the projection used by TaskOrgAdded/CoaAdded-style events: expect additional fields (dbCreationTimestamp, dbTimestamp, dbVersion and, for COA, taskOrg/extensions) and a different timestamp format; the schema is approximate.",
           "schema": {
             "$ref": "#/components/schemas/StpCoa"
           }
@@ -2386,11 +2740,37 @@
           }
         }
       ]
+    },
+    {
+      "name": "RequestResponse",
+      "description": "Emitted in response to a Request meta-message; correlates the asynchronous result back to the request via the echoed cookie.",
+      "x-descriptionStatus": "draft",
+      "params": [
+        {
+          "name": "cookie",
+          "description": "Correlation id echoed back from the originating Request.",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "success",
+          "description": "Whether the dispatched method completed successfully.",
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "result",
+          "description": "the dispatched method's result, or the error message when success is false",
+          "schema": {}
+        }
+      ]
     }
   ],
   "x-surfaceSource": {
     "repo": "hyssostech/STP",
-    "commit": "89ce7ea5b2bba0944f348ad1022059e5d74f4ec",
+    "commit": "89ce7ea5b2bba0944f348ad1022059e5d74f4ecc",
     "inboundFile": "BridgingAgents/WebSocketsBridge/JsonMessage.cs",
     "outboundFile": "BridgingAgents/WebSocketsBridge/StpJsonClient.cs"
   }

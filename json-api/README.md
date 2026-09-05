@@ -83,59 +83,65 @@ Incoming messages follow the same format as the outgoing ones, with a `method` p
     "jsonrpc": "2.0",
     "method":"SymbolAdded",
     "params":{
-        "symbol":{
-            "fsTYPE":"unit",
-            "poid":"idDS6X03AGXT68E",
-            "creatorRole":"s3",
-            "confidence":0.820098781593131,
-            "alt":0,
-            "sidc":{
-                "partA":"1003100015",
-                "partB":"1205010000",
-                "symbolSet":"10",
-                "legacy":"SFGPUCRVA--E---"
-            },
-            "location":{
+        "alternates":[
+            {
                 "fsTYPE":"unit",
-                "shape":"point",
-                "coords":[{"lon":11.1648166167093,"lat":58.9486323288235}],
-                "width":0.0,
-                "altitude":0.0,
-                "radius":0.0,
-                "candidatePoids":[]
-            },
-            "shortDescription":"A/3-1",
-            "description":"ARMORED CAVALRY RECON COMPANY",
-            "fullDescription":"FRIENDLY ARMORED CAVALRY RECON COMPANY A/3-1",
-            "affiliation":"friend",
-            "echelon":"company",
-            "parent":"3-1",
-            "designator1":"A",
-            "designator2":null,
-            "status":"present",
-            "modifier":"none",
-            "strength":"none",
-            "timeFrom":null,
-            "timeTo":null,
-            "altitude":null,
-            "minAltitude":null,
-            "maxAltitude":null,
-            "extensions":{
-                "appId":"coaEditor",
-                "priority":3,
-                "metadata":{"color":"#FF0000","tags":["urgent","reviewed"]}
+                "poid":"idDS6X03AGXT68E",
+                "creatorRole":"s3",
+                "confidence":0.820098781593131,
+                "alt":0,
+                "sidc":{
+                    "partA":"1003100015",
+                    "partB":"1205010000",
+                    "symbolSet":"10",
+                    "legacy":"SFGPUCRVA--E---"
+                },
+                "location":{
+                    "fsTYPE":"unit",
+                    "shape":"point",
+                    "coords":[{"lon":11.1648166167093,"lat":58.9486323288235}],
+                    "width":0.0,
+                    "altitude":0.0,
+                    "radius":0.0,
+                    "candidatePoids":[]
+                },
+                "shortDescription":"A/3-1",
+                "description":"ARMORED CAVALRY RECON COMPANY",
+                "fullDescription":"FRIENDLY ARMORED CAVALRY RECON COMPANY A/3-1",
+                "affiliation":"friend",
+                "echelon":"company",
+                "parent":"3-1",
+                "designator1":"A",
+                "designator2":null,
+                "status":"present",
+                "modifier":"none",
+                "strength":"none",
+                "timeFrom":null,
+                "timeTo":null,
+                "altitude":null,
+                "minAltitude":null,
+                "maxAltitude":null,
+                "extensions":{
+                    "appId":"coaEditor",
+                    "priority":3,
+                    "metadata":{"color":"#FF0000","tags":["urgent","reviewed"]}
+                }
             }
-        },
+        ],
         "isUndo":false
     }
 }
 ```
 
+Note: `alternates` carries the primary interpretation plus any additional recognition
+hypotheses (see `BuildSymbolAlternates` in StpJsonClient.cs); a single-element array is
+the common case but clients should not assume exactly one entry.
+
 ## Extensions
 
 All STP objects (symbols, tasks, task organizations, TO units, and TO relationships) support an optional `extensions` property that client applications can use to attach arbitrary additional data.
 
-Extension values can be primitives, arrays, or nested objects — the full JSON data model is supported. The data is round-tripped through STP: values set when an object is created or updated (via `AddSymbol`, `UpdateSymbol`, `AddTask`, etc.) are persisted internally and returned on all subsequent events (`SymbolAdded`, `SymbolModified`, `TaskAdded`, etc.).
+Extension values can be primitives, arrays, or nested objects - the full JSON data model is supported. The data is round-tripped through STP: values set when an object is created or updated (via `AddSymbol`, `UpdateSymbol`, `AddTask`, etc.) are persisted internally and returned on all subsequent events (`SymbolAdded`, `SymbolModified`, `TaskAdded`, etc.).
 
 When no extensions are present, the property is omitted from the JSON payload.
 
@@ -166,3 +172,23 @@ The `extensions` property is returned as part of the object in all notification 
 ## Schema
 
 An [OpenRPC](https://github.com/open-rpc) definition of the api can be found in [sketch-thru-plan-api.json](sketch-thru-plan-api.json)
+
+### Extensions to the OpenRPC spec
+
+The contract uses three `x-`prefixed extensions beyond the base OpenRPC spec:
+
+* `x-stpEvents` - the engine also sends unsolicited, asynchronous events to the
+  client (`SymbolAdded`, `TaskModified`, etc.). OpenRPC has no native concept of a
+  server-to-client push event, so these are listed separately from `methods` (which
+  are client-to-engine calls) under this top-level key. Each entry has the same
+  `name`/`description`/`params` shape as a method, but no `result`.
+* `"x-descriptionStatus": "draft"` - marks a method or event whose description was
+  generated from the engine source rather than hand-curated; treat the prose as a
+  best-effort read of the C# rather than a settled, reviewed contract.
+* `"x-engineDispatch": "none"` - marks a method that is listed in this contract (for
+  example because an existing SDK still exposes it) but that the engine's
+  WebSocketsBridge does not actually dispatch: the request deserialises with null
+  params and is answered with a `RequestResponse` event carrying `success: false`
+  ("No handler"). See the rule enforced by the STP repo's
+  `tools/check-openrpc-surface.sh`, which fails a build if a contract method is
+  missing from the engine's dispatch switch and not marked this way.
