@@ -5,6 +5,30 @@ import { IStpConnector } from './interfaces/IStpConnector';
  * @implements IStpConnector - {@link IStpConnector}
  */
 export class StpWebSocketsConnector implements IStpConnector {
+  /**
+   * Builds the Error a refused request rejects with. STP sends a null result when it cannot
+   * dispatch a method, so there is frequently no text to relay; say what is known rather than
+   * rejecting with an empty value that tells the caller nothing.
+   * @param result - the `result` field of the RequestResponse, often null
+   */
+  static refusalError(result: any): Error {
+    if (result instanceof Error) return result;
+    let text = '';
+    if (typeof result === 'string') text = result;
+    else if (typeof result === 'number' || typeof result === 'boolean') text = String(result);
+    else if (result !== null && typeof result === 'object') {
+      // Some failures carry a structured payload; its own message is the useful part, and
+      // String() on an object would throw all of it away as "[object Object]".
+      text = typeof result.message === 'string' ? result.message : JSON.stringify(result);
+    }
+    text = text.trim();
+    return new Error(
+      text !== ''
+        ? text
+        : 'STP refused the request and gave no reason. The usual cause is a method this engine does not dispatch; check the engine log for "No handler for method".'
+    );
+  }
+
   //#region Websocket used to communicate to STP
   connstring: string;
   socket: WebSocket | null;
@@ -127,7 +151,12 @@ export class StpWebSocketsConnector implements IStpConnector {
               tracker.responseFuture.resolve(params.result);
             }
             else {
-              tracker.responseFuture.reject(params.result);
+              // STP answers a method it cannot dispatch with success:false and a null result.
+              // Rejecting with that raw value handed the caller a rejection whose reason was
+              // `null` - no Error, no message, no stack - which is how the COA calls this SDK
+              // sends but the engine never dispatches stayed invisible. Engines from 2026-09 put
+              // the reason in the result; keep that text, and supply one when there is none.
+              tracker.responseFuture.reject(StpWebSocketsConnector.refusalError(params.result));
             }
           }
         }
