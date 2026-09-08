@@ -65,6 +65,26 @@ export enum StpRole {
 }
 
 /**
+ * Listening mode used by {@link StpRecognizer.sendListen}.
+ * The engine accepts either the member name (as sent here) or its ordinal:
+ * once = 0, on = 1, off = 2.
+ */
+export enum ListenMode {
+  /**
+   * Listen until the first period of inactivity is detected, then stop automatically
+   */
+  Once = 'once',
+  /**
+   * Keep listening until explicitly told to stop
+   */
+  On = 'on',
+  /**
+   * Stop listening
+   */
+  Off = 'off'
+}
+
+/**
  * Common STP properties
  */
 export class StpItem {
