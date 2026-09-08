@@ -66,6 +66,30 @@ export class StpRecognizer{
   }
 
   /**
+   * Rebuild the list of subscribed events from the handlers CURRENTLY assigned, and re-register with STP.
+   *
+   * IMPORTANT: subscriptions are fixed at connect time - buildSolvables() only runs once, inside connect().
+   * If an on* handler is assigned AFTER connect() has already resolved, STP will never route that event to
+   * this client until this method is called to pick up the new handler. Call it any time a handler is
+   * attached (or removed) past the initial connect().
+   * @throws Error if called before a connection to STP has been established
+   */
+  public async refreshSubscriptions(): Promise<void> {
+    if (!this.stpConnector.isConnected) {
+      throw new Error(
+        'Cannot refresh subscriptions: not connected to STP. Call connect() first.'
+      );
+    }
+    if (typeof this.stpConnector.updateSolvables !== 'function') {
+      throw new Error(
+        'Cannot refresh subscriptions: the connector in use does not support updateSolvables().'
+      );
+    }
+    const solvables: string[] = this.buildSolvables();
+    await this.stpConnector.updateSolvables(solvables);
+  }
+
+  /**
    * Build a list of messages that this service handles based on the event subscriptions that were set
    * @ignore
    */
@@ -255,21 +279,28 @@ export class StpRecognizer{
     } else if (msg.method === 'CoaDeleted' && this.onCoaDeleted) {
       const pp = msg.params as { poid: string; isUndo: boolean };
       this.onCoaDeleted(pp.poid, pp.isUndo);
-    // } else if (msg.method === 'CoaSwitched' && this.onCoaSwitched) {
-    //   const pp = msg.params as {
-    //     coa: StpType.StpCoa;
-    //   };
-    //   this.onCoaSwitched(pp.coa);
+    } else if (msg.method === 'CoaSwitched' && this.onCoaSwitched) {
+      const pp = msg.params as {
+        coa: StpType.StpCoa;
+      };
+      this.onCoaSwitched(pp.coa);
     } else if (msg.method === 'RoleSwitched' && this.onRoleSwitched) {
       const pp = msg.params as {
         role: StpType.StpRole;
       };
       this.onRoleSwitched(pp.role);
+    } else if (msg.method === 'NewScenario' && this.onNewScenario) {
+      this.onNewScenario();
     } else if (msg.method === 'InkProcessed' && this.onInkProcessed) {
       this.onInkProcessed();
     } else if (msg.method === 'SpeechRecognized' && this.onSpeechRecognized) {
       const pp = msg.params as { phrases: string[] };
       this.onSpeechRecognized(pp.phrases);
+    } else if (msg.method === 'SpeechDiscarded' && this.onSpeechDiscarded) {
+      this.onSpeechDiscarded();
+    } else if (msg.method === 'SpeechParsed' && this.onSpeechParsed) {
+      const pp = msg.params as { alternates: ISpeechRecoItem[] };
+      this.onSpeechParsed(pp.alternates);
     } else if (msg.method === 'SymbolEdited' && this.onSymbolEdited) {
       const pp = msg.params as {
         operation: string;
@@ -979,10 +1010,26 @@ export class StpRecognizer{
   onInkProcessed: (() => void) | undefined;
 
   /**
+   * A new scenario has been created or loaded, replacing any previous content
+   */
+  onNewScenario: (() => void) | undefined;
+
+  /**
    * User speech was successfully transcribed
    * @param phrases - Phrases that were recognized
    */
   onSpeechRecognized: ((phrases: string[]) => void) | undefined;
+
+  /**
+   * User speech input was discarded rather than integrated (e.g. did not match any grammar)
+   */
+  onSpeechDiscarded: (() => void) | undefined;
+
+  /**
+   * User speech was parsed against the grammar, producing ranked alternates
+   * @param alternates - Speech recognition alternates that matched the grammar
+   */
+  onSpeechParsed: ((alternates: ISpeechRecoItem[]) => void) | undefined;
 
   //#endregion
 
@@ -1152,9 +1199,11 @@ export class StpRecognizer{
    * @param isUndo - True if this is the result of an undo operation (of a to COA add)
    */
   onCoaDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
-  /*
-  onCoaSwitched: ((StpCoa coaPoid) => void) | undefined;
-*/
+  /**
+   * A new COA has become current/active
+   * @param coa
+   */
+  onCoaSwitched: ((coa: StpType.StpCoa) => void) | undefined;
   //#endregion
 
   //#region Handlers - Role operations

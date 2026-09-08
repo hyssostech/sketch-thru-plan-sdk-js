@@ -237,6 +237,29 @@ export class StpWebSocketsConnector implements IStpConnector {
     return this.request(JSON.stringify(msg), timeout);
   }
 
+  /**
+   * Replace the current solvables (event subscriptions) and re-register with STP.
+   * Subscriptions are otherwise fixed at the time connect() first runs, so this is the way to
+   * pick up handlers that are attached after the connection has already been established.
+   * @param solvables - Updated array of messages this service handles
+   * @param timeout - Optional number of seconds to wait for the re-registration to complete
+   * @returns The sessionId returned by STP's registration response
+   */
+  async updateSolvables(
+    solvables: string[],
+    timeout: number = this.DEFAULT_TIMEOUT
+  ): Promise<string> {
+    if (!this.isConnected) {
+      throw new Error(
+        'Failed to update subscriptions: connection is not open (' + this.connState + ')'
+      );
+    }
+    this.solvables = solvables;
+    const sessionId: string = await this.register(timeout);
+    this.sessionId = sessionId;
+    return sessionId;
+  }
+
   disconnect(timeout: number = this.DEFAULT_TIMEOUT): Promise<void> {
     return this.promiseWithTimeout<void>(
       timeout,

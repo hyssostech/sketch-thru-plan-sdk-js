@@ -43,6 +43,16 @@ export interface IStpConnector {
   disconnect(timeout?: number): Promise<void>;
 
   /**
+   * Replace the current solvables (event subscriptions) and re-register with STP.
+   * Optional: implemented by connectors that support updating subscriptions after the
+   * initial connect() call, e.g. when a consumer attaches a handler later on.
+   * @param solvables - Updated array of messages this service handles
+   * @param timeout - Optional number of seconds to wait for the re-registration to complete
+   * @returns The sessionId returned by STP's registration response
+   */
+  updateSolvables?(solvables: string[], timeout?: number): Promise<string>;
+
+  /**
    * Send a message/command to STP
    * @param message - STP API message to send
    */
