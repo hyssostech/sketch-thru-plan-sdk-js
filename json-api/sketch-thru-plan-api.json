@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "methods": [
     {
@@ -1193,6 +1193,248 @@
         "name": "ok",
         "schema": {
           "type": "null"
+        }
+      }
+    },
+    {
+      "name": "ChangeTimeOut",
+      "description": "Set the wait and segmentation timeouts together, in seconds. This is the only public control over how long STP waits before deciding a sketch is finished, so it is required whenever a user draws a multi-stroke 2525/APP6 symbol: use 0.0 for ordinary single-stroke point, line and area work, and around 2.5 while a full symbol is being drawn. Fire and forget.",
+      "params": [
+        {
+          "name": "timeout",
+          "description": "Timeout in seconds. 0.0 restores single-stroke behaviour.",
+          "schema": {
+            "type": "number"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetSegmentationTimeout",
+      "description": "Restore the segmentation timeout to its configured default, undoing an earlier ChangeTimeOut. Fire and forget.",
+      "params": []
+    },
+    {
+      "name": "SetSpeechListening",
+      "description": "Turn speech capture on or off for this client. Fire and forget; STP reports the resulting state through the AudioCapture event.",
+      "params": [
+        {
+          "name": "listen",
+          "description": "True to start listening, false to stop.",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RecognizeNow",
+      "description": "Recognize whatever has been collected so far instead of waiting for the segmentation timeout to expire. Fire and forget.",
+      "params": []
+    },
+    {
+      "name": "SendListen",
+      "description": "Ask STP to start or stop listening. Fire and forget. NB the .NET SDK serialises `mode` with default settings, so it arrives as the ORDINAL of the enum rather than its name; the engine accepts either spelling.",
+      "params": [
+        {
+          "name": "mode",
+          "description": "Listening mode: once (0) listens until the first inactivity, on (1) listens until told to stop, off (2) stops.",
+          "schema": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "once",
+                  "on",
+                  "off"
+                ]
+              },
+              {
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "time",
+          "description": "Timestamp of the request. Defaults to now.",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SendAudioCaptureState",
+      "description": "Report this client's own audio capture state to STP so other components can reflect it in their user interface. Fire and forget.",
+      "params": [
+        {
+          "name": "isListening",
+          "description": "True while this client is capturing audio.",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AdvertiseViewport",
+      "description": "Tell STP which geographic area this client is currently showing, so recognition can be biased towards what the user can actually see. Fire and forget.",
+      "params": [
+        {
+          "name": "topLeft",
+          "description": "North-west corner of the visible map.",
+          "schema": {
+            "$ref": "#/components/schemas/LatLon"
+          }
+        },
+        {
+          "name": "botRight",
+          "description": "South-east corner of the visible map.",
+          "schema": {
+            "$ref": "#/components/schemas/LatLon"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SetAutoTasking",
+      "description": "Enable or disable automatic tasking, in which STP infers tasks from symbols without an explicit spoken task. Fire and forget.",
+      "params": [
+        {
+          "name": "isEnabled",
+          "description": "True to enable automatic tasking.",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetRole",
+      "description": "Clear the role previously set with SetRole, returning this client to the default role. Fire and forget.",
+      "params": []
+    },
+    {
+      "name": "UndoLastOp",
+      "description": "Undo the last operation applied to an object. STP replays the effect as ordinary events carrying isUndo = true, so a client that already handles the Added/Modified/Deleted events needs no extra handling. Fire and forget.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique id of the object whose last operation is to be undone.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ResetStpScenario",
+      "description": "Discard the current scenario contents on the server, leaving the scenario itself in place. Returns no value.",
+      "params": []
+    },
+    {
+      "name": "GetActiveScenarioDescription",
+      "description": "Return the metadata of the scenario currently loaded - its name, id and session details - without fetching any of its contents.",
+      "params": [],
+      "result": {
+        "name": "scenario",
+        "schema": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    {
+      "name": "GetAllObjects",
+      "description": "Return every object in the current scenario as a flat list, symbols, tasks and task organizations alike. Prefer GetScenarioContent or GetScenarioObjectSet when the structured form is wanted.",
+      "params": [],
+      "result": {
+        "name": "objects",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    {
+      "name": "GetDeletedObjects",
+      "description": "Return the objects deleted from the current scenario. A deleted object is TOMBSTONED rather than removed, so it is still reachable here and its poid can be reused by a later add.",
+      "params": [],
+      "result": {
+        "name": "objects",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    {
+      "name": "GetPoidObject",
+      "description": "Return a single object by its unique id. Returns null when no object carries that poid.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique id of the object to fetch.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "object",
+        "schema": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    {
+      "name": "GetScenarioTaskOrgList",
+      "description": "Return the task organizations (ORBATs) defined in the current scenario, as summaries rather than full contents.",
+      "params": [],
+      "result": {
+        "name": "taskOrgs",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/StpTaskOrg"
+          }
+        }
+      }
+    },
+    {
+      "name": "GetTaskOrgObjects",
+      "description": "Return the objects making up a task organization as a plain array. This is a SYNONYM of GetTaskOrgObjectSet - both reach the same engine call and return the same array; the two spellings exist because the .NET SDK grew both.",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Task organization unique id.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "objects",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
         }
       }
     }
