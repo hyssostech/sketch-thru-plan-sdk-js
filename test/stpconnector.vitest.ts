@@ -71,7 +71,9 @@ describe('StpWebSocketsConnector (mocked)', () => {
   it('request rejects when server responds with success=false', async () => {
     const connector = new StpWebSocketsConnector(WS_URL);
     await connector.connect('ServiceName', ['Foo']);
-    await expect(connector.request('{"method":"Fail"}')).rejects.toBe('BAD');
+    // A refusal now rejects with an Error carrying the engine's text rather than with the bare
+    // value: a null result used to reach the caller as a rejection with no message at all.
+    await expect(connector.request('{"method":"Fail"}')).rejects.toThrow('BAD');
   });
 
   it('onerror dispatch triggers user-readable error message', async () => {

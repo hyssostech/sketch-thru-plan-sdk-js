@@ -175,7 +175,7 @@ An [OpenRPC](https://github.com/open-rpc) definition of the api can be found in 
 
 ### Extensions to the OpenRPC spec
 
-The contract uses three `x-`prefixed extensions beyond the base OpenRPC spec:
+The contract uses four `x-`prefixed extensions beyond the base OpenRPC spec:
 
 * `x-stpEvents` - the engine also sends unsolicited, asynchronous events to the
   client (`SymbolAdded`, `TaskModified`, etc.). OpenRPC has no native concept of a
@@ -192,3 +192,11 @@ The contract uses three `x-`prefixed extensions beyond the base OpenRPC spec:
   ("No handler"). See the rule enforced by the STP repo's
   `tools/check-openrpc-surface.sh`, which fails a build if a contract method is
   missing from the engine's dispatch switch and not marked this way.
+* `"x-layer": "transport"` - marks a message that belongs to the wire protocol
+  rather than to the application surface. Three carry it: the `Register` and
+  `Request` methods and the `RequestResponse` event. Every SDK builds and consumes
+  these inside its connector, so an application using an SDK never sends or sees
+  one - but a client written WITHOUT an SDK cannot work without implementing all
+  three, which is why they stay documented here. **Generators, reference pages and
+  tool listings that present a public API should skip this layer**; anything
+  describing the wire itself must keep it.

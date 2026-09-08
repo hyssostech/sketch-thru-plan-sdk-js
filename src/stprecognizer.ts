@@ -66,6 +66,30 @@ export class StpRecognizer{
   }
 
   /**
+   * Rebuild the list of subscribed events from the handlers CURRENTLY assigned, and re-register with STP.
+   *
+   * IMPORTANT: subscriptions are fixed at connect time - buildSolvables() only runs once, inside connect().
+   * If an on* handler is assigned AFTER connect() has already resolved, STP will never route that event to
+   * this client until this method is called to pick up the new handler. Call it any time a handler is
+   * attached (or removed) past the initial connect().
+   * @throws Error if called before a connection to STP has been established
+   */
+  public async refreshSubscriptions(): Promise<void> {
+    if (!this.stpConnector.isConnected) {
+      throw new Error(
+        'Cannot refresh subscriptions: not connected to STP. Call connect() first.'
+      );
+    }
+    if (typeof this.stpConnector.updateSolvables !== 'function') {
+      throw new Error(
+        'Cannot refresh subscriptions: the connector in use does not support updateSolvables().'
+      );
+    }
+    const solvables: string[] = this.buildSolvables();
+    await this.stpConnector.updateSolvables(solvables);
+  }
+
+  /**
    * Build a list of messages that this service handles based on the event subscriptions that were set
    * @ignore
    */
@@ -255,21 +279,28 @@ export class StpRecognizer{
     } else if (msg.method === 'CoaDeleted' && this.onCoaDeleted) {
       const pp = msg.params as { poid: string; isUndo: boolean };
       this.onCoaDeleted(pp.poid, pp.isUndo);
-    // } else if (msg.method === 'CoaSwitched' && this.onCoaSwitched) {
-    //   const pp = msg.params as {
-    //     coa: StpType.StpCoa;
-    //   };
-    //   this.onCoaSwitched(pp.coa);
+    } else if (msg.method === 'CoaSwitched' && this.onCoaSwitched) {
+      const pp = msg.params as {
+        coa: StpType.StpCoa;
+      };
+      this.onCoaSwitched(pp.coa);
     } else if (msg.method === 'RoleSwitched' && this.onRoleSwitched) {
       const pp = msg.params as {
         role: StpType.StpRole;
       };
       this.onRoleSwitched(pp.role);
+    } else if (msg.method === 'NewScenario' && this.onNewScenario) {
+      this.onNewScenario();
     } else if (msg.method === 'InkProcessed' && this.onInkProcessed) {
       this.onInkProcessed();
     } else if (msg.method === 'SpeechRecognized' && this.onSpeechRecognized) {
       const pp = msg.params as { phrases: string[] };
       this.onSpeechRecognized(pp.phrases);
+    } else if (msg.method === 'SpeechDiscarded' && this.onSpeechDiscarded) {
+      this.onSpeechDiscarded();
+    } else if (msg.method === 'SpeechParsed' && this.onSpeechParsed) {
+      const pp = msg.params as { alternates: ISpeechRecoItem[] };
+      this.onSpeechParsed(pp.alternates);
     } else if (msg.method === 'SymbolEdited' && this.onSymbolEdited) {
       const pp = msg.params as {
         operation: string;
@@ -425,6 +456,67 @@ export class StpRecognizer{
     this.informStp('SendSimulatedSpeechRecognition', {
       text: arguments[0],
       startTime: arguments[1] ?? null
+    });
+  }
+
+  /**
+   * Set the wait and segmentation timeouts together, in seconds. This is the only public
+   * control over how long STP waits before deciding a sketch is finished, so it must be
+   * changed whenever a user draws a multi-stroke 2525/APP6 symbol: use 0.0 for ordinary
+   * single-stroke point, line and area work, and around 2.5 while a full symbol is being
+   * drawn. Fire and forget.
+   * @param timeout - Timeout in seconds. 0.0 restores single-stroke behavior.
+   */
+  changeTimeOut(timeout: number): void {
+    this.informStp('ChangeTimeOut', {
+      timeout: arguments[0]
+    });
+  }
+
+  /**
+   * Restore the segmentation timeout to its configured default, undoing an earlier changeTimeOut. Fire and forget.
+   */
+  resetSegmentationTimeout(): void {
+    this.informStp('ResetSegmentationTimeout', null);
+  }
+
+  /**
+   * Turn speech capture on or off for this client. Fire and forget; STP reports the resulting
+   * state through the AudioCapture event.
+   * @param listen - True to start listening, false to stop.
+   */
+  setSpeechListening(listen: boolean): void {
+    this.informStp('SetSpeechListening', {
+      listen: arguments[0]
+    });
+  }
+
+  /**
+   * Recognize whatever has been collected so far instead of waiting for the segmentation timeout to expire. Fire and forget.
+   */
+  recognizeNow(): void {
+    this.informStp('RecognizeNow', null);
+  }
+
+  /**
+   * Ask STP to start or stop listening. Fire and forget.
+   * @param mode - Listening mode: once listens until the first inactivity, on listens until told to stop, off stops.
+   * @param time - Optional timestamp of the request. Defaults to now if not provided.
+   */
+  sendListen(mode: StpType.ListenMode, time?: Date): void {
+    this.informStp('SendListen', {
+      mode: arguments[0],
+      time: arguments[1] ?? null
+    });
+  }
+
+  /**
+   * Report this client's own audio capture state to STP so other components can reflect it in their user interface. Fire and forget.
+   * @param isListening - True while this client is capturing audio.
+   */
+  sendAudioCaptureState(isListening: boolean): void {
+    this.informStp('SendAudioCaptureState', {
+      isListening: arguments[0]
     });
   }
   //#endregion
@@ -594,6 +686,55 @@ export class StpRecognizer{
    */
   async getCoaObjectSet(poid: string, timeout?: number): Promise<StpType.StpItem[]> {
     return this.requestStp('GetCoaObjectSet', {
+      poid: arguments[0],
+    }, timeout);
+  }
+
+  /**
+   * Discard the current scenario contents on the server, leaving the scenario itself in place.
+   * @param timeout - Optional timeout in seconds
+   */
+  async resetStpScenario(timeout?: number): Promise<void> {
+    return this.requestStp('ResetStpScenario', null, timeout);
+  }
+
+  /**
+   * Return the metadata of the scenario currently loaded - its name, id and session details - without fetching any of its contents.
+   * @param timeout - Optional timeout in seconds
+   * @returns Scenario metadata, or null/undefined if no scenario is loaded
+   */
+  async getActiveScenarioDescription(timeout?: number): Promise<any> {
+    return this.requestStp('GetActiveScenarioDescription', null, timeout);
+  }
+
+  /**
+   * Return every object in the current scenario as a flat list - symbols, tasks and task organizations alike.
+   * Prefer getScenarioContent or getScenarioObjectSet when the structured form is wanted.
+   * @param timeout - Optional timeout in seconds
+   * @returns Array of STP objects in the current scenario
+   */
+  async getAllObjects(timeout?: number): Promise<StpType.StpItem[]> {
+    return this.requestStp('GetAllObjects', null, timeout);
+  }
+
+  /**
+   * Return the objects deleted from the current scenario. A deleted object is tombstoned rather
+   * than removed, so it is still reachable here and its poid can be reused by a later add.
+   * @param timeout - Optional timeout in seconds
+   * @returns Array of deleted STP objects
+   */
+  async getDeletedObjects(timeout?: number): Promise<StpType.StpItem[]> {
+    return this.requestStp('GetDeletedObjects', null, timeout);
+  }
+
+  /**
+   * Return a single object by its unique id.
+   * @param poid - Unique id of the object to fetch
+   * @param timeout - Optional timeout in seconds
+   * @returns The object, or null if no object carries that poid
+   */
+  async getPoidObject(poid: string, timeout?: number): Promise<StpType.StpItem | null> {
+    return this.requestStp('GetPoidObject', {
       poid: arguments[0],
     }, timeout);
   }
@@ -802,6 +943,29 @@ export class StpRecognizer{
       poid: arguments[0]
     });
   }
+
+  /**
+   * Return the task organizations (ORBATs) defined in the current scenario, as summaries rather than full contents.
+   * @param timeout - Optional timeout in seconds
+   * @returns Array of TO summaries
+   */
+  async getScenarioTaskOrgList(timeout?: number): Promise<StpType.StpTaskOrg[]> {
+    return this.requestStp('GetScenarioTaskOrgList', null, timeout);
+  }
+
+  /**
+   * Return the objects making up a task organization as a plain array. This is a synonym of
+   * getTaskOrgObjectSet - both reach the same engine call and return the same array; the two
+   * spellings exist because the .NET SDK grew both.
+   * @param poid - Task organization unique id
+   * @param timeout - Optional timeout in seconds
+   * @returns Array of task org objects
+   */
+  async getTaskOrgObjects(poid: string, timeout?: number): Promise<StpType.StpItem[]> {
+    return this.requestStp('GetTaskOrgObjects', {
+      poid: arguments[0],
+    }, timeout);
+  }
   //#endregion
 
   //#region Task commands
@@ -961,6 +1125,50 @@ export class StpRecognizer{
       role: arguments[0],
     }, timeout);
   }
+
+  /**
+   * Clear the role previously set with setCurrentRole, returning this client to the default role. Fire and forget.
+   */
+  resetRole(): void {
+    this.informStp('ResetRole', null);
+  }
+  //#endregion
+
+  //#region Client and viewport commands
+  /**
+   * Tell STP which geographic area this client is currently showing, so recognition can be
+   * biased towards what the user can actually see. Fire and forget.
+   * @param topLeft - North-west corner of the visible map
+   * @param botRight - South-east corner of the visible map
+   */
+  advertiseViewport(topLeft: StpType.LatLon, botRight: StpType.LatLon): void {
+    this.informStp('AdvertiseViewport', {
+      topLeft: arguments[0],
+      botRight: arguments[1]
+    });
+  }
+
+  /**
+   * Enable or disable automatic tasking, in which STP infers tasks from symbols without an explicit spoken task. Fire and forget.
+   * @param isEnabled - True to enable automatic tasking.
+   */
+  setAutoTasking(isEnabled: boolean): void {
+    this.informStp('SetAutoTasking', {
+      isEnabled: arguments[0]
+    });
+  }
+
+  /**
+   * Undo the last operation applied to an object. STP replays the effect as ordinary events
+   * carrying isUndo = true, so a client that already handles the Added/Modified/Deleted events
+   * needs no extra handling. Fire and forget.
+   * @param poid - Unique id of the object whose last operation is to be undone.
+   */
+  undoLastOp(poid: string): void {
+    this.informStp('UndoLastOp', {
+      poid: arguments[0]
+    });
+  }
   //#endregion
 
   //#region Handlers - Speech and pen events
@@ -979,10 +1187,26 @@ export class StpRecognizer{
   onInkProcessed: (() => void) | undefined;
 
   /**
+   * A new scenario has been created or loaded, replacing any previous content
+   */
+  onNewScenario: (() => void) | undefined;
+
+  /**
    * User speech was successfully transcribed
    * @param phrases - Phrases that were recognized
    */
   onSpeechRecognized: ((phrases: string[]) => void) | undefined;
+
+  /**
+   * User speech input was discarded rather than integrated (e.g. did not match any grammar)
+   */
+  onSpeechDiscarded: (() => void) | undefined;
+
+  /**
+   * User speech was parsed against the grammar, producing ranked alternates
+   * @param alternates - Speech recognition alternates that matched the grammar
+   */
+  onSpeechParsed: ((alternates: ISpeechRecoItem[]) => void) | undefined;
 
   //#endregion
 
@@ -1152,9 +1376,11 @@ export class StpRecognizer{
    * @param isUndo - True if this is the result of an undo operation (of a to COA add)
    */
   onCoaDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
-  /*
-  onCoaSwitched: ((StpCoa coaPoid) => void) | undefined;
-*/
+  /**
+   * A new COA has become current/active
+   * @param coa
+   */
+  onCoaSwitched: ((coa: StpType.StpCoa) => void) | undefined;
   //#endregion
 
   //#region Handlers - Role operations
