@@ -21,7 +21,10 @@ if (typeof window !== 'undefined' && ImportedWR) {
 interface LatLonLike { lat?: number; lon?: number; x?: number; y?: number; }
 interface BoundsLike { east?: number; west?: number; north?: number; south?: number; }
 interface LocationLike { shape?: string; coords?: LatLonLike[]; centroid?: LatLonLike; }
-interface SidcLike { legacy?: string; partA?: string; partB?: string; symbolSet?: string; }
+// `charlie` is the primary 2525C field and `legacy` its deprecated alias, per
+// the contract change in fc200a1. Line 39 already reads `sidc?.charlie`; this
+// local shape never gained the member, so the plugin has not compiled since.
+interface SidcLike { charlie?: string; legacy?: string; partA?: string; partB?: string; symbolSet?: string; }
 interface SymbolLike {
   poid?: string; fsTYPE?: string; sidc?: SidcLike; affiliation?: string; parent?: string;
   designator1?: string; designator2?: string; status?: string; modifier?: string; strength?: string;
