@@ -1,0 +1,57 @@
+# Gitleaks configuration.
+#
+# The hardened-ci workflow runs `gitleaks detect --source . --exit-code 1`, which
+# scans the FULL COMMIT HISTORY, not the working tree. Until this file existed
+# there was no config at all, so gitleaks ran its default ruleset with no
+# allowlist and every run failed on two historical findings - one a real key that
+# was deleted in 2023, one a vendored placeholder that was never a secret.
+#
+# NB gitleaks 8.24.3 IGNORES the plural [[allowlists]] form. Measured: with it,
+# all three findings came back. The singular [allowlist] table below is what this
+# version honours, and its conditions are OR-ed.
+
+[extend]
+# Keep the whole default ruleset. This file only ADDS an allowlist; it must never
+# narrow what gitleaks looks for.
+useDefault = true
+
+[allowlist]
+description = """
+Two unrelated historical findings.
+
+(1) A REAL Google Maps API key, committed to the sample pages in 2023 and deleted
+from the tree the same month. It is in NO branch today - `git grep` finds it in
+neither `main` nor `dev` - but gitleaks scans history, so it is re-reported on
+every run and will be until the history is rewritten. Allowlisted by COMMIT
+rather than by the key's value, so the secret is not restated here and any NEW
+occurrence of it, in any other commit, still fails the scan.
+
+THIS IS NOT A CLEARANCE. The repository is public, so the key was exposed for the
+two years it sat in history and remains exposed in the git objects. It must be
+treated as compromised and REVOKED in the Google Cloud console if that has not
+already been done. Allowlisting only stops the scanner re-reporting a fact that
+is already known and recorded. Excising it from history is the other half, and
+for a public repository that is a deliberate, disruptive act - it rewrites every
+downstream clone - so it belongs to the repository owner, not to a CI fix.
+
+(2) NOT a secret at all: `privPlaceholderKey` inside the vendored Microsoft
+Cognitive Services Speech SDK bundle under plugins/speech/azurespeech-plugin/dist/.
+Its value is the lowercase alphabet followed by 0-5 - the vendor's own
+placeholder, in third-party bundled output rather than our source. Matched on the
+literal value, NOT on the file path: a path allowlist would blind the scanner to a
+genuine key accidentally committed into that same bundle, whereas this can only
+ever suppress that one harmless string.
+
+Recorded 2026-09-08.
+"""
+
+commits = [
+  "b3154115e50885a7d28e5f4bf5d03f264f777982", # 2023-05-31 Added Roles sample
+  "efcba64c750fc65d730fb8d2f3256732c84b676c", # 2023-06-15 Added custom commands sample
+  "c6e72530ad4c050c65b01f066ee371740f5ee7ef", # 2023-06-21 Updating google maps loading
+  "b16082216356df00fb195c4d463940d58814e91d", # 2023-06-23 Removed file
+]
+
+regexes = [
+  '''abcdefghijklmnopqrstuvwxyz012345''',
+]
