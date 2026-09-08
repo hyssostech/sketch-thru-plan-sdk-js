@@ -59,7 +59,7 @@
   ],
   "devDependencies": {
     "@types/lodash": "^4.17.23",
-    "@types/node": "^22.10.1",
+    "@types/node": "^26.4.1",
     "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.1.0",
     "http-server": "^14.1.1",
