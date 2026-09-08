@@ -1087,7 +1087,7 @@
     },
     {
       "name": "Register",
-      "description": "Register a client service with STP, declaring the event types it can solve/handle and its machine/session identifiers.",
+      "description": "Register a client service with STP, declaring the event types it can solve/handle and its machine/session identifiers. TRANSPORT: this message is built and consumed by the SDK connectors themselves; an application using an SDK never sends or sees it. It is documented here because a client written without an SDK must implement it.",
       "params": [
         {
           "name": "serviceName",
@@ -1134,11 +1134,12 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-layer": "transport"
     },
     {
       "name": "Request",
-      "description": "Meta-message that wraps another JSON-RPC request (as a serialized string) for STP to dispatch; the result is returned asynchronously as a RequestResponse event carrying the same cookie.",
+      "description": "Meta-message that wraps another JSON-RPC request (as a serialized string) for STP to dispatch; the result is returned asynchronously as a RequestResponse event carrying the same cookie. TRANSPORT: this message is built and consumed by the SDK connectors themselves; an application using an SDK never sends or sees it. It is documented here because a client written without an SDK must implement it.",
       "params": [
         {
           "name": "jsonRequest",
@@ -1168,7 +1169,8 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-layer": "transport"
     },
     {
       "name": "SyncScenarioSessionFromObjectSet",
@@ -2743,7 +2745,7 @@
     },
     {
       "name": "RequestResponse",
-      "description": "Emitted in response to a Request meta-message; correlates the asynchronous result back to the request via the echoed cookie.",
+      "description": "Emitted in response to a Request meta-message; correlates the asynchronous result back to the request via the echoed cookie. TRANSPORT: this message is built and consumed by the SDK connectors themselves; an application using an SDK never sends or sees it. It is documented here because a client written without an SDK must implement it.",
       "x-descriptionStatus": "draft",
       "params": [
         {
@@ -2765,12 +2767,13 @@
           "description": "the dispatched method's result, or the error message when success is false",
           "schema": {}
         }
-      ]
+      ],
+      "x-layer": "transport"
     }
   ],
   "x-surfaceSource": {
     "repo": "hyssostech/STP",
-    "commit": "89ce7ea5b2bba0944f348ad1022059e5d74f4ecc",
+    "commit": "e59e87c65dc097c4145240e0833342639b1c0973",
     "inboundFile": "BridgingAgents/WebSocketsBridge/JsonMessage.cs",
     "outboundFile": "BridgingAgents/WebSocketsBridge/StpJsonClient.cs"
   }
