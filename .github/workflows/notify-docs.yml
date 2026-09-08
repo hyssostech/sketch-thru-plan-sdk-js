@@ -1,5 +1,25 @@
 name: Notify docs site of SDK source changes
 
+# Tells hyssostech/stp-docs to rebuild when the SDK source moves, so the public
+# API reference does not drift behind the package.
+#
+# THIS HAS NEVER SUCCEEDED. It has run twice - 2026-09-05 and 2026-09-08 - and
+# failed both times with "Parameter token or opts.auth is required", which means
+# `secrets.STP_DOCS_PAT` is absent or empty in this repository, not merely
+# expired. A cross-repo dispatch needs a PAT; `GITHUB_TOKEN` cannot reach
+# another repository.
+#
+# Rather than fail every push to main on a missing credential, the dispatch is
+# now SKIPPED when the secret is not configured, and the run says so in its
+# summary. Add the secret and it starts working with no further change.
+#
+# The fallback is not "docs go stale": stp-docs also deploys on a SCHEDULE, so
+# the site refreshes without any cross-repo credential at all. This dispatch
+# only makes that refresh immediate. That matters because the PAT this used to
+# need is the same class of credential whose expiry silently froze the docs site
+# for six months (2026-02-26 to 2026-09-04); the scheduled build is what makes
+# that failure mode survivable.
+
 on:
   push:
     branches: [main]
@@ -11,10 +31,31 @@ jobs:
   trigger-docs-rebuild:
     runs-on: ubuntu-latest
     steps:
+      # The `secrets` context cannot be read in a job-level `if`, so the token is
+      # mapped into `env` and tested at step level.
       - name: Trigger stp-docs deployment
+        if: env.STP_DOCS_PAT != ''
+        env:
+          STP_DOCS_PAT: ${{ secrets.STP_DOCS_PAT }}
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.STP_DOCS_PAT }}
           repository: hyssostech/stp-docs
           event-type: sdk-source-updated
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+
+      - name: Say plainly that the dispatch was skipped
+        if: env.STP_DOCS_PAT == ''
+        env:
+          STP_DOCS_PAT: ${{ secrets.STP_DOCS_PAT }}
+        run: |
+          {
+            echo "### Docs rebuild NOT dispatched"
+            echo
+            echo "\`STP_DOCS_PAT\` is not configured in this repository, so the"
+            echo "cross-repo dispatch to \`hyssostech/stp-docs\` was skipped."
+            echo
+            echo "The docs site still refreshes on its own schedule, so this is a"
+            echo "delay, not a stall. Add the secret to make updates immediate."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "STP_DOCS_PAT not set - dispatch skipped (see the job summary)."
