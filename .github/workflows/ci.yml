@@ -17,6 +17,14 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+      # The bundled Vosk model is built in the STP engine repo and copied
+      # here; nothing used to compare the two copies against each other or
+      # against what the engine actually built, and they had silently
+      # drifted apart and fallen months behind (Jira STP-683). This reads
+      # the LFS pointers rather than the blobs, so it costs no LFS
+      # bandwidth and needs no dependencies - hence its place before npm ci.
+      - name: Verify bundled speech model
+        run: npm run verify:speech-model
       - name: Install dependencies
         run: npm ci
       - name: Build

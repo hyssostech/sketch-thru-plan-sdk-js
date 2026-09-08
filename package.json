@@ -25,6 +25,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "validate:schema": "node ../validation/check-openrpc.js",
+  "verify:speech-model": "node scripts/verify-speech-model.mjs",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack",
     "start": "http-server . -p 8080 -o /samples/index.html -c-1",

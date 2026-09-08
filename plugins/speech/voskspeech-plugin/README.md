@@ -24,6 +24,34 @@ The resulting `model/` directory (~50 MB on disk) must contain the unpacked `am/
 
 > **Note:** The page must be served over **HTTPS** for microphone access. Modern browsers also require **AudioWorklet** (Chrome 66+, Firefox 76+, Safari 14.1+, Edge 79+) and **WebAssembly** support.
 
+### Where the model comes from
+
+`model/vosk-model-la-domain.zip` is **not authored in this repository** and must
+never be edited here. It is a deterministic repackaging of
+`Clients/MultiSpeech/Models/vosk-model-la-domain/` in the STP engine repo, and
+`samples/basic/vosk-model-la-domain.zip` is a byte copy of it. Refresh both, plus
+the `model-artifacts.sha256` stamp beside the zip, with a single engine command:
+
+```bash
+cd <STP>/Clients/MultiSpeech/vosk-model-builder
+python -m build.model_artifacts --deploy --js-sdk-root <this repo>
+```
+
+`npm run verify:speech-model` checks both copies against that stamp and runs in
+CI. It reads the Git LFS pointers rather than the blobs, so it costs no LFS
+bandwidth: a pointer records `oid sha256:<hash>`, which is the content hash.
+
+**Current state:** the bundled model is still the engine's 2026-05-14
+build. Refreshing it is a browser behaviour change and is gated on the
+STP-638 vosk-browser run; until that lands, the stamp here pins what is
+actually shipped rather than what the engine last built.
+
+This is enforced because it went wrong (Jira STP-683). The two copies here were
+built from the 2026-05-14 engine model, had missed two rebuilds, and were not
+even identical to each other - same files, same content, 32 bytes of embedded
+zip timestamps apart, because each was zipped in its own run. Nothing compared
+them.
+
 ## Accessing the plugin functionality
 
 The plugin requires two separate scripts: the Vosk WASM runtime and the plugin bundle itself. The Vosk runtime (`vosk-browser`) is **not** bundled into the plugin — it is loaded separately so the browser can cache the large WASM module independently.
