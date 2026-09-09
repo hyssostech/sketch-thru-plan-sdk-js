@@ -113,4 +113,12 @@ jobs:
           format: table
           exit-code: 1
           severity: CRITICAL,HIGH
-          ignore-unfixed: true
+          # NO ignore-unfixed. It answers "is a fix available", not "are we
+          # exposed", so it drops any advisory upstream has not patched. This
+          # workflow now runs on sdk-v* tags (see the trigger above), and the
+          # release workflow's own dependency gate deliberately omits the same
+          # flag. Leaving it here meant one tag ran two scans under opposite
+          # policies, and the stricter one could not redden the run. Measured
+          # 2026-09-09 before removing it: trivy fs over this repo reports 0
+          # CRITICAL/HIGH, 0 of them unfixed, so this is a no-op today and a
+          # real gate the first time an unpatched advisory lands.
