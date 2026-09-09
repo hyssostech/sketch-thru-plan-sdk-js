@@ -37,6 +37,7 @@ GATES=(
   "Build|BUILD_RESULT|npm run build - tsc compile plus the three rollup bundles that make up dist/"
   "Unit tests|TEST_RESULT|npm test - the vitest suite"
   "Package|PACK_RESULT|npm pack - produces the tarball attached to this release"
+  "Packed file set|PACK_CONTENTS_RESULT|the tarball contains exactly the expected files - nothing missing, nothing unexpected"
   "SBOM generation|SBOM_RESULT|CycloneDX SBOM over the published package's runtime dependency closure"
   "SBOM assertions|SBOM_ASSERT_RESULT|spec version, metadata version, dev-dependency exclusion, non-vacuous component list"
   "Vulnerability scan|SCAN_RESULT|Trivy sbom scan of that SBOM"

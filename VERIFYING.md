@@ -64,7 +64,7 @@ From the release page for tag `sdk-v<version>`:
 | File | What it is |
 | --- | --- |
 | `sketch-thru-plan-sdk-<version>.tgz` | the packed npm package |
-| `sbom.cdx.json` | CycloneDX SBOM of the runtime dependency closure (spec version reported in `ci-summary.md`) |
+| `sbom.cdx.json` | CycloneDX SBOM built from the packed tarball (spec version reported in `ci-summary.md`) |
 | `trivy-report.json` | the raw vulnerability scan of that SBOM |
 | `ci-summary.md` | generated gate results and measured counts (also the release body) |
 | `VERIFYING.md` | this file |
@@ -175,10 +175,17 @@ advisories are published continuously.
 
 **What this does not prove.**
 
-- Not that the SBOM describes the tarball's actual contents. It is derived from
-  `package.json` and `package-lock.json`, which is the closure `npm install`
-  reproduces. It is not derived from static analysis of `dist/`, and rollup
-  inlines some dependencies into the UMD bundle.
+- Not that the SBOM describes what is *inside* `dist/`. It is generated from
+  the packed tarball's own `package.json` - so it describes the shipped
+  artifact rather than the repository tree - but it lists that manifest's
+  declared dependency closure, not the result of static analysis. rollup
+  inlines some dependencies into the UMD bundle, and nothing here re-derives
+  components from the emitted bytes.
+- Not that the dependency versions match the repository's lockfile. The
+  closure is resolved from the published manifest at release time, which is
+  what a consumer installing this package receives; that can differ from the
+  lockfile CI tested if a dependency published a new version inside an
+  existing semver range.
 - Not that a clean scan means safe. It means no *known, published* advisory
   matched a package in the SBOM at scan time.
 

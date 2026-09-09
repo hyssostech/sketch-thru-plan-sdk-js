@@ -1,0 +1,53 @@
+{
+  "note": [
+    "STP-708 - the exact surface of the published package.",
+    "",
+    "Both lists below are compared as SETS, in BOTH directions: nothing missing",
+    "and nothing unexpected, with the difference named either way. A check that",
+    "only looks for what it expects is the same defect as a coverage gate that",
+    "counts instead of enumerating - it can be right about what you were looking",
+    "for and wrong about the rest.",
+    "",
+    "That is not hypothetical. While this workflow was being written, the",
+    "concurrent npm-workspaces conversion silently changed what npm packs for a",
+    "member package: websockets-plugin went from 28 files to 10, losing all 18",
+    "docs, because with no 'files' array npm packlist fell back to ignore rules",
+    "and the root .gitignore's root-anchored /docs began reaching workspace",
+    "members at pack time. Every check stayed green. The first fix then restored",
+    "the docs and silently dropped CHANGELOG.md, which npm had been including by",
+    "default; 'did the docs come back?' passed, and only a full file-count",
+    "comparison caught it.",
+    "",
+    "This root package declares 'files', so it is not exposed to that specific",
+    "fallback - but an SBOM built from a tarball inherits whatever the tarball",
+    "got wrong. Pack-based scoping fixes workspace enumeration; it does not make",
+    "the pack itself trustworthy. Only this list does.",
+    "",
+    "CHANGING EITHER LIST IS A DELIBERATE ACT. If a release fails here, the",
+    "question is what changed the published surface, not how to relax the",
+    "threshold. Update these lists in the same change that alters the surface,",
+    "so it is visible in review.",
+    "",
+    "packedFiles: verified 2026-09-09 against the tarball npm serves for",
+    "sketch-thru-plan-sdk@0.6.14 ('npm pack sketch-thru-plan-sdk@0.6.14'),",
+    "not merely against a local build. Paths are relative to the 'package/'",
+    "root that every npm tarball uses.",
+    "",
+    "sbomComponents: package coordinates only, deliberately WITHOUT versions.",
+    "A package appearing or disappearing is a supply-chain change and stops the",
+    "release; a version moving inside an existing range is routine and is",
+    "covered by the vulnerability scan instead."
+  ],
+  "packedFiles": [
+    "LICENSE",
+    "README.md",
+    "dist/sketch-thru-plan-sdk-bundle-min.js",
+    "dist/sketch-thru-plan-sdk-bundle.d.ts",
+    "dist/sketch-thru-plan-sdk-bundle.esm.js",
+    "package.json"
+  ],
+  "sbomComponents": [
+    "@types/geojson",
+    "lodash"
+  ]
+}

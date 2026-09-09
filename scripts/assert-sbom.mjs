@@ -55,7 +55,7 @@ function parseArgs(argv) {
 }
 
 const args = parseArgs(process.argv.slice(2));
-const required = ['sbom', 'manifest', 'expect-spec', 'expect-version', 'expect-tool'];
+const required = ['sbom', 'manifest', 'expect-spec', 'expect-version', 'expect-tool', 'expected'];
 for (const r of required) {
   if (!args[r]) {
     console.error(`usage error: --${r} is required`);
@@ -88,6 +88,16 @@ try {
   manifest = JSON.parse(readFileSync(args.manifest, 'utf8'));
 } catch (err) {
   console.error(`ASSERT FAIL: cannot read or parse manifest at ${args.manifest}: ${err.message}`);
+  process.exit(1);
+}
+
+// The expected component set, tracked in the repository so that changing the
+// published dependency surface is a reviewed act rather than a silent one.
+let expected;
+try {
+  expected = JSON.parse(readFileSync(args.expected, 'utf8'));
+} catch (err) {
+  console.error(`ASSERT FAIL: cannot read or parse ${args.expected}: ${err.message}`);
   process.exit(1);
 }
 
@@ -186,6 +196,32 @@ check(
 
 for (const dep of runtimeDeps) {
   check(present.has(dep), `runtime dependency ${dep} is present in the SBOM`);
+}
+
+// THE WHOLE-SET ASSERTION. Everything else in this section is a named
+// blocklist, and a blocklist can only catch the categories it thought of - a
+// component that is neither a devDependency nor a sibling plugin would pass
+// every one of them. This compares the component set in BOTH directions and
+// names the difference either way.
+const expectedComponents = Array.isArray(expected.sbomComponents) ? expected.sbomComponents : null;
+if (!expectedComponents || expectedComponents.length === 0) {
+  check(false, `${args.expected} declares no sbomComponents to compare against`);
+} else {
+  const actualSet = [...present].sort();
+  const wantSet = [...expectedComponents].sort();
+  const missingComponents = wantSet.filter((c) => !actualSet.includes(c));
+  const unexpectedComponents = actualSet.filter((c) => !wantSet.includes(c));
+  check(
+    missingComponents.length === 0,
+    'no expected component is missing from the SBOM',
+    `missing: ${missingComponents.join(', ')}`,
+  );
+  check(
+    unexpectedComponents.length === 0,
+    'no unexpected component appears in the SBOM',
+    `unexpected: ${unexpectedComponents.join(', ')}`,
+  );
+  notes.push(`component set compared against ${args.expected}: ${wantSet.length} expected`);
 }
 
 const devLeaks = devDeps.filter((d) => present.has(d) && !runtimeDeps.includes(d));

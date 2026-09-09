@@ -67,6 +67,9 @@ jobs:
       build_result: ${{ steps.build.outcome }}
       test_result: ${{ steps.test.outcome }}
       pack_result: ${{ steps.pack.outcome }}
+      extract_result: ${{ steps.extract.outcome }}
+      pack_contents_result: ${{ steps.pack_contents.outcome }}
+      tarball_sha256: ${{ steps.extract.outputs.tarball_sha256 }}
       sbom_result: ${{ steps.sbom.outcome }}
       sbom_assert_result: ${{ steps.sbom_assert.outcome }}
       sbom_components: ${{ steps.sbom_assert.outputs.sbom_components }}
@@ -163,33 +166,60 @@ jobs:
           tar -tzf "$path"
           echo "tarball=$tarball" >>"$GITHUB_OUTPUT"
 
-      # --package-lock-only makes the component set a function of the lockfile
-      # rather than of whatever happens to be in node_modules, so it is
-      # reproducible and dev dependencies cannot leak in through the install
-      # tree. The positional argument must be the manifest FILE: passing a
-      # directory fails with "No evidence: no package lock file".
-      - name: Generate the CycloneDX SBOM
-        id: sbom
+      # Everything downstream describes THE TARBALL, not the repository. A
+      # root-scoped SBOM makes accuracy a function of repository layout, and
+      # the layout is changing: measured against the unpushed npm-workspaces
+      # conversion, the previous root-scoped command emitted 331 components
+      # including all eight @hyssostech plugins and the entire AWS SDK.
+      - name: Extract the packed tarball
+        id: extract
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
         run: |
           set -euo pipefail
-          npx --yes "$CDX_NPM_PKG" \
-            --spec-version "$CDX_SPEC_VERSION" \
-            --output-format JSON \
-            --output-file sbom.cdx.json \
-            --mc-type library \
-            --omit dev \
-            --omit optional \
-            --omit peer \
-            --package-lock-only \
-            package.json
+          rm -rf sbom-work
+          mkdir -p sbom-work
+          tar -xzf "$TARBALL" -C sbom-work
+          [ -f sbom-work/package/package.json ] ||
+            { echo "::error::no package/package.json inside $TARBALL"; exit 1; }
+          # Bind the SBOM to the exact tarball it describes. The release job
+          # re-checks this digest against the file it is about to attach, so
+          # the published SBOM and the published tarball cannot drift apart.
+          sha="$(sha256sum -- "$TARBALL" | cut -d' ' -f1)"
+          echo "tarball_sha256=$sha" >>"$GITHUB_OUTPUT"
+          echo "tarball sha256: $sha"
+
+      # An SBOM built from a tarball inherits whatever the tarball got wrong,
+      # so the tarball gets its own gate. Compared as a SET in BOTH directions
+      # against scripts/expected-release-contents.json - nothing missing and
+      # nothing unexpected - because a check that only looks for what it
+      # expects can be right about that and wrong about everything else.
+      - name: Assert the packed file set
+        id: pack_contents
+        run: |
+          node scripts/assert-pack-contents.mjs \
+            --extracted sbom-work \
+            --expected scripts/expected-release-contents.json
+
+      - name: Generate the CycloneDX SBOM from the packed tree
+        id: sbom
+        run: |
+          bash scripts/sbom-from-tarball.sh \
+            sbom-work/package \
+            sbom.cdx.json \
+            "$CDX_SPEC_VERSION" \
+            "$CDX_NPM_PKG"
 
       # The generator's flags are not evidence that the generator obeyed them.
+      # --manifest is the SHIPPED package.json from inside the tarball, not the
+      # repository's, so the assertions describe what consumers receive.
       - name: Assert the SBOM is what we asked for
         id: sbom_assert
         run: |
           node scripts/assert-sbom.mjs \
             --sbom sbom.cdx.json \
-            --manifest package.json \
+            --manifest sbom-work/package/package.json \
+            --expected scripts/expected-release-contents.json \
             --expect-spec "$CDX_SPEC_VERSION" \
             --expect-version "${{ steps.version.outputs.version }}" \
             --expect-tool "$CDX_NPM_PKG"
@@ -381,6 +411,7 @@ jobs:
           BUILD_RESULT: ${{ needs.build.outputs.build_result }}
           TEST_RESULT: ${{ needs.build.outputs.test_result }}
           PACK_RESULT: ${{ needs.build.outputs.pack_result }}
+          PACK_CONTENTS_RESULT: ${{ needs.build.outputs.pack_contents_result }}
           SBOM_RESULT: ${{ needs.build.outputs.sbom_result }}
           SBOM_ASSERT_RESULT: ${{ needs.build.outputs.sbom_assert_result }}
           SCAN_RESULT: ${{ needs.scan.outputs.scan_result }}
@@ -430,6 +461,7 @@ jobs:
         if: steps.summary.outputs.publish_ok == 'true'
         env:
           TARBALL: ${{ needs.build.outputs.tarball }}
+          TARBALL_SHA256: ${{ needs.build.outputs.tarball_sha256 }}
         run: |
           set -euo pipefail
           # Flatten first, for the same reason as in the scan job: the
@@ -445,6 +477,14 @@ jobs:
             ls -laR inputs || true
             exit 1
           fi
+          # The SBOM describes one specific tarball. Attaching a different one
+          # would publish an SBOM of an artifact nobody can download.
+          actual_sha="$(sha256sum -- "inputs/$TARBALL" | cut -d' ' -f1)"
+          if [ "$actual_sha" != "$TARBALL_SHA256" ]; then
+            echo "::error::the tarball to be attached ($actual_sha) is not the one the SBOM describes ($TARBALL_SHA256)"
+            exit 1
+          fi
+          echo "tarball digest matches the SBOM's subject: $actual_sha"
           mkdir -p release
           cp "inputs/$TARBALL" release/
           cp inputs/sbom.cdx.json release/
