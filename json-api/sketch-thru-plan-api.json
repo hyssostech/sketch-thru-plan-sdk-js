@@ -791,7 +791,7 @@
     },
     {
       "name": "ConvertC2SIMContent",
-      "description": "Convert C2SIM content (e.g. between BML/IBML formats). No SDK call is made at all: the engine's dispatcher (StpJsonClient.cs:263) assigns result = null with the comment \"removed from new SDK\" and never calls into the SDK. The result is always null, and success stays true - so a caller cannot distinguish \"not implemented\" from \"converted to nothing\".",
+      "description": "Convert C2SIM content (e.g. between BML/IBML formats) to STP's native object-set representation. The conversion happens entirely inside the engine's own SDK layer and never reaches the C2SIM bridge agent. Returns the converted objects as the multiline string ObjectSet.ToMultilineString() produces: \"object_set([\" followed by one STP object per line and a closing \"])\".",
       "params": [
         {
           "name": "content",
@@ -802,7 +802,7 @@
         },
         {
           "name": "options",
-          "description": "Conversion options (implementation-defined key/value pairs).",
+          "description": "Accepted for wire compatibility with existing clients (the public .NET SDK sends this field) but ignored by the engine: conversion behavior does not depend on its contents.",
           "schema": {
             "type": "object",
             "additionalProperties": true
@@ -811,9 +811,9 @@
       ],
       "x-descriptionStatus": "draft",
       "result": {
-        "name": "ok",
+        "name": "content",
         "schema": {
-          "type": "null"
+          "type": "string"
         }
       }
     },
