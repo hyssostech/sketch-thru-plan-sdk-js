@@ -791,7 +791,7 @@
     },
     {
       "name": "ConvertC2SIMContent",
-      "description": "Convert C2SIM content (e.g. between BML/IBML formats). No SDK call is made at all: the engine's dispatcher (StpJsonClient.cs:263) assigns result = null with the comment \"removed from new SDK\" and never calls into the SDK. The result is always null, and success stays true - so a caller cannot distinguish \"not implemented\" from \"converted to nothing\".",
+      "description": "Convert C2SIM content (e.g. between BML/IBML formats) to STP's native object-set representation. The conversion happens entirely inside the engine's own SDK layer and never reaches the C2SIM bridge agent. Returns the converted objects as the multiline string ObjectSet.ToMultilineString() produces: \"object_set([\" followed by one STP object per line and a closing \"])\". Three things are worth knowing before you rely on the result. SYMBOLS ONLY: units and tactical graphics are extracted, but tasks are not created. This is a long-standing, deliberate limitation - STP tasks carry more detail than C2SIM captures, and the missing information cannot be filled in from an Order document. NOT IDEMPOTENT: the conversion mints a task org to hold the converted symbols (one per affiliation present, named \"Friendly TO\" and \"Hostile TO\") with a freshly generated identifier on every call, so converting the same document twice yields two different task orgs. NO PARENT COA: converted symbols are parented to that minted task org, but a purely local conversion mints no course of action, so nothing carries a parent COA - a caller that needs COA-parented objects, to load them into a scenario say, must mint the COAs and parent the objects itself. Input must be well-formed XML: a well-formed document with nothing convertible yields an empty \"object_set([])\" shell, but malformed content fails the call rather than returning an empty result.",
       "params": [
         {
           "name": "content",
@@ -802,7 +802,7 @@
         },
         {
           "name": "options",
-          "description": "Conversion options (implementation-defined key/value pairs).",
+          "description": "Accepted for wire compatibility with existing clients (the public .NET SDK sends this field) and then IGNORED. That is deliberate, and it differs from the sibling C2SIM methods on purpose: those carry an enumerated key set and reject an unknown key rather than ignoring it (STP-687), whereas this method has no key set to enumerate. Those keys configure the C2SIM bridge agent, and this conversion is purely local to the engine's SDK layer and never reaches that agent. Nothing passed here can change the result.",
           "schema": {
             "type": "object",
             "additionalProperties": true
@@ -811,9 +811,9 @@
       ],
       "x-descriptionStatus": "draft",
       "result": {
-        "name": "ok",
+        "name": "content",
         "schema": {
-          "type": "null"
+          "type": "string"
         }
       }
     },
