@@ -41,14 +41,38 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        working-directory: ${{ matrix.package }}
-        run: npm install
+      # STP-723. These three steps used to run with
+      # working-directory: ${{ matrix.package }} and `npm install`.
+      #
+      # That was correct while each plugin owned a package-lock.json. Once the
+      # root package.json declares workspaces (STP-698) and the nine per-plugin
+      # lockfiles are deleted, `npm install` from inside a member resolves at
+      # the WORKSPACE ROOT, and - measured, not assumed - it does so silently:
+      #
+      #   npm install in plugins/connectors/websockets-plugin
+      #     -> exit 0, creates node_modules at the REPO ROOT (228 packages),
+      #        none in the plugin directory.
+      #   With package.json deliberately desynced from the lockfile
+      #     -> STILL exit 0, and it MUTATED the root package-lock.json.
+      #   npm ci at the root, same desync
+      #     -> exit 1, EUSAGE, naming the desync.
+      #
+      # So the old shape would let a release tag re-resolve dependencies,
+      # rewrite the lockfile inside the runner's checkout, and publish a
+      # tarball built from a tree that no lockfile in the repository
+      # describes - without ever failing. `npm ci` is the whole fix: it
+      # refuses to proceed when package.json and the lockfile disagree.
+      #
+      # Verified equivalent before changing: building and packing via
+      # --workspace produces a byte-identical file list to the old
+      # working-directory form - 28 files, 60.2 kB, 330.2 kB unpacked for
+      # websockets-plugin. --workspace accepts the PATH form, which is what
+      # matrix.package already holds, so the matrix is unchanged.
+      - name: Install dependencies (root, deterministic)
+        run: npm ci
 
       - name: Build
-        working-directory: ${{ matrix.package }}
-        run: npm run build
+        run: npm run build --workspace ${{ matrix.package }}
 
       - name: Publish to npm (Trusted Publishing)
-        working-directory: ${{ matrix.package }}
-        run: npm publish --access public
+        run: npm publish --access public --workspace ${{ matrix.package }}
