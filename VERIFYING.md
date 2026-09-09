@@ -12,14 +12,19 @@ Jira STP-711.
 
 ## Start here: the package already has provenance nobody points at
 
-`sketch-thru-plan-sdk@0.6.14` is published through npm Trusted Publishing
-(OIDC) by `.github/workflows/publish-sdk.yml`, so npm already recorded a
-genuine SLSA v1 provenance attestation for it. It has been there, unadvertised,
-since that release. You can check it today, before any of the release assets
-described further down exist:
+This package is published through npm Trusted Publishing (OIDC) by
+`.github/workflows/publish-sdk.yml`, so npm records a genuine SLSA v1
+provenance attestation for each published version. That has been true, and
+unadvertised, since well before this document existed: it was verified against
+the registry for `sketch-thru-plan-sdk@0.6.14` on 2026-09-09, the latest
+version at the time, which reports
+`dist.attestations.provenance.predicateType = https://slsa.dev/provenance/v1`.
+
+You can check any version yourself, before any of the release assets described
+further down exist. Substitute the version you actually installed:
 
 ```sh
-npm view sketch-thru-plan-sdk@0.6.14 dist.attestations
+npm view sketch-thru-plan-sdk@<version> dist.attestations
 ```
 
 That prints the attestation bundle's URL and the registry signature over it. To
@@ -59,7 +64,7 @@ From the release page for tag `sdk-v<version>`:
 | File | What it is |
 | --- | --- |
 | `sketch-thru-plan-sdk-<version>.tgz` | the packed npm package |
-| `sbom.cdx.json` | CycloneDX 1.6 SBOM of the runtime dependency closure |
+| `sbom.cdx.json` | CycloneDX SBOM of the runtime dependency closure (spec version reported in `ci-summary.md`) |
 | `trivy-report.json` | the raw vulnerability scan of that SBOM |
 | `ci-summary.md` | generated gate results and measured counts (also the release body) |
 | `VERIFYING.md` | this file |
@@ -89,8 +94,10 @@ corruption, not tampering. Step 2 is what makes it mean something.
 Note also that `sha256sum -c` only walks the manifest. It cannot tell you about
 a file that was *added* to the release and left out of the manifest. Compare
 the manifest's entries against the release page's asset list if that matters to
-you - the workflow asserts this equality at upload time, but that assertion
-lives in the run log, not in the artifact.
+you. The workflow does assert it: the release is created as a DRAFT, the
+draft's asset list is compared against the staged set, and only then is it
+promoted to public - so a mismatch never becomes visible. That assertion lives
+in the run log, not in the artifact.
 
 ### 2. Verify the provenance of the manifest
 
@@ -189,6 +196,11 @@ omits it. A finding with no published fix is still a finding.
   whether its runner, its action dependencies, or its registry mirrors behaved.
 - **Test results.** `ci-summary.md` reports whether the suite passed. Neither
   the attestation nor the checksums say anything about what the tests covered.
+- **The package's own code.** Every security figure in these assets concerns
+  DEPENDENCIES. No static analysis of this package's source or bundles is
+  performed by the release workflow, so nothing here says whether the SDK's own
+  code contains a vulnerable pattern. `ci-summary.md` lists SAST as NOT
+  PERFORMED BY THIS WORKFLOW for that reason.
 - **Secret scanning and dependency audit.** Those gates live in
   `hardened-ci.yml` and are gated by its triggers, not by this release
   workflow. Nothing in the release assets records whether they ran for this
