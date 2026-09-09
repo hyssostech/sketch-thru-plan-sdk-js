@@ -89,7 +89,7 @@ class StpWebSocketsConnector {
                 serviceName: this.serviceName,
                 language: 'javascript',
                 solvables: this.solvables,
-                machineId: this.machineId || this.getUniqueId(9),
+                machineId: this.machineId || null,
                 sessionId: this.sessionId
             }
         });
@@ -155,11 +155,6 @@ class StpWebSocketsConnector {
                 }, timeout * 1000);
             })
         ]);
-    }
-    getUniqueId(numChars) {
-        if (!numChars)
-            numChars = 9;
-        return Math.random().toString(36).substr(2, numChars);
     }
 }
 class Tracker {

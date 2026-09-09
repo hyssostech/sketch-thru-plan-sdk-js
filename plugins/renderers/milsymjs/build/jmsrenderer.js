@@ -99,6 +99,7 @@ export class JmsRenderer {
     }
     /** Render a multipoint symbol using the missioncommand/mil-sym-js renderer */
     renderMP(format) {
+        var _a;
         const armyc2Global = window.armyc2;
         const secGlobal = window.sec;
         if (!armyc2Global || !secGlobal) {
@@ -127,7 +128,7 @@ export class JmsRenderer {
             modifiers[mtg.T_UNIQUE_DESIGNATION_2] = this.symbol.designator2;
         const scale = 1;
         swr.setDefaultSymbologyStandard(1); // 2525C
-        return swr.RenderSymbol(this.symbol.poid, this.symbol.shortDescription, this.symbol.fullDescription, this.symbol.sidc.legacy, tgLatLng, 'clampToGround', scale, bbox, modifiers, format);
+        return swr.RenderSymbol(this.symbol.poid, this.symbol.shortDescription, this.symbol.fullDescription, ((_a = this.symbol.sidc.charlie) !== null && _a !== void 0 ? _a : this.symbol.sidc.legacy), tgLatLng, 'clampToGround', scale, bbox, modifiers, format);
     }
     /** Build the GeoJSON representation of a single point symbol */
     pointGeoJSON() {
@@ -139,7 +140,7 @@ export class JmsRenderer {
     }
     /** Generate SVG rendering for point symbols */
     pointSVG() {
-        var _a;
+        var _a, _b;
         let res = null;
         const renderOptions = {};
         if (this.symbol.parent)
@@ -160,7 +161,7 @@ export class JmsRenderer {
             renderOptions.altitudeDepth = this.symbol.altitude.toString();
         renderOptions.size = 30;
         const MilSymbolCtor = (ms === null || ms === void 0 ? void 0 : ms.Symbol) || ((_a = ms === null || ms === void 0 ? void 0 : ms.default) === null || _a === void 0 ? void 0 : _a.Symbol) || (ms === null || ms === void 0 ? void 0 : ms.default) || ms;
-        const symbolRenderer = new MilSymbolCtor(this.symbol.sidc.legacy, renderOptions);
+        const symbolRenderer = new MilSymbolCtor(((_b = this.symbol.sidc.charlie) !== null && _b !== void 0 ? _b : this.symbol.sidc.legacy), renderOptions);
         const symbolSvg = symbolRenderer.asSVG();
         if (symbolSvg) {
             const anchor = symbolRenderer.getAnchor();

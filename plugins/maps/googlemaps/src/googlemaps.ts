@@ -1,5 +1,5 @@
 declare const google: any;
-import { IMapAdapter } from '../../interfaces/IMapAdapter';
+import type { IMapAdapter } from 'sketch-thru-plan-sdk';
 
 export class GoogleMap implements IMapAdapter {
   // Events

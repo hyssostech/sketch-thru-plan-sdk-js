@@ -20,16 +20,16 @@
     "clean:docs": "rimraf docs",
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
     "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts && npm run bundle:min",
-    "bundle:umd": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
-    "bundle:esm": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle.esm.js --format esm  --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
-    "bundle:dts": "rollup build/azurespeech-plugin/src/stpazurespeech.d.ts --file dist/stpazurespeech-bundle.d.ts --format es --plugin rollup-plugin-dts",
+    "bundle:umd": "rollup build/stpazurespeech.js --file dist/stpazurespeech-bundle.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:esm": "rollup build/stpazurespeech.js --file dist/stpazurespeech-bundle.esm.js --format esm  --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:dts": "rollup build/stpazurespeech.d.ts --file dist/stpazurespeech-bundle.d.ts --format es --plugin rollup-plugin-dts",
     "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/stpazurespeech-bundle-min.js -- dist/stpazurespeech-bundle.js",
-    "copy:dts": "npx cpx2 \"./src/*.d.ts\" \"./build/azurespeech-plugin/src/\"",
+    "copy:dts": "npx cpx2 \"./src/*.d.ts\" \"./build/\"",
     "fix:format": "prettier --config ../../.prettierrc src --write",
     "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
     "build:dev": "npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
     "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
-    "bundle:umd:dev": "rollup build/azurespeech-plugin/src/stpazurespeech.js --file dist/stpazurespeech-bundle-min.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
+    "bundle:umd:dev": "rollup build/stpazurespeech.js --file dist/stpazurespeech-bundle-min.js --format umd --name StpAS --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack"
   },
@@ -39,8 +39,12 @@
   },
   "author": "Hyssos Tech",
   "license": "MIT",
+  "peerDependencies": {
+    "sketch-thru-plan-sdk": "^0.6.14"
+  },
   "devDependencies": {
-    "cpx2": "^8.0.0"
+    "cpx2": "^8.0.0",
+    "sketch-thru-plan-sdk": "file:../../.."
   },
   "dependencies": {
     "agent-base": "^7.1.4",

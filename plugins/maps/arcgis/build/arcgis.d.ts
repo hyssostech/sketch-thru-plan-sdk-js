@@ -1,5 +1,5 @@
-import { IMapAdapter } from '../../interfaces/IMapAdapter';
-export declare class GoogleMap implements IMapAdapter {
+import type { IMapAdapter } from 'sketch-thru-plan-sdk';
+export declare class ArcGISMap implements IMapAdapter {
     onStrokeStart?: (location: {
         lat: number;
         lon: number;
@@ -18,7 +18,7 @@ export declare class GoogleMap implements IMapAdapter {
         lon: number;
     }>, timeStrokeStart: string, timeStrokeEnd: string, intersectedPoids: string[]) => void;
     onSelection?: (symbol: any) => void;
-    apiKey: string;
+    apiKey: string | null;
     mapCenter: {
         lat: number;
         lon: number;
@@ -26,22 +26,36 @@ export declare class GoogleMap implements IMapAdapter {
     zoomLevel: number;
     mapDivId: string;
     private mapRef;
-    private strokeStart;
-    private strokeEnd;
-    private strokePoly;
-    private moveListener;
+    private viewRef;
+    private symbolLayerPoint;
+    private symbolLayerMultipoint;
+    private symbolLayerLine;
+    private symbolLayerPolygon;
+    private inkLayer;
+    private inkLayerView;
+    private drawing;
+    private strokeStartTs;
+    private strokeGraphic;
     private assets;
-    constructor(apiKey: string, mapDivId: string, mapCenter: {
+    private nextObjectId;
+    private milDictionaryStyleUrl;
+    private milDictionaryPortalItemId;
+    private basemap;
+    sidcStandard: 'C' | 'D';
+    constructor(apiKey: string | null, mapDivId: string, mapCenter: {
         lat: number;
         lon: number;
-    }, zoomLevel: number);
+    }, zoomLevel: number, options?: {
+        mil2525StyleUrl?: string;
+        mil2525PortalItemId?: string;
+        basemap?: string;
+        sidcStandard?: 'C' | 'D';
+    });
     load: () => Promise<void>;
-    initMap: () => Promise<void>;
-    drawFreeHand: (latLng: any) => void;
-    enableDrawing: () => void;
-    enableDragZoom: () => void;
     addFeature: (symbolGeoJSON: any) => void;
-    removeFeature: (poid: string) => void;
+    removeFeature: (poid: string) => Promise<void>;
+    private layerForEsriType;
+    updateFeature: (symbolGeoJSON: any) => void;
     addPoly: (coords: Array<{
         lat: number;
         lon: number;
@@ -56,5 +70,8 @@ export declare class GoogleMap implements IMapAdapter {
         closeInfo?: boolean;
     }>) => void;
     clearInk: () => void;
-    getIsoTimestamp: () => string;
+    private getIsoTimestamp;
+    private geoJSONToEsriGeometry;
+    private getIntersectedPoids;
+    private convertExtentToWGS84;
 }

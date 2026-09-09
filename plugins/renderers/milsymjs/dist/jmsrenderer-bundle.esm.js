@@ -94638,7 +94638,7 @@ armyc2.c2sd.renderer.utilities.UnitFontLookup = (function () {
         RendererSettings = armyc2.c2sd.renderer.utilities.RendererSettings;
 
     var symbolMapB = null,
-        symbolMapC = null;
+        symbolMapC = null;
 
 
     return {
@@ -103962,7 +103962,7 @@ armyc2.c2sd.renderer.SinglePointRenderer = (function () {
     var _statusColorMap = {"C":"#00FF00","D":"#FFFF00","X":"#FF0000","F":"#0000FF"},
         //_unitTextModifierKeys = {"B":"B","C":"C","F":"F","G":"G","H":"H","H1":"H1","H2":"H2","J":"J","K":"K","L":"L","M":"M","N":"N","P":"P","R2":"R2","T":"T","T1":"T1","V":"V","W":"W","W1":"W1","X":"X","Y":"Y","Z":"Z","AC":"AC","AD":"AD","AE":"AE","AF":"AF","CN":"CN"},
         //_tgTextModifierKeys = {"B":"B","C":"C","F":"F","G":"G","H":"H","H1":"H1","H2":"H2","N":"N","T":"T","T1":"T1","V":"V","W":"W","W1":"W1","X":"X","Y":"Y","AM":"AM","AN":"AN","Length":"Length","Width":"Width","Radius":"Radius","Angle":"Angle"};
-        _unitTextModifierKeys = ["B","C","F","G","H","H1","H2","J","K","L","M","N","P","R2","T","T1","V","W","W1","X","Y","Z","AC","AD","AE","AF","CN"];
+        _unitTextModifierKeys = ["B","C","F","G","H","H1","H2","J","K","L","M","N","P","R2","T","T1","V","W","W1","X","Y","Z","AC","AD","AE","AF","CN"];
     
 return {    
     
@@ -107348,7 +107348,7 @@ return {
         
         var descent = RendererUtilities.getFontDescent(RendererSettings.getModifierFontName(),RendererSettings.getModifierFontSize(),RendererSettings.getModifierFontStyle(),"TQgj");
         
-        var strText = "";
+        var strText = "";
 
         var basicID = SymbolUtilities.getBasicSymbolIDStrict(symbolID);
         
@@ -149276,6 +149276,7 @@ class JmsRenderer {
     }
     /** Render a multipoint symbol using the missioncommand/mil-sym-js renderer */
     renderMP(format) {
+        var _a;
         const armyc2Global = window.armyc2;
         const secGlobal = window.sec;
         if (!armyc2Global || !secGlobal) {
@@ -149304,7 +149305,7 @@ class JmsRenderer {
             modifiers[mtg.T_UNIQUE_DESIGNATION_2] = this.symbol.designator2;
         const scale = 1;
         swr.setDefaultSymbologyStandard(1); // 2525C
-        return swr.RenderSymbol(this.symbol.poid, this.symbol.shortDescription, this.symbol.fullDescription, this.symbol.sidc.legacy, tgLatLng, 'clampToGround', scale, bbox, modifiers, format);
+        return swr.RenderSymbol(this.symbol.poid, this.symbol.shortDescription, this.symbol.fullDescription, ((_a = this.symbol.sidc.charlie) !== null && _a !== void 0 ? _a : this.symbol.sidc.legacy), tgLatLng, 'clampToGround', scale, bbox, modifiers, format);
     }
     /** Build the GeoJSON representation of a single point symbol */
     pointGeoJSON() {
@@ -149316,7 +149317,7 @@ class JmsRenderer {
     }
     /** Generate SVG rendering for point symbols */
     pointSVG() {
-        var _a;
+        var _a, _b;
         let res = null;
         const renderOptions = {};
         if (this.symbol.parent)
@@ -149337,7 +149338,7 @@ class JmsRenderer {
             renderOptions.altitudeDepth = this.symbol.altitude.toString();
         renderOptions.size = 30;
         const MilSymbolCtor = ((_a = ms === null || ms === void 0 ? void 0 : ms$1) === null || _a === void 0 ? void 0 : _a.Symbol) || (ms === null || ms === void 0 ? void 0 : ms$1) || ms;
-        const symbolRenderer = new MilSymbolCtor(this.symbol.sidc.legacy, renderOptions);
+        const symbolRenderer = new MilSymbolCtor(((_b = this.symbol.sidc.charlie) !== null && _b !== void 0 ? _b : this.symbol.sidc.legacy), renderOptions);
         const symbolSvg = symbolRenderer.asSVG();
         if (symbolSvg) {
             const anchor = symbolRenderer.getAnchor();

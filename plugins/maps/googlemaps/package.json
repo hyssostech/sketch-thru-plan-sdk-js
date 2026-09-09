@@ -12,9 +12,9 @@
     "clean:docs": "rimraf docs",
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
     "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts && npm run bundle:min",
-    "bundle:umd": "rollup build/googlemaps/src/googlemaps.js --file dist/googlemaps-bundle.js --format umd --name GoogleMap",
-    "bundle:esm": "rollup build/googlemaps/src/googlemaps.js --file dist/googlemaps-bundle.esm.js --format esm",
-    "bundle:dts": "rollup build/googlemaps/src/googlemaps.d.ts --file dist/googlemaps-bundle.d.ts --format es --plugin rollup-plugin-dts",
+    "bundle:umd": "rollup build/googlemaps.js --file dist/googlemaps-bundle.js --format umd --name GoogleMap",
+    "bundle:esm": "rollup build/googlemaps.js --file dist/googlemaps-bundle.esm.js --format esm",
+    "bundle:dts": "rollup build/googlemaps.d.ts --file dist/googlemaps-bundle.d.ts --format es --plugin rollup-plugin-dts",
     "bundle:min": "terser --ecma 6 --compress --mangle --module -o dist/googlemaps-bundle-min.js -- dist/googlemaps-bundle.js",
     "fix:format": "prettier --config ../../.prettierrc src --write",
     "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
@@ -23,5 +23,11 @@
     "bundle:umd:dev": "rollup build/googlemaps.js --file dist/googlemaps-bundle-min.js --format umd --name GoogleMap",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack"
+  },
+  "peerDependencies": {
+    "sketch-thru-plan-sdk": "^0.6.14"
+  },
+  "devDependencies": {
+    "sketch-thru-plan-sdk": "file:../../.."
   }
 }

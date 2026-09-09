@@ -1,4 +1,4 @@
-import { IStpRenderer } from '../../interfaces/IStpRenderer';
+import type { IStpRenderer } from 'sketch-thru-plan-sdk';
 declare global {
     interface Window {
         WebRenderer?: any;
@@ -24,6 +24,7 @@ interface LocationLike {
     centroid?: LatLonLike;
 }
 interface SidcLike {
+    charlie?: string;
     legacy?: string;
     partA?: string;
     partB?: string;

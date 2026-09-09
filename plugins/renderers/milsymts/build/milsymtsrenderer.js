@@ -15,7 +15,7 @@ function closeRing(coords) { if (coords.length > 0) {
     if (f[0] !== l[0] || f[1] !== l[1])
         coords.push([...f]);
 } return coords; }
-function symbolProps(symbol) { var _a, _b; return { poid: symbol.poid, sidc: (_b = (_a = symbol.sidc) === null || _a === void 0 ? void 0 : _a.legacy) !== null && _b !== void 0 ? _b : symbol.sidc, fullDescription: symbol.fullDescription, fsTYPE: symbol.fsTYPE, affiliation: symbol.affiliation, status: symbol.status }; }
+function symbolProps(symbol) { var _a, _b, _c, _d; return { poid: symbol.poid, sidc: (_d = ((_b = (_a = symbol.sidc) === null || _a === void 0 ? void 0 : _a.charlie) !== null && _b !== void 0 ? _b : (_c = symbol.sidc) === null || _c === void 0 ? void 0 : _c.legacy)) !== null && _d !== void 0 ? _d : symbol.sidc, fullDescription: symbol.fullDescription, fsTYPE: symbol.fsTYPE, affiliation: symbol.affiliation, status: symbol.status }; }
 function renderWithWebRenderer(symbol, bounds) {
     var _a;
     try {

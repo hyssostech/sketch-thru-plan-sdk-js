@@ -3,7 +3,7 @@
  * missioncommand/mil-sym-js for multipoint
  */
 import './mil-sym-js.js';
-import { IStpRenderer } from '../../interfaces/IStpRenderer';
+import type { IStpRenderer } from 'sketch-thru-plan-sdk';
 export declare enum RenderFormat {
     formatKML = 0,
     formatGeoJSON = 2,

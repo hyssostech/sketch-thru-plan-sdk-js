@@ -1,4 +1,4 @@
-import { IMapAdapter } from '../../interfaces/IMapAdapter';
+import type { IMapAdapter } from 'sketch-thru-plan-sdk';
 export declare class LeafletMap implements IMapAdapter {
     onStrokeStart?: (location: {
         lat: number;

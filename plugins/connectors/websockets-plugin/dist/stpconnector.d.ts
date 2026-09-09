@@ -1,15 +1,4 @@
-interface IStpConnector {
-    baseName?: string;
-    name: string | undefined;
-    isConnected: boolean;
-    connect(serviceName: string, solvables: string[], timeout?: number, machineId?: string | null, sessionId?: string | null): Promise<string | undefined>;
-    disconnect(timeout?: number): Promise<void>;
-    inform(message: string, timeout?: number): Promise<void>;
-    request(message: string, timeout?: number): Promise<any>;
-    onInform: ((message: string) => void) | undefined;
-    onRequest: ((message: string) => string[]) | undefined;
-    onError: ((error: string) => void) | undefined;
-}
+import { IStpConnector } from 'sketch-thru-plan-sdk';
 
 declare class StpWebSocketsConnector implements IStpConnector {
     connstring: string;
@@ -35,7 +24,6 @@ declare class StpWebSocketsConnector implements IStpConnector {
     onError: ((error: string) => void) | undefined;
     private tryConnect;
     private promiseWithTimeout;
-    private getUniqueId;
 }
 
 export { StpWebSocketsConnector, StpWebSocketsConnector as default };

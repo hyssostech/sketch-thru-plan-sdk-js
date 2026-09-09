@@ -1,9 +1,9 @@
 import { createModel, Model, KaldiRecognizer } from 'vosk-browser';
-import {
+import type {
   ISpeechRecognizer,
   ISpeechRecoResult,
   ISpeechRecoItem,
-} from '../../interfaces/ISpeechRecognizer';
+} from 'sketch-thru-plan-sdk';
 import type {
   ServerMessageResult,
   ServerMessagePartialResult,

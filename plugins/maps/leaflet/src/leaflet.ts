@@ -1,5 +1,5 @@
 declare const L: any;
-import { IMapAdapter } from '../../interfaces/IMapAdapter';
+import type { IMapAdapter } from 'sketch-thru-plan-sdk';
 
 export class LeafletMap implements IMapAdapter {
   // Events
