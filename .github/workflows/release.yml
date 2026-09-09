@@ -71,6 +71,7 @@ jobs:
       sbom_assert_result: ${{ steps.sbom_assert.outcome }}
       sbom_components: ${{ steps.sbom_assert.outputs.sbom_components }}
       sbom_spec: ${{ steps.sbom_assert.outputs.sbom_spec }}
+      sbom_tool: ${{ steps.sbom_assert.outputs.sbom_tool }}
       sbom_mc_name: ${{ steps.sbom_assert.outputs.sbom_mc_name }}
       sbom_mc_version: ${{ steps.sbom_assert.outputs.sbom_mc_version }}
 
@@ -190,17 +191,21 @@ jobs:
             --sbom sbom.cdx.json \
             --manifest package.json \
             --expect-spec "$CDX_SPEC_VERSION" \
-            --expect-version "${{ steps.version.outputs.version }}"
+            --expect-version "${{ steps.version.outputs.version }}" \
+            --expect-tool "$CDX_NPM_PKG"
 
       - name: Upload build outputs
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-inputs
           path: |
             *.tgz
             sbom.cdx.json
-          if-no-files-found: warn
+          # error, not warn: these two files ARE the release. A silent
+          # no-op upload here surfaces much later as a confusing
+          # "primary artifact missing" in the release job.
+          if-no-files-found: error
           retention-days: 7
 
   # ===================================================================
@@ -290,21 +295,30 @@ jobs:
           exit-code: '0'
           version: ${{ env.TRIVY_ACTION_VERSION }}
 
-      # min-packages defends against the failure mode where a scan succeeds
-      # having decoded nothing: measured with Trivy 0.70.0, an SBOM containing
-      # zero components scans cleanly, exits 0, and reports one package - the
-      # metadata root component, which is always present.
-      - name: Count findings and gate on CRITICAL/HIGH
+      # The script is handed BOTH the report and the SBOM so it can prove
+      # COVERAGE: every component the SBOM declares must appear among the
+      # packages Trivy reports examining, and any that do not are named and
+      # fail the gate.
+      #
+      # An earlier version compared a count against the declared component
+      # total. That was the wrong shape and off by one - Trivy also counts the
+      # metadata root component, so a healthy scan reports components + 1, and
+      # exactly one real dependency could vanish unscanned while the count
+      # still cleared the floor. Measured with the pinned Trivy 0.70.0:
+      # removing lodash's purl dropped it from the package list entirely, and
+      # the old check exited 0 attesting HIGH: 0 over a scan that never looked
+      # at the only runtime dependency carrying executable code.
+      - name: Count findings, prove coverage, and gate on CRITICAL/HIGH
         id: gate
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           node scripts/trivy-summarize.mjs \
             --report trivy-report.json \
-            --fail-on CRITICAL,HIGH \
-            --min-packages "${{ needs.build.outputs.sbom_components }}"
+            --sbom inputs/sbom.cdx.json \
+            --fail-on CRITICAL,HIGH
 
       - name: Upload the Trivy report
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: trivy-report
@@ -319,10 +333,12 @@ jobs:
   release:
     name: Publish the GitHub Release
     needs: [build, scan]
-    # always(): the summary must be produced even when a gate failed, because
-    # a red run with no explanation is how gates rot unnoticed. Publication is
-    # gated separately, on publish_ok.
-    if: always()
+    # !cancelled(), not always(): the summary must be produced even when a gate
+    # failed, because a red run with no explanation is how gates rot unnoticed -
+    # but a CANCELLED run must stay cancelled. Under always() this job would
+    # still run and exit 1, reporting a deliberate cancellation as a failure.
+    # Publication is gated separately, on publish_ok.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release and upload assets
@@ -334,7 +350,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Download build outputs
-        if: always()
+        if: ${{ !cancelled() }}
         continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -342,7 +358,7 @@ jobs:
           path: inputs
 
       - name: Download the Trivy report
-        if: always()
+        if: ${{ !cancelled() }}
         continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -370,7 +386,7 @@ jobs:
           SCAN_RESULT: ${{ needs.scan.outputs.scan_result }}
           SCAN_GATE_RESULT: ${{ needs.scan.outputs.scan_gate_result }}
           SBOM_SPEC: ${{ needs.build.outputs.sbom_spec }}
-          SBOM_TOOL: ${{ env.CDX_NPM_PKG }}
+          SBOM_TOOL: ${{ needs.build.outputs.sbom_tool }}
           SBOM_MC_NAME: ${{ needs.build.outputs.sbom_mc_name }}
           SBOM_MC_VERSION: ${{ needs.build.outputs.sbom_mc_version }}
           SBOM_COMPONENTS: ${{ needs.build.outputs.sbom_components }}
@@ -386,7 +402,7 @@ jobs:
         run: bash scripts/ci-summary.sh ci-summary.md
 
       - name: Show the summary in the run
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           if [ -s ci-summary.md ]; then
             cat ci-summary.md >>"$GITHUB_STEP_SUMMARY"
@@ -396,7 +412,7 @@ jobs:
           fi
 
       - name: Upload ci-summary.md
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ci-summary
@@ -483,7 +499,13 @@ jobs:
         if: steps.summary.outputs.publish_ok == 'true'
         run: bash scripts/release-manifest.sh verify release
 
-      - name: Create the GitHub Release
+      # Created as a DRAFT. 'gh release create' is not atomic - it creates the
+      # release, then uploads each asset - so a partial upload would otherwise
+      # leave a PUBLIC release whose assets do not match SHA256SUMS, and a
+      # re-run cannot repair it because the tag already has a release. A draft
+      # is not visible to consumers, so nothing is published until the asset
+      # set has been checked against the manifest.
+      - name: Create the GitHub Release as a draft
         if: steps.summary.outputs.publish_ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -493,6 +515,7 @@ jobs:
         run: |
           set -euo pipefail
           gh release create "$TAG" \
+            --draft \
             --title "$PKG_NAME $VERSION" \
             --notes-file release/ci-summary.md \
             --verify-tag \
@@ -500,7 +523,9 @@ jobs:
 
       # Closes the loop the manifest opens: SHA256SUMS is only a claim about
       # "the published set" if the published set is the set that was hashed.
-      - name: Check the uploaded asset set matches the manifest
+      # Runs against the draft, so a mismatch here means nothing was ever
+      # public.
+      - name: Check the draft's asset set matches the manifest
         if: steps.summary.outputs.publish_ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -509,12 +534,23 @@ jobs:
           set -euo pipefail
           gh release view "$TAG" --json assets --jq '.assets[].name' | LC_ALL=C sort >uploaded.txt
           ( cd release && ls -1 ) | LC_ALL=C sort >staged.txt
-          echo "uploaded:"; sed 's/^/  /' uploaded.txt
+          echo "uploaded to the draft:"; sed 's/^/  /' uploaded.txt
           if ! diff -u staged.txt uploaded.txt; then
-            echo "::error::the release page's asset set differs from the staged, hashed set"
+            echo "::error::the draft's asset set differs from the staged, hashed set - not promoting"
             exit 1
           fi
-          echo "the release carries exactly the files covered by SHA256SUMS (plus the manifest and the attestation bundle)."
+          echo "the draft carries exactly the files covered by SHA256SUMS (plus the manifest and the attestation bundle)."
+
+      # Only now does anything become visible to a consumer.
+      - name: Promote the draft to a published release
+        if: steps.summary.outputs.publish_ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release edit "$TAG" --draft=false
+          echo "published: $(gh release view "$TAG" --json url --jq '.url')"
 
       # Last, so it cannot pre-empt the summary. A failed gate must still
       # leave a red run behind.
