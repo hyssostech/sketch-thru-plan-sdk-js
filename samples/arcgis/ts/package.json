@@ -1,6 +1,7 @@
 {
   "name": "c2sim-arcgis-ts",
   "version": "1.0.0",
+  "private": true,
   "description": "C2SIM ArcGIS sample (TypeScript) built as static files",
   "main": "./dist/index.js",
   "module": "./dist/index.min.js",
@@ -36,7 +37,7 @@
     }
   },
   "dependencies": {
-    "sketch-thru-plan-sdk": "^0.6.12",
+    "sketch-thru-plan-sdk": "file:../../..",
     "@hyssostech/azurespeech-plugin": "^0.3.2"
   }
 }

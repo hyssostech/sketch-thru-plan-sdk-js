@@ -37,7 +37,10 @@
     "!dist/**/*.js.map"
   ],
   "workspaces": [
-    "plugins/*/*"
+    "plugins/*/*",
+    "quickstart/ts",
+    "samples/arcgis/ts",
+    "samples/arcgis/react"
   ],
   "repository": {
     "type": "git",
