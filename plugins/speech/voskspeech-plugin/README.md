@@ -41,11 +41,6 @@ python -m build.model_artifacts --deploy --js-sdk-root <this repo>
 CI. It reads the Git LFS pointers rather than the blobs, so it costs no LFS
 bandwidth: a pointer records `oid sha256:<hash>`, which is the content hash.
 
-**Current state:** the bundled model is still the engine's 2026-05-14
-build. Refreshing it is a browser behaviour change and is gated on the
-STP-638 vosk-browser run; until that lands, the stamp here pins what is
-actually shipped rather than what the engine last built.
-
 This is enforced because it went wrong (Jira STP-683). The two copies here were
 built from the 2026-05-14 engine model, had missed two rebuilds, and were not
 even identical to each other - same files, same content, 32 bytes of embedded

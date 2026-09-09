@@ -1,11 +1,15 @@
-# Expected digests for the DERIVED browser Vosk model artifacts.
-# Authoritative source: Clients/MultiSpeech/Models/vosk-model-la-domain
-# content = sha256 over each model file's sha256 (manifest excluded),
-#           so it is independent of zip packing and file mtimes.
-# zip     = sha256 of the deterministic zip every derived copy must
-#           match byte for byte.
+# Expected digests for the BUILT Vosk domain models and the browser
+# artifacts derived from them.
+# model.<name> = sha256 over each model file's sha256 (manifest
+#                excluded), so it is independent of zip packing and
+#                of file mtimes. Both domain models are covered:
+#                ls-domain ships no zip, so this stamp is the only
+#                thing that would notice an edit to it.
+# zip          = sha256 of the deterministic browser zip that every
+#                derived copy must match byte for byte.
 # Written by build/model_artifacts.py --write-stamp after a deploy;
 # checked by build/model_artifacts.py --check.
-# Do not hand-edit - redeploy the model instead.
-content 51eda8d5b463219a3e11b0c16ed2eb8ea6a01b0326bb4dca22c983f675347f51
-zip 6820aa51ff6dc3b5c64cc99f99dd3c7d095d0bcb80c463e77e55dbf36c95d6c2
+# Do not hand-edit - rebuild or redeploy the models instead.
+model.vosk-model-la-domain c83e142ae8da2673944cd5629bdc3c2c8a82b737fff93d29a4e754fbeedf7573
+model.vosk-model-ls-domain abe2e16e30ff74cdf5ce721bda69a09492d0ca19ef19fe2b8f7c30b5fad6435f
+zip aa05b6c28cfbfad74cb1a28f1df890d6e66ffb5b3e9ef6fc90cc31520f5909f1
