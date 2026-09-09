@@ -854,10 +854,138 @@
         },
         {
           "name": "options",
-          "description": "Generation options (implementation-defined key/value pairs).",
+          "description": "Generation options. Applied to THIS CALL ONLY - options no longer persist into the engine's shared configuration, so nothing one caller passes affects any later call or any other session (STP-687). The key set is definite and enumerated below, NOT implementation-defined. An unknown or misspelled key fails the call with success = false and nothing applied, rather than being silently ignored. Key names are compared CASE-INSENSITIVELY, so the camelCase spellings used by the JS SDK's StpC2SIMOptions (for example restUrl for resturl) are equivalent to the canonical names listed here. Three properties of the engine's configuration are deliberately NOT settable over the wire because they are not operator-settable either - stphost and stpport drive the engine's own long-lived connection, and backgroundmode is set by the host process.",
           "schema": {
             "type": "object",
-            "additionalProperties": true
+            "properties": {
+              "resturl": {
+                "type": "string",
+                "description": "C2SIM REST endpoint, host:port/path, e.g. http://10.2.10.30:8080/C2SIMServer."
+              },
+              "restpassword": {
+                "type": "string",
+                "description": "C2SIM REST endpoint password. Applied to this call only; it is never stored."
+              },
+              "stompurl": {
+                "type": "string",
+                "description": "STOMP endpoint, host:port/destination. Used to build this call's REST client; it does NOT move the engine's long-lived notification subscription."
+              },
+              "serverprotocol": {
+                "type": "string",
+                "description": "C2SIM server protocol version."
+              },
+              "systemname": {
+                "type": "string",
+                "description": "Value of SystemEntityList/SystemName in the generated Initialization document."
+              },
+              "resetbeforeinitialize": {
+                "type": "boolean",
+                "description": "Force the C2SIM server to Uninitialized before pushing Initialization, so it is not merged with a previous one."
+              },
+              "runafterinitialize": {
+                "type": "boolean",
+                "description": "Switch the C2SIM server to Running immediately after pushing Initialization."
+              },
+              "fullto": {
+                "type": "boolean",
+                "description": "Include the full Task Org, including entities not placed on the map. When false, only placed elements and their subordinates."
+              },
+              "schemaversion": {
+                "type": "string",
+                "description": "Schema version hint (1.0.0 / 1.0.1 / 1.0.2). All inputs generate 1.0.2 unified output."
+              },
+              "addorphantgtoinitialization": {
+                "type": "boolean",
+                "description": "Include tactical graphics that are not part of any task in the Initialization document."
+              },
+              "placealltgininitialization": {
+                "type": "boolean",
+                "description": "Place tactical graphics in the Initialization document instead of the Order document."
+              },
+              "includeMapGraphicId": {
+                "type": "boolean",
+                "description": "Include MapGraphicID references to tactical graphics in tasks, rather than relying on Location."
+              },
+              "entityNameCharLimit": {
+                "type": "integer",
+                "description": "Maximum number of characters in a generated entity name; 0 for no limit."
+              },
+              "includeDescriptionInName": {
+                "type": "boolean",
+                "description": "Append the description to generated entity names - required to round-trip an ORBAT imported from C2SIM documents."
+              },
+              "rulesOfEngagement": {
+                "type": "string",
+                "description": "Default rules of engagement.",
+                "enum": [
+                  "Hold",
+                  "Free",
+                  "Tight"
+                ]
+              },
+              "updateunitpositions": {
+                "type": "boolean",
+                "description": "Use Position Report information to update units. ACCEPTED BUT INERT for a single call: it is read only by the engine's inbound report handler, which has no per-call context."
+              },
+              "exportfiledir": {
+                "type": "string",
+                "description": "Default document export folder."
+              },
+              "validationschema": {
+                "type": "string",
+                "description": "Path to a schema file to validate generated XML against; empty for no validation."
+              },
+              "startdate": {
+                "type": "string",
+                "description": "Mission start date. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it.",
+                "format": "date-time"
+              },
+              "phaseduration": {
+                "type": "integer",
+                "description": "Duration of each STP phase, in minutes."
+              },
+              "fromsenderuuid": {
+                "type": "string",
+                "description": "Sender unique id."
+              },
+              "toreceiveruuid": {
+                "type": "string",
+                "description": "Receiver unique id."
+              },
+              "friendfstname": {
+                "type": "string",
+                "description": "Friendly forces name."
+              },
+              "friendfstuuid": {
+                "type": "string",
+                "description": "Friendly forces unique id."
+              },
+              "hostilefstname": {
+                "type": "string",
+                "description": "Hostile forces name."
+              },
+              "hostilefstuuid": {
+                "type": "string",
+                "description": "Hostile forces unique id."
+              },
+              "neutralfstname": {
+                "type": "string",
+                "description": "Neutral forces name."
+              },
+              "neutralfstuuid": {
+                "type": "string",
+                "description": "Neutral forces unique id."
+              },
+              "unknownfstname": {
+                "type": "string",
+                "description": "Unknown forces name. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it."
+              },
+              "unknownfstuuid": {
+                "type": "string",
+                "description": "Unknown forces unique id. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it."
+              }
+            },
+            "additionalProperties": false
           }
         }
       ],
@@ -1035,10 +1163,138 @@
       "params": [
         {
           "name": "options",
-          "description": "Pull options (implementation-defined key/value pairs).",
+          "description": "Pull options. Applied to THIS CALL ONLY - options no longer persist into the engine's shared configuration, so nothing one caller passes affects any later call or any other session (STP-687). The key set is definite and enumerated below, NOT implementation-defined. An unknown or misspelled key fails the call with success = false and nothing applied, rather than being silently ignored. Key names are compared CASE-INSENSITIVELY, so the camelCase spellings used by the JS SDK's StpC2SIMOptions (for example restUrl for resturl) are equivalent to the canonical names listed here. Three properties of the engine's configuration are deliberately NOT settable over the wire because they are not operator-settable either - stphost and stpport drive the engine's own long-lived connection, and backgroundmode is set by the host process.",
           "schema": {
             "type": "object",
-            "additionalProperties": true
+            "properties": {
+              "resturl": {
+                "type": "string",
+                "description": "C2SIM REST endpoint, host:port/path, e.g. http://10.2.10.30:8080/C2SIMServer."
+              },
+              "restpassword": {
+                "type": "string",
+                "description": "C2SIM REST endpoint password. Applied to this call only; it is never stored."
+              },
+              "stompurl": {
+                "type": "string",
+                "description": "STOMP endpoint, host:port/destination. Used to build this call's REST client; it does NOT move the engine's long-lived notification subscription."
+              },
+              "serverprotocol": {
+                "type": "string",
+                "description": "C2SIM server protocol version."
+              },
+              "systemname": {
+                "type": "string",
+                "description": "Value of SystemEntityList/SystemName in the generated Initialization document."
+              },
+              "resetbeforeinitialize": {
+                "type": "boolean",
+                "description": "Force the C2SIM server to Uninitialized before pushing Initialization, so it is not merged with a previous one."
+              },
+              "runafterinitialize": {
+                "type": "boolean",
+                "description": "Switch the C2SIM server to Running immediately after pushing Initialization."
+              },
+              "fullto": {
+                "type": "boolean",
+                "description": "Include the full Task Org, including entities not placed on the map. When false, only placed elements and their subordinates."
+              },
+              "schemaversion": {
+                "type": "string",
+                "description": "Schema version hint (1.0.0 / 1.0.1 / 1.0.2). All inputs generate 1.0.2 unified output."
+              },
+              "addorphantgtoinitialization": {
+                "type": "boolean",
+                "description": "Include tactical graphics that are not part of any task in the Initialization document."
+              },
+              "placealltgininitialization": {
+                "type": "boolean",
+                "description": "Place tactical graphics in the Initialization document instead of the Order document."
+              },
+              "includeMapGraphicId": {
+                "type": "boolean",
+                "description": "Include MapGraphicID references to tactical graphics in tasks, rather than relying on Location."
+              },
+              "entityNameCharLimit": {
+                "type": "integer",
+                "description": "Maximum number of characters in a generated entity name; 0 for no limit."
+              },
+              "includeDescriptionInName": {
+                "type": "boolean",
+                "description": "Append the description to generated entity names - required to round-trip an ORBAT imported from C2SIM documents."
+              },
+              "rulesOfEngagement": {
+                "type": "string",
+                "description": "Default rules of engagement.",
+                "enum": [
+                  "Hold",
+                  "Free",
+                  "Tight"
+                ]
+              },
+              "updateunitpositions": {
+                "type": "boolean",
+                "description": "Use Position Report information to update units. ACCEPTED BUT INERT for a single call: it is read only by the engine's inbound report handler, which has no per-call context."
+              },
+              "exportfiledir": {
+                "type": "string",
+                "description": "Default document export folder."
+              },
+              "validationschema": {
+                "type": "string",
+                "description": "Path to a schema file to validate generated XML against; empty for no validation."
+              },
+              "startdate": {
+                "type": "string",
+                "description": "Mission start date. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it.",
+                "format": "date-time"
+              },
+              "phaseduration": {
+                "type": "integer",
+                "description": "Duration of each STP phase, in minutes."
+              },
+              "fromsenderuuid": {
+                "type": "string",
+                "description": "Sender unique id."
+              },
+              "toreceiveruuid": {
+                "type": "string",
+                "description": "Receiver unique id."
+              },
+              "friendfstname": {
+                "type": "string",
+                "description": "Friendly forces name."
+              },
+              "friendfstuuid": {
+                "type": "string",
+                "description": "Friendly forces unique id."
+              },
+              "hostilefstname": {
+                "type": "string",
+                "description": "Hostile forces name."
+              },
+              "hostilefstuuid": {
+                "type": "string",
+                "description": "Hostile forces unique id."
+              },
+              "neutralfstname": {
+                "type": "string",
+                "description": "Neutral forces name."
+              },
+              "neutralfstuuid": {
+                "type": "string",
+                "description": "Neutral forces unique id."
+              },
+              "unknownfstname": {
+                "type": "string",
+                "description": "Unknown forces name. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it."
+              },
+              "unknownfstuuid": {
+                "type": "string",
+                "description": "Unknown forces unique id. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it."
+              }
+            },
+            "additionalProperties": false
           }
         }
       ],
@@ -1070,10 +1326,138 @@
         },
         {
           "name": "options",
-          "description": "Push options (implementation-defined key/value pairs).",
+          "description": "Push options. Applied to THIS CALL ONLY - options no longer persist into the engine's shared configuration, so nothing one caller passes affects any later call or any other session (STP-687). The key set is definite and enumerated below, NOT implementation-defined. An unknown or misspelled key fails the call with success = false and nothing applied, rather than being silently ignored. Key names are compared CASE-INSENSITIVELY, so the camelCase spellings used by the JS SDK's StpC2SIMOptions (for example restUrl for resturl) are equivalent to the canonical names listed here. Three properties of the engine's configuration are deliberately NOT settable over the wire because they are not operator-settable either - stphost and stpport drive the engine's own long-lived connection, and backgroundmode is set by the host process.",
           "schema": {
             "type": "object",
-            "additionalProperties": true
+            "properties": {
+              "resturl": {
+                "type": "string",
+                "description": "C2SIM REST endpoint, host:port/path, e.g. http://10.2.10.30:8080/C2SIMServer."
+              },
+              "restpassword": {
+                "type": "string",
+                "description": "C2SIM REST endpoint password. Applied to this call only; it is never stored."
+              },
+              "stompurl": {
+                "type": "string",
+                "description": "STOMP endpoint, host:port/destination. Used to build this call's REST client; it does NOT move the engine's long-lived notification subscription."
+              },
+              "serverprotocol": {
+                "type": "string",
+                "description": "C2SIM server protocol version."
+              },
+              "systemname": {
+                "type": "string",
+                "description": "Value of SystemEntityList/SystemName in the generated Initialization document."
+              },
+              "resetbeforeinitialize": {
+                "type": "boolean",
+                "description": "Force the C2SIM server to Uninitialized before pushing Initialization, so it is not merged with a previous one."
+              },
+              "runafterinitialize": {
+                "type": "boolean",
+                "description": "Switch the C2SIM server to Running immediately after pushing Initialization."
+              },
+              "fullto": {
+                "type": "boolean",
+                "description": "Include the full Task Org, including entities not placed on the map. When false, only placed elements and their subordinates."
+              },
+              "schemaversion": {
+                "type": "string",
+                "description": "Schema version hint (1.0.0 / 1.0.1 / 1.0.2). All inputs generate 1.0.2 unified output."
+              },
+              "addorphantgtoinitialization": {
+                "type": "boolean",
+                "description": "Include tactical graphics that are not part of any task in the Initialization document."
+              },
+              "placealltgininitialization": {
+                "type": "boolean",
+                "description": "Place tactical graphics in the Initialization document instead of the Order document."
+              },
+              "includeMapGraphicId": {
+                "type": "boolean",
+                "description": "Include MapGraphicID references to tactical graphics in tasks, rather than relying on Location."
+              },
+              "entityNameCharLimit": {
+                "type": "integer",
+                "description": "Maximum number of characters in a generated entity name; 0 for no limit."
+              },
+              "includeDescriptionInName": {
+                "type": "boolean",
+                "description": "Append the description to generated entity names - required to round-trip an ORBAT imported from C2SIM documents."
+              },
+              "rulesOfEngagement": {
+                "type": "string",
+                "description": "Default rules of engagement.",
+                "enum": [
+                  "Hold",
+                  "Free",
+                  "Tight"
+                ]
+              },
+              "updateunitpositions": {
+                "type": "boolean",
+                "description": "Use Position Report information to update units. ACCEPTED BUT INERT for a single call: it is read only by the engine's inbound report handler, which has no per-call context."
+              },
+              "exportfiledir": {
+                "type": "string",
+                "description": "Default document export folder."
+              },
+              "validationschema": {
+                "type": "string",
+                "description": "Path to a schema file to validate generated XML against; empty for no validation."
+              },
+              "startdate": {
+                "type": "string",
+                "description": "Mission start date. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it.",
+                "format": "date-time"
+              },
+              "phaseduration": {
+                "type": "integer",
+                "description": "Duration of each STP phase, in minutes."
+              },
+              "fromsenderuuid": {
+                "type": "string",
+                "description": "Sender unique id."
+              },
+              "toreceiveruuid": {
+                "type": "string",
+                "description": "Receiver unique id."
+              },
+              "friendfstname": {
+                "type": "string",
+                "description": "Friendly forces name."
+              },
+              "friendfstuuid": {
+                "type": "string",
+                "description": "Friendly forces unique id."
+              },
+              "hostilefstname": {
+                "type": "string",
+                "description": "Hostile forces name."
+              },
+              "hostilefstuuid": {
+                "type": "string",
+                "description": "Hostile forces unique id."
+              },
+              "neutralfstname": {
+                "type": "string",
+                "description": "Neutral forces name."
+              },
+              "neutralfstuuid": {
+                "type": "string",
+                "description": "Neutral forces unique id."
+              },
+              "unknownfstname": {
+                "type": "string",
+                "description": "Unknown forces name. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it."
+              },
+              "unknownfstuuid": {
+                "type": "string",
+                "description": "Unknown forces unique id. ACCEPTED BUT INERT: nothing in the C2SIM bridge reads it."
+              }
+            },
+            "additionalProperties": false
           }
         }
       ],
