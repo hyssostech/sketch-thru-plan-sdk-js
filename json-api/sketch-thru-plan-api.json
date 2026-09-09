@@ -802,7 +802,7 @@
         },
         {
           "name": "options",
-          "description": "Accepted for wire compatibility with existing clients (the public .NET SDK sends this field) but ignored by the engine: conversion behavior does not depend on its contents.",
+          "description": "Accepted for wire compatibility with existing clients (the public .NET SDK sends this field) and then IGNORED. That is deliberate, and it differs from the sibling C2SIM methods on purpose: those carry an enumerated key set and reject an unknown key rather than ignoring it (STP-687), whereas this method has no key set to enumerate. Those keys configure the C2SIM bridge agent, and this conversion is purely local to the engine's SDK layer and never reaches that agent. Nothing passed here can change the result.",
           "schema": {
             "type": "object",
             "additionalProperties": true
