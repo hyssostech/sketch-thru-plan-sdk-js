@@ -23,15 +23,5 @@
     "bundle:umd:dev": "rollup build/arcgis/src/arcgis.js --file dist/arcgis-bundle.js --format umd --name ArcGISMap",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack"
-  },
-  "devDependencies": {
-    "@rollup/plugin-terser": "^1.0.0",
-    "prettier": "^3.8.1",
-    "rimraf": "^6.1.2",
-    "rollup": "^4.57.1",
-    "rollup-plugin-dts": "^6.3.0",
-    "terser": "^5.46.0",
-    "typedoc": "^0.28.16",
-    "typescript": "^5.9.3"
   }
 }

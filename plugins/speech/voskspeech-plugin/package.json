@@ -37,13 +37,7 @@
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "rimraf": "^6.1.2",
-    "rollup": "^4.57.1",
-    "rollup-plugin-dts": "^6.3.0",
-    "terser": "^5.46.0",
-    "typedoc": "^0.28.16",
-    "typescript": "^5.9.3"
+    "@rollup/plugin-node-resolve": "^16.0.1"
   },
   "dependencies": {
     "vosk-browser": "^0.0.8"

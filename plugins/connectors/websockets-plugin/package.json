@@ -27,14 +27,5 @@
         "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/plugins/connectors/websockets-plugin"
     },
     "author": "Hyssos Tech",
-    "license": "MIT",
-    "devDependencies": {
-        "prettier": "^3.8.1",
-        "rimraf": "^6.1.2",
-        "rollup": "^4.57.1",
-        "rollup-plugin-dts": "^6.3.0",
-        "terser": "^5.46.0",
-        "typedoc": "^0.28.16",
-        "typescript": "^5.9.3"
-    }
+    "license": "MIT"
 }

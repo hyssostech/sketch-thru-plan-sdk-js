@@ -40,14 +40,7 @@
   "author": "Hyssos Tech",
   "license": "MIT",
   "devDependencies": {
-    "cpx2": "^8.0.0",
-    "prettier": "^3.8.1",
-    "rimraf": "^6.1.2",
-    "rollup": "^4.57.1",
-    "rollup-plugin-dts": "^6.3.0",
-    "terser": "^5.46.0",
-    "typedoc": "^0.28.16",
-    "typescript": "^5.9.3"
+    "cpx2": "^8.0.0"
   },
   "dependencies": {
     "agent-base": "^7.1.4",
