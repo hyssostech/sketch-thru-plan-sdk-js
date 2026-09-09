@@ -55,7 +55,7 @@ function parseArgs(argv) {
 }
 
 const args = parseArgs(process.argv.slice(2));
-const required = ['sbom', 'manifest', 'expect-spec', 'expect-version'];
+const required = ['sbom', 'manifest', 'expect-spec', 'expect-version', 'expect-tool'];
 for (const r of required) {
   if (!args[r]) {
     console.error(`usage error: --${r} is required`);
@@ -123,6 +123,39 @@ check(
   mc.version !== '0.0.0',
   'metadata.component.version is not the placeholder 0.0.0',
   `got ${JSON.stringify(mc.version)}`,
+);
+
+/* --- the generator, read from the document rather than assumed ---------- */
+
+// CycloneDX 1.5 and later record tools as {components:[], services:[]};
+// 1.4 and earlier used a flat array of {vendor,name,version}. Accept both.
+const toolsRaw = (sbom.metadata && sbom.metadata.tools) || {};
+const toolComponents = Array.isArray(toolsRaw)
+  ? toolsRaw
+  : Array.isArray(toolsRaw.components)
+    ? toolsRaw.components
+    : [];
+const toolIds = toolComponents.map((t) => {
+  const name = t.group ? `${t.group}/${t.name}` : t.name;
+  return `${name}@${t.version}`;
+});
+
+check(
+  toolIds.length > 0,
+  'the SBOM records which tool produced it',
+  'metadata.tools is empty - the document cannot say where it came from',
+);
+
+// The workflow pins the generator; this closes the loop by asserting the
+// document agrees. ci-summary.md then reports the generator READ FROM HERE,
+// so the published summary never restates a workflow literal as if it were
+// an observation.
+const expectedTool = args['expect-tool'];
+const generator = toolIds.find((id) => id === expectedTool);
+check(
+  Boolean(generator),
+  `the SBOM says it was produced by ${expectedTool}`,
+  `metadata.tools records: ${toolIds.join(', ') || '(none)'}`,
 );
 
 /* --- component set ----------------------------------------------------- */
@@ -198,6 +231,7 @@ if (process.env.GITHUB_OUTPUT) {
     [
       `sbom_components=${components.length}`,
       `sbom_spec=${sbom.specVersion}`,
+      `sbom_tool=${generator || ''}`,
       `sbom_mc_name=${mc.name}`,
       `sbom_mc_version=${mc.version}`,
       '',
