@@ -91,6 +91,17 @@ for spec in "${GATES[@]}"; do
   fi
 done
 
+# The eight gate strings can all say "success" while the scan reports that it
+# measured nothing - the gate outcomes and the measurement flag are independent
+# signals. Every current path that sets scan_measured=false also exits non-zero,
+# so this is an unguarded invariant rather than a live defect; guard it anyway.
+# Publishing a body that reads "Vulnerability gate | PASS" beside
+# "HIGH: NOT MEASURED" is exactly the false attestation this file exists to
+# prevent.
+if [ "${SCAN_MEASURED:-}" != 'true' ]; then
+  publish_ok='false'
+fi
+
 {
   printf '\n'
   printf 'A gate that did not run is shown as DID NOT RUN, never as SKIP. If any row\n'
@@ -153,6 +164,12 @@ done
   printf '  derived from the manifest and lockfile, not from static analysis of\n'
   printf '  `dist/`. rollup inlines some runtime dependencies into the UMD bundle;\n'
   printf '  nothing here re-derives components from the emitted bytes.\n'
+  printf -- '- **Static application security testing (SAST / code scanning)** - NOT\n'
+  printf '  PERFORMED BY THIS WORKFLOW. Nothing here analyses the source or the built\n'
+  printf '  bundles for vulnerable code patterns; every security figure above concerns\n'
+  printf '  DEPENDENCIES, not this package'"'"'s own code. If a code-scanning workflow\n'
+  printf '  exists in this repository it is gated by its own triggers, which this\n'
+  printf '  document cannot observe - check the Actions tab for this commit.\n'
   printf -- '- **Secret scanning, npm audit, filesystem vulnerability scan, dependency\n'
   printf '  review** - NOT PERFORMED BY THIS WORKFLOW. They live in\n'
   printf '  `.github/workflows/hardened-ci.yml` and are gated by its own triggers, which\n'
