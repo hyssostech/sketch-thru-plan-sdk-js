@@ -2,6 +2,13 @@
   "name": "@hyssostech/azurespeech-plugin",
   "version": "0.3.3",
   "description": "Microsoft Cognitive Services Speech plugin for Sketch-thru-Plan",
+  "files": [
+    "CHANGELOG.md",
+    "dist",
+    "src",
+    "docs",
+    "tsconfig.json"
+  ],
   "main": "dist/stpazurespeech-bundle-min.js",
   "types": "dist/stpazurespeech-bundle.d.ts",
   "module": "dist/stpazurespeech-bundle.esm.js",

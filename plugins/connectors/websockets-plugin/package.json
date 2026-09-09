@@ -2,8 +2,15 @@
     "name": "@hyssostech/websockets-plugin",
     "version": "0.1.2",
     "description": "Websockets connector to Sketch-thru-Plan services",
-    "main": "dist/stpconnector-bundle-min.js",
-    "types": "dist/stpconnector-bundle.d.ts",
+    "files": [
+    "CHANGELOG.md",
+    "dist",
+    "src",
+    "docs",
+    "tsconfig.json"
+  ],
+  "main": "dist/stpconnector-bundle-min.js",
+    "types": "dist/stpconnector.d.ts",
     "publishConfig": {
         "access": "public",
         "registry": "https://registry.npmjs.org/"
