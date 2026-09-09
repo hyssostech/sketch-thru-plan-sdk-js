@@ -1,6 +1,6 @@
 {
   "name": "sketch-thru-plan-sdk",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "description": "Sketch-thru-Plan SDK for JavaScript",
   "main": "dist/sketch-thru-plan-sdk-bundle-min.js",
   "types": "dist/sketch-thru-plan-sdk-bundle.d.ts",
@@ -27,7 +27,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "validate:schema": "node ../validation/check-openrpc.js",
-  "verify:speech-model": "node scripts/verify-speech-model.mjs",
+    "verify:speech-model": "node scripts/verify-speech-model.mjs",
     "prepublishOnly": "npm run build",
     "publish:dry": "npm run build && npm pack",
     "start": "http-server . -p 8080 -o /samples/index.html -c-1",

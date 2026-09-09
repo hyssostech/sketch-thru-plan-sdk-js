@@ -1,6 +1,31 @@
 # Sketch-Thru-Plan Change Log
 npm config list
-## Unreleased - BREAKING: symbology enum values renamed on the wire
+## Version 0.6.15
+
+Closes the wire-surface gap with the STP engine. Everything below is additive;
+no existing API changed.
+
+- **Seventeen methods added**, matching dispatch arms the engine bridge already
+  exposed: `advertiseViewport`, `changeTimeOut`, `getActiveScenarioDescription`,
+  `getAllObjects`, `getDeletedObjects`, `getPoidObject`,
+  `getScenarioTaskOrgList`, `getTaskOrgObjects`, `recognizeNow`, `resetRole`,
+  `resetSegmentationTimeout`, `resetStpScenario`, `sendAudioCaptureState`,
+  `sendListen`, `setAutoTasking`, `setSpeechListening`, `undoLastOp`
+- **Three events the engine emits but this SDK could never receive** are now
+  handled: `onNewScenario`, `onSpeechDiscarded`, `onSpeechParsed`. No handler
+  was declared for them, so `buildSolvables()` left them out of the
+  subscription set and the engine never sent them
+- **`onCoaSwitched` restored.** Its dispatch arm sat inside a `/* */` block with
+  invalid syntax and its property declaration was dead alongside it, despite a
+  comment claiming the arm was live
+- **`refreshSubscriptions()` added**, with `updateSolvables()` as an optional
+  method on `IStpConnector`, so a handler attached after `connect()` is picked
+  up instead of staying silently unrouted for the life of the connection
+- JSON-RPC contract `json-api/sketch-thru-plan-api.json` raised to **0.4.0**:
+  the 17 methods documented, transport-level messages marked `x-layer`, and the
+  C2SIM `options` key set documented in place of "implementation-defined"
+
+## Version 0.6.14 - BREAKING: symbology enum values renamed on the wire
 
 **Breaking change.** The STP engine renamed four symbology enums so their names match the values
 its symbol tables have always authored. Those names go onto the JSON wire verbatim (the bridge
