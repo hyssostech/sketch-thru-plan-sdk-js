@@ -189,8 +189,9 @@ omits it. A finding with no published fix is still a finding.
   whether its runner, its action dependencies, or its registry mirrors behaved.
 - **Test results.** `ci-summary.md` reports whether the suite passed. Neither
   the attestation nor the checksums say anything about what the tests covered.
-- **Secret scanning and dependency audit for this tag.** Those gates live in
-  `hardened-ci.yml`, which triggers on `main`, on pull requests, and on tags
-  matching `v*` - a `sdk-v*` tag does not match. They ran when the commit
-  landed on `main`, not when it was tagged. `ci-summary.md` records this as
-  NOT PERFORMED rather than omitting it.
+- **Secret scanning and dependency audit.** Those gates live in
+  `hardened-ci.yml` and are gated by its triggers, not by this release
+  workflow. Nothing in the release assets records whether they ran for this
+  commit; the Actions tab does. `ci-summary.md` lists this as NOT PERFORMED BY
+  THIS WORKFLOW rather than omitting it, and deliberately does not assert an
+  answer it cannot measure.
