@@ -113,6 +113,19 @@ jobs:
           format: table
           exit-code: 1
           severity: CRITICAL,HIGH
+          # SCOPE LIMIT, STATED DELIBERATELY: this job does not check out LFS
+          # content, so the fs scan walks a 133-byte pointer where
+          # plugins/speech/voskspeech-plugin/model/vosk-model-la-domain.zip
+          # sits - the repo's only genuine LFS payload. Trivy neither errors
+          # nor warns; it scans nothing there and goes green. That is accepted,
+          # not overlooked: the archive is speech-model data carrying no
+          # dependency manifest or package metadata, so scanning it would find
+          # nothing, and lfs: true would pull it on every push and PR to prove
+          # that. ci.yml's verify:speech-model already reads the POINTER on
+          # purpose for the same bandwidth reason. If that archive ever carries
+          # executable content, this decision has to be revisited and lfs: true
+          # added here. Recorded so the gap is a choice with a reason rather
+          # than an accident nobody noticed.
           # NO ignore-unfixed. It answers "is a fix available", not "are we
           # exposed", so it drops any advisory upstream has not patched. This
           # workflow now runs on sdk-v* tags (see the trigger above), and the
