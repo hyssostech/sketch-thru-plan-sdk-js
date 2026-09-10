@@ -110,7 +110,7 @@ const zoomLevel = 13;
 
 **Connector Plugin** - The first step it to create a connection object that will provide the basic communication services to STP. In this quickstart app, we employ a Websockets connector that communicates with STP's native OAA Publish Subscribe services. 
 
-Other plugins can be developed to implement different communication mechanisms, for example plain REST calls, or based on some event queue mechanism used by the backend infrastructure into which STP may have been embedded. The websockets plugin is posted [here](../plugins/connectors/websockets-plugin)
+Other plugins can be developed to implement different communication mechanisms, for example plain REST calls, or based on some event queue mechanism used by the backend infrastructure into which STP may have been embedded. The SDK's own `StpWebSocketsConnector` is the reference implementation
 
 ```javascript
 // Create an STP connection object - using a websocket connection to STP's pub/sub system

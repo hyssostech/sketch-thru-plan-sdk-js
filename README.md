@@ -106,7 +106,9 @@ Components that can be swapped and/or reused are described in [plugins](plugins)
 
 a. Speech recognition using the Microsoft Cognitive Services Speech recognizer - `@hyssostech/azurespeech-plugin` - <https://www.npmjs.com/package/@hyssostech/azurespeech-plugin>
 
-b. Connection to STP via WebSockets - `@hyssostech/websockets-plugin`
+b. Connection to STP via WebSockets - built into the SDK as `StpWebSocketsConnector`.
+The former `@hyssostech/websockets-plugin` package duplicated that class and is retired;
+use the SDK export directly.
 
 ## Reference
 
