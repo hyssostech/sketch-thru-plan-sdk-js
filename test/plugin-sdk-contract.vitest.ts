@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 /**
  * Guards the property STP-698 phase 2b established: the plugins consume the
@@ -153,4 +154,62 @@ describe('plugin -> SDK type contract (STP-698 phase 2b)', () => {
         `${[...required.keys()].sort().join(', ')}`
     );
   });
+
+  // The assertion above checks that a NAME exists. It does not check the shape
+  // behind the name, and an independent review proved the gap: renaming a
+  // member of an SDK interface leaves every assertion above green while the
+  // plugins no longer satisfy it. Only a real compile catches that, and no
+  // workflow compiled a plugin on push or PR - so "drift is a compile error"
+  // was asserted rather than exercised. This exercises it.
+  //
+  // WHAT THIS CANNOT CATCH, stated so nobody assumes otherwise: DELETING a
+  // member from an interface. An implementor is allowed to have members the
+  // interface does not declare, so a deletion breaks no plugin. That is a
+  // TypeScript rule, not a hole in this check - a deletion is caught only by a
+  // caller that used the member.
+  it(
+    'every plugin still type-checks against the SDK it now imports from',
+    () => {
+      const tsconfigs = fs
+        .readdirSync(PLUGINS, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .flatMap((group) =>
+          fs
+            .readdirSync(path.join(PLUGINS, group.name), { withFileTypes: true })
+            .filter((d) => d.isDirectory())
+            .map((pkg) => path.join(PLUGINS, group.name, pkg.name, 'tsconfig.json'))
+        )
+        .filter((f) => fs.existsSync(f));
+
+      expect(
+        tsconfigs.length,
+        'no plugin tsconfig found - this check would pass having compiled nothing'
+      ).toBeGreaterThan(0);
+
+      const failures: string[] = [];
+      for (const cfg of tsconfigs) {
+        const r = spawnSync('npx', ['tsc', '--noEmit', '-p', cfg], {
+          cwd: ROOT,
+          encoding: 'utf8',
+          shell: true,
+        });
+        if (r.status !== 0) {
+          const firstError =
+            (r.stdout || '').split('\n').find((l) => l.includes('error TS')) ?? '';
+          failures.push(`${path.relative(ROOT, cfg)} -> exit ${r.status} ${firstError.trim()}`);
+        }
+      }
+
+      expect(
+        failures,
+        'these plugins no longer compile against the SDK, which is exactly the ' +
+          'drift this phase exists to make loud:\n  ' + failures.join('\n  ')
+      ).toEqual([]);
+
+      console.log(
+        `[plugin-sdk-contract] tsc --noEmit clean for all ${tsconfigs.length} plugins`
+      );
+    },
+    180000
+  );
 });

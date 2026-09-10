@@ -11,7 +11,7 @@
     "build": "npm run clean && npm run build:ts && npm run build:umd"
   },
   "peerDependencies": {
-    "sketch-thru-plan-sdk": "^0.6.14"
+    "sketch-thru-plan-sdk": "^0.6.15"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

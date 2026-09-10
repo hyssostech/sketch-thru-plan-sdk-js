@@ -36,7 +36,7 @@
     "author": "Hyssos Tech",
     "license": "MIT",
     "peerDependencies": {
-        "sketch-thru-plan-sdk": "^0.6.14"
+        "sketch-thru-plan-sdk": "^0.6.15"
     },
     "devDependencies": {
         "sketch-thru-plan-sdk": "file:../../.."
