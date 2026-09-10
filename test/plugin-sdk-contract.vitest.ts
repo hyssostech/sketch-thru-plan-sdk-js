@@ -65,6 +65,32 @@ describe('plugin -> SDK type contract (STP-698 phase 2b)', () => {
     ).toBe(true);
   });
 
+  it('the SDK type bundle is not stale relative to the sources it is built from', () => {
+    // Without this, the guard below is really "ci.yml happens to run
+    // npm run build before npm test". That is an implicit dependency on a
+    // workflow owned by another effort - reordering those steps would silently
+    // turn this suite into a check against yesterday's bundle, and whoever
+    // reordered them would have no reason to know.
+    const built = fs.statSync(SDK_DTS).mtimeMs;
+    const sources = walk(path.join(ROOT, 'src'));
+    expect(sources.length).toBeGreaterThan(0);
+
+    const newer = sources
+      .filter((f) => fs.statSync(f).mtimeMs > built)
+      .map((f) => path.relative(ROOT, f));
+
+    expect(
+      newer,
+      'the built SDK type bundle is older than these sources, so this suite ' +
+        'would be checking a stale artifact. Run "npm run build".\n  ' +
+        newer.join('\n  ')
+    ).toEqual([]);
+
+    console.log(
+      `[plugin-sdk-contract] SDK bundle is newer than all ${sources.length} src files`
+    );
+  });
+
   it('no plugin keeps its own copy of an SDK interface', () => {
     const survivors = RETIRED_INTERFACE_DIRS.filter((d) => fs.existsSync(path.join(ROOT, d)));
     expect(
