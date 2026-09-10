@@ -13,6 +13,8 @@
     "clean": "rimraf --glob dist build ./interfaces \"./*.d.ts\"",
     "clean:docs": "rimraf docs",
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
+    "build:plugins": "npm run build --workspaces --if-present",
+    "build:all": "npm run build && npm run build:plugins",
     "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
     "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts",
     "bundle:umd": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle-min.js --format umd --name StpSDK --interop auto",

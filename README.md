@@ -70,6 +70,24 @@ npm run build:docs # generate typedoc API documentation
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the version history and [`resources.md`](resources.md) for the publish checklist and developer notes.
 
+## Building
+
+The samples, quickstart and plugins are a **developer artifact you build first**.
+Plugin bundles are generated, not committed, so a fresh clone does not contain
+them:
+
+```
+npm ci
+npm run build:all
+```
+
+`build:all` builds the SDK and then every plugin (`npm run build --workspaces`).
+Build the SDK alone with `npm run build`, the plugins alone with
+`npm run build:plugins`.
+
+Opening a sample page straight from a fresh clone, without building, will fail
+to load its plugin bundles.
+
 ## Getting started
 
 The [quickstart](quickstart) folder contains introductory examples.
