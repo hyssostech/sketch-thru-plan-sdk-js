@@ -12,8 +12,10 @@
 # These are committed as ordinary blobs, NOT LFS pointers. They were
 # marked filter=lfs by 0ad5a15 without being migrated, which made every
 # fresh checkout show them modified and made `git add -A` replace ~20 MB
-# of vendored source with pointers. `-text` is kept: they are generated
-# bundles and must not be EOL-normalized.
+# of vendored source with pointers. `-text` is kept so GIT does not convert
+# their line endings on checkin/checkout. Note it does NOT stop the BUILD from
+# writing whatever endings it likes: regenerating these bundles on a machine
+# whose toolchain emits LF rewrites every line, which is what happened here.
 plugins/renderers/milsymjs/src/mil-sym-js.js -text
 plugins/renderers/milsymjs/build/milsymjs/src/mil-sym-js.js -text
 plugins/renderers/milsymjs/dist/jmsrenderer-bundle.js -text

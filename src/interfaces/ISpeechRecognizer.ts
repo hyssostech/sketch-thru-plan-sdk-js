@@ -1,4 +1,9 @@
 /**
+ * Stp speech recognition results standard interface
+ * @interface
+ */
+
+/**
  * Stp interface to speech recognition engine
  * @interface
  */
@@ -40,11 +45,6 @@ export interface ISpeechRecognizer {
    */
   onError: ((error: Error) => void) | undefined;
 }
-
-/**
- * Stp speech recognition results standard interface
- * @interface
- */
 
 /**
  * Speech recognition results

@@ -24,14 +24,6 @@ const ROOT = process.cwd();
 const PLUGINS = path.join(ROOT, 'plugins');
 const SDK_DTS = path.join(ROOT, 'dist', 'sketch-thru-plan-sdk-bundle.d.ts');
 
-/** Directories that held duplicated copies of the SDK's interfaces. */
-const RETIRED_INTERFACE_DIRS = [
-  'plugins/connectors/interfaces',
-  'plugins/speech/interfaces',
-  'plugins/maps/interfaces',
-  'plugins/renderers/interfaces',
-];
-
 function walk(dir: string, out: string[] = []): string[] {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -93,27 +85,75 @@ describe('plugin -> SDK type contract (STP-698 phase 2b)', () => {
   });
 
   it('no plugin keeps its own copy of an SDK interface', () => {
-    const survivors = RETIRED_INTERFACE_DIRS.filter((d) => fs.existsSync(path.join(ROOT, d)));
+    // Scanned, not enumerated. The earlier version listed four hard-coded
+    // paths, so a duplicate reintroduced anywhere else - including beside the
+    // source that imports it - passed silently.
+    const survivors: string[] = [];
+    const scan = (dir: string) => {
+      if (!fs.existsSync(dir)) return;
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!e.isDirectory()) continue;
+        if (['node_modules', 'dist', 'build', 'docs'].includes(e.name)) continue;
+        const full = path.join(dir, e.name);
+        if (e.name === 'interfaces') survivors.push(path.relative(ROOT, full));
+        else scan(full);
+      }
+    };
+    scan(PLUGINS);
+
+    const SDK_OWNED = ['IStpConnector', 'ISpeechRecognizer', 'IMapAdapter', 'IStpRenderer'];
+    const dupes = pluginSources.filter((f) => {
+      const t = fs.readFileSync(f, 'utf8');
+      return SDK_OWNED.some((n) => new RegExp(`(interface|type)\\s+${n}\\b`).test(t));
+    });
+
     expect(
       survivors,
-      `these directories held duplicated interface copies that drifted (one was ` +
-        `untouched since 2021-02-17) and must not come back: ${survivors.join(', ')}`
+      'these directories held duplicated interface copies that drifted (one was ' +
+        'untouched since 2021-02-17) and must not come back'
     ).toEqual([]);
+    expect(
+      dupes.map((f) => path.relative(ROOT, f)),
+      'these plugin files re-declare a type the SDK owns, which is the drift ' +
+        'this phase removed, reintroduced under a different path'
+    ).toEqual([]);
+
     console.log(
-      `[plugin-sdk-contract] retired interface dirs still absent: ${RETIRED_INTERFACE_DIRS.length}/${RETIRED_INTERFACE_DIRS.length}`
+      `[plugin-sdk-contract] no interfaces/ dir under plugins; no plugin file redeclares any of ${SDK_OWNED.join(', ')}`
     );
   });
 
   it('no plugin imports an interface by relative path out of its own tree', () => {
+    // Any number of ../ segments, not just two. The earlier version matched the
+    // literal '../../interfaces/' only, so '../interfaces/' passed.
     const offenders = pluginSources.filter((f) =>
-      /from\s+['"]\.\.\/\.\.\/interfaces\//.test(fs.readFileSync(f, 'utf8'))
+      /from\s+['"](?:\.\.\/)+[^'"]*interfaces\//.test(fs.readFileSync(f, 'utf8'))
     );
     expect(offenders.map((f) => path.relative(ROOT, f))).toEqual([]);
   });
 
   it('every type a plugin imports from the SDK is actually exported by the SDK', () => {
     const dts = fs.readFileSync(SDK_DTS, 'utf8');
-    const importRe = /import\s+type\s*\{([^}]+)\}\s*from\s*['"]sketch-thru-plan-sdk['"]/g;
+    // Matches `import type { A }`, `import { A }` and `import { type A }`.
+    // The earlier version matched only the first form, so a plugin written in
+    // either of the others contributed nothing while the suite stayed green -
+    // a guard narrower than its own title.
+    const importRe =
+      /import\s+(?:type\s+)?\{([^}]+)\}\s*from\s*['"]sketch-thru-plan-sdk['"]/g;
+
+    // The names the SDK actually EXPORTS, not merely declares. A declaration
+    // that is not exported satisfies "is it in the bundle" while being
+    // unreachable by any consumer.
+    const exported = new Set<string>();
+    for (const m of dts.matchAll(/export\s+(?:type\s+)?\{([^}]+)\}/g)) {
+      for (const raw of m[1].split(',')) {
+        const n = raw.trim().split(/\s+as\s+/).pop()?.trim();
+        if (n) exported.add(n);
+      }
+    }
+    for (const m of dts.matchAll(/export\s+(?:declare\s+)?(?:interface|type|class|enum)\s+(\w+)/g)) {
+      exported.add(m[1]);
+    }
 
     const required = new Map<string, string[]>();
     for (const file of pluginSources) {
@@ -138,8 +178,7 @@ describe('plugin -> SDK type contract (STP-698 phase 2b)', () => {
 
     const missing: string[] = [];
     for (const [name, users] of required) {
-      const declared = new RegExp(`\\b(interface|type|class|enum)\\s+${name}\\b`).test(dts);
-      if (!declared) missing.push(`${name} (imported by ${users.join(', ')})`);
+      if (!exported.has(name)) missing.push(`${name} (imported by ${users.join(', ')})`);
     }
 
     expect(
