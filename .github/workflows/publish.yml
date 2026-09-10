@@ -22,7 +22,6 @@ jobs:
       fail-fast: false
       matrix:
         package:
-          - plugins/connectors/websockets-plugin
           - plugins/speech/azurespeech-plugin
           - plugins/speech/awsspeech-plugin
           - plugins/speech/voskspeech-plugin
@@ -49,7 +48,7 @@ jobs:
       # lockfiles are deleted, `npm install` from inside a member resolves at
       # the WORKSPACE ROOT, and - measured, not assumed - it does so silently:
       #
-      #   npm install in plugins/connectors/websockets-plugin
+      #   npm install inside a plugin directory
       #     -> exit 0, creates node_modules at the REPO ROOT (228 packages),
       #        none in the plugin directory.
       #   With package.json deliberately desynced from the lockfile
@@ -64,10 +63,19 @@ jobs:
       # refuses to proceed when package.json and the lockfile disagree.
       #
       # Verified equivalent before changing: building and packing via
-      # --workspace produces a byte-identical file list to the old
-      # working-directory form - 28 files, 60.2 kB, 330.2 kB unpacked for
-      # websockets-plugin. --workspace accepts the PATH form, which is what
-      # matrix.package already holds, so the matrix is unchanged.
+      # --workspace produced a byte-identical file list to the old
+      # working-directory form - 28 files, 60.2 kB, 330.2 kB unpacked. That
+      # measurement was taken on @hyssostech/websockets-plugin, which STP-698
+      # has since RETIRED: the fork duplicated the SDK's own connector, its
+      # entire difference was the missing updateSolvables, and nothing in the
+      # repo used it.
+      #
+      # Its matrix entry is removed above. Leaving it would fail the publish
+      # job on a missing directory at the next plugins-v* tag - the deletion
+      # landed on the convention branch while this file lists the packages.
+      #
+      # --workspace accepts the PATH form that matrix.package holds, so the
+      # six remaining entries need no other change.
       - name: Install dependencies (root, deterministic)
         run: npm ci
 
