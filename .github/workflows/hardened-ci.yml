@@ -51,6 +51,7 @@ jobs:
           gitleaks detect \
             --source . \
             --verbose \
+            --redact \
             --report-format sarif \
             --report-path gitleaks-report.sarif \
             --exit-code 1
