@@ -36,6 +36,28 @@ on:
       # Same namespace as publish-sdk.yml. The seven npm plugins publish from
       # 'plugins-v*' (publish.yml) and are not covered by this workflow.
       - 'sdk-v*'
+  # Rehearsal path. Until this workflow has run once, the only way to exercise
+  # it was to push a real tag - which is also the only way to find out whether
+  # it works, on an action that cannot be undone. Worse, a failure after
+  # 'gh release create' leaves a draft on the tag and a re-run then fails at
+  # create ("release already exists") with no way to self-heal.
+  #
+  # So: dispatch with a tag, and DO NOT touch the release by default. Every
+  # gate, the SBOM, the scan, the manifest and the staged asset set all run;
+  # the three steps that create, inspect or promote the GitHub Release are
+  # skipped unless 'publish' is explicitly true. That makes the first
+  # end-to-end exercise free and repeatable.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing sdk-v* tag to build the evidence package from'
+        required: true
+        type: string
+      publish:
+        description: 'Actually create and promote the GitHub Release (leave false to rehearse)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -81,6 +103,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Explicit so a rehearsal checks out the tag it was given rather than
+          # the branch the dispatch came from. On a tag push this resolves to
+          # the same ref as the default.
+          ref: ${{ inputs.tag || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -92,9 +119,14 @@ jobs:
       # labelled with one version and contain another, so stop here.
       - name: Derive the version from the tag and check package.json agrees
         id: version
+        env:
+          # On a tag push this is the tag. On a dispatch the ref name is the
+          # branch the dispatch came from, so the tag has to come from the input
+          # or the sdk-v* check below would reject it for the wrong reason.
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF_NAME}"
+          tag="${RELEASE_TAG}"
           version="${tag#sdk-v}"
           if [ "$version" = "$tag" ]; then
             echo "::error::tag '$tag' does not start with 'sdk-v'"
@@ -274,6 +306,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Explicit so a rehearsal checks out the tag it was given rather than
+          # the branch the dispatch came from. On a tag push this resolves to
+          # the same ref as the default.
+          ref: ${{ inputs.tag || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -378,6 +415,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Explicit so a rehearsal checks out the tag it was given rather than
+          # the branch the dispatch came from. On a tag push this resolves to
+          # the same ref as the default.
+          ref: ${{ inputs.tag || github.ref_name }}
 
       - name: Download build outputs
         if: ${{ !cancelled() }}
@@ -403,7 +445,7 @@ jobs:
         env:
           PKG_NAME: ${{ needs.build.outputs.pkg_name }}
           VERSION: ${{ needs.build.outputs.version }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag || github.ref_name }}
           COMMIT: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -546,10 +588,10 @@ jobs:
       # is not visible to consumers, so nothing is published until the asset
       # set has been checked against the manifest.
       - name: Create the GitHub Release as a draft
-        if: steps.summary.outputs.publish_ok == 'true'
+        if: steps.summary.outputs.publish_ok == 'true' && (github.event_name == 'push' || inputs.publish)
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag || github.ref_name }}
           PKG_NAME: ${{ needs.build.outputs.pkg_name }}
           VERSION: ${{ needs.build.outputs.version }}
         run: |
@@ -566,10 +608,10 @@ jobs:
       # Runs against the draft, so a mismatch here means nothing was ever
       # public.
       - name: Check the draft's asset set matches the manifest
-        if: steps.summary.outputs.publish_ok == 'true'
+        if: steps.summary.outputs.publish_ok == 'true' && (github.event_name == 'push' || inputs.publish)
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           set -euo pipefail
           gh release view "$TAG" --json assets --jq '.assets[].name' | LC_ALL=C sort >uploaded.txt
@@ -583,10 +625,10 @@ jobs:
 
       # Only now does anything become visible to a consumer.
       - name: Promote the draft to a published release
-        if: steps.summary.outputs.publish_ok == 'true'
+        if: steps.summary.outputs.publish_ok == 'true' && (github.event_name == 'push' || inputs.publish)
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           set -euo pipefail
           gh release edit "$TAG" --draft=false
