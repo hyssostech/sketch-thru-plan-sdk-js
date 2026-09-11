@@ -24,21 +24,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/plugins/speech/awsspeech-plugin"
+    "url": "git+https://github.com/hyssostech/sketch-thru-plan-sdk-js.git",
+    "directory": "plugins/speech/awsspeech-plugin"
   },
   "author": "Hyssos Tech",
   "license": "MIT",
+  "peerDependencies": {
+    "sketch-thru-plan-sdk": "^0.6.15"
+  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "prettier": "^3.8.1",
-    "rimraf": "^6.1.2",
-    "rollup": "^4.57.1",
-    "rollup-plugin-dts": "^6.3.0",
-    "terser": "^5.46.0",
-    "typedoc": "^0.28.16",
-    "typescript": "^5.9.3"
+    "sketch-thru-plan-sdk": "file:../../.."
   },
   "dependencies": {
     "@aws-sdk/client-transcribe-streaming": "^3.998.0"

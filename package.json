@@ -13,6 +13,8 @@
     "clean": "rimraf --glob dist build ./interfaces \"./*.d.ts\"",
     "clean:docs": "rimraf docs",
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
+    "build:plugins": "npm run build --workspaces --if-present",
+    "build:all": "npm run build && npm run build:plugins",
     "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
     "bundle": "npm run bundle:umd && npm run bundle:esm && npm run bundle:dts",
     "bundle:umd": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle-min.js --format umd --name StpSDK --interop auto",
@@ -35,6 +37,12 @@
   "files": [
     "dist",
     "!dist/**/*.js.map"
+  ],
+  "workspaces": [
+    "plugins/*/*",
+    "quickstart/ts",
+    "samples/arcgis/ts",
+    "samples/arcgis/react"
   ],
   "repository": {
     "type": "git",
@@ -59,6 +67,7 @@
     "C2SIM"
   ],
   "devDependencies": {
+    "@rollup/plugin-terser": "^1.0.0",
     "@types/lodash": "^4.17.23",
     "@types/node": "^26.4.1",
     "@vitest/coverage-v8": "^4.0.18",
@@ -69,6 +78,7 @@
     "rimraf": "^6.1.2",
     "rollup": "^4.57.1",
     "rollup-plugin-dts": "^6.3.0",
+    "terser": "^5.46.0",
     "typedoc": "^0.28.16",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"

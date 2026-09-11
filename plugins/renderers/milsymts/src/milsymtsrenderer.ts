@@ -4,7 +4,7 @@
  */
 
 import * as MilSymTsWeb from '@armyc2.c5isr.renderer/mil-sym-ts-web';
-import { IStpRenderer } from '../../interfaces/IStpRenderer';
+import type { IStpRenderer } from 'sketch-thru-plan-sdk';
 
 declare global {
   interface Window { WebRenderer?: any; milSymTS?: any; JmsRenderer?: any; }

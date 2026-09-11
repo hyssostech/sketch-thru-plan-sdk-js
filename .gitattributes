@@ -9,9 +9,12 @@
 *.tar.gz filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
 # Large generated JS bundles (mil-sym-js renderer)
-plugins/renderers/milsymjs/src/mil-sym-js.js filter=lfs diff=lfs merge=lfs -text
-plugins/renderers/milsymjs/build/milsymjs/src/mil-sym-js.js filter=lfs diff=lfs merge=lfs -text
-plugins/renderers/milsymjs/dist/jmsrenderer-bundle.js filter=lfs diff=lfs merge=lfs -text
-plugins/renderers/milsymjs/dist/jmsrenderer-bundle.esm.js filter=lfs diff=lfs merge=lfs -text
-plugins/renderers/milsymjs/dist/jmsrenderer-bundle-min.js filter=lfs diff=lfs merge=lfs -text
+# These are committed as ordinary blobs, NOT LFS pointers. They were
+# marked filter=lfs by 0ad5a15 without being migrated, which made every
+# fresh checkout show them modified and made `git add -A` replace ~20 MB
+# of vendored source with pointers. `-text` is kept so GIT does not convert
+# their line endings on checkin/checkout. Note it does NOT stop the BUILD from
+# writing whatever endings it likes: regenerating these bundles on a machine
+# whose toolchain emits LF rewrites every line, which is what happened here.
+plugins/renderers/milsymjs/src/mil-sym-js.js -text
 plugins/speech/voskspeech-plugin/model/*.zip filter=lfs diff=lfs merge=lfs -text

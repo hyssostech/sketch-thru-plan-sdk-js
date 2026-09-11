@@ -81,7 +81,9 @@ let solvables = ["SpeechRecognized", "PenDown", "InkProcessed","SymbolAdded", "S
 
 A system handling the STP component connections is required to route to the component those messages/events listed as solvables, invoking `onInform` or `onRequest` depending on the whether the message being routed was posted via an `inform` or a `request` respectively. Informs do generate any return types, whereas Requests do, to support queries.  
 
-The [`websockets`](websockets-plugin) plugin implements this interface via Websockets. The STP server provides a native publish/subscribe mechanism, based on the Open Agent Architecture (OAA) framework, but other Websockets based mechanisms could be used on the server side as well.
+The SDK implements this interface via Websockets as `StpWebSocketsConnector`, exported
+from `sketch-thru-plan-sdk`. (A separate `websockets-plugin` package used to ship a copy
+of that class; it drifted a method behind the SDK and has been retired.) The STP server provides a native publish/subscribe mechanism, based on the Open Agent Architecture (OAA) framework, but other Websockets based mechanisms could be used on the server side as well.
 
 This plugin is used in the [quicktstarts](../../quickstart) to provide the main SDK object the means to communicate with STP.  
 

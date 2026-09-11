@@ -13,7 +13,7 @@
     "@hyssostech/azurespeech-plugin": "^0.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "sketch-thru-plan-sdk": "^0.6.12"
+    "sketch-thru-plan-sdk": "file:../../.."
   },
   "devDependencies": {
     "@types/react": "^19.1.2",

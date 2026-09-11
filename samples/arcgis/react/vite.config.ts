@@ -19,6 +19,9 @@ function serveLocalBundles(): Plugin {
     '/local/sketch-thru-plan-sdk-bundle-min.js': path.join(
       sdkRoot, 'dist/sketch-thru-plan-sdk-bundle-min.js'
     ),
+    '/local/stpazurespeech-bundle-min.js': path.join(
+      sdkRoot, 'plugins/speech/azurespeech-plugin/dist/stpazurespeech-bundle-min.js'
+    ),
   };
 
   return {

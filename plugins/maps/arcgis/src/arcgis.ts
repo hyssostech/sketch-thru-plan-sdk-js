@@ -2,7 +2,7 @@
 // Assumes the application has loaded the ArcGIS JS API and its AMD `require` function globally.
 // Example: <script src="https://js.arcgis.com/4.29/"></script>
 
-import { IMapAdapter } from '../../interfaces/IMapAdapter';
+import type { IMapAdapter } from 'sketch-thru-plan-sdk';
 
 declare const require: any;
 

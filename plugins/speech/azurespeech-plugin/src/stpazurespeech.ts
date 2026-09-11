@@ -1,9 +1,9 @@
   import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
-  import {
+  import type {
     ISpeechRecognizer,
     ISpeechRecoResult,
     ISpeechRecoItem
-  } from '../../interfaces/ISpeechRecognizer';
+  } from 'sketch-thru-plan-sdk';
   
   /**
    * Implements speech recognition services using Azure Speech-to-text

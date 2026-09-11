@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import dts from 'rollup-plugin-dts';
 
-const input = 'build/awsspeech-plugin/src/stpawsspeech.js';
+const input = 'build/stpawsspeech.js';
 
 export default [
   // UMD bundle (for script tags)
@@ -29,7 +29,7 @@ export default [
   },
   // Type declarations bundle
   {
-    input: 'build/awsspeech-plugin/src/stpawsspeech.d.ts',
+    input: 'build/stpawsspeech.d.ts',
     output: {
       file: 'dist/stpawsspeech-bundle.d.ts',
       format: 'es',

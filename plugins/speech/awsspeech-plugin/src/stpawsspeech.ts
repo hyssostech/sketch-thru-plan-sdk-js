@@ -3,11 +3,11 @@ import {
   StartStreamTranscriptionCommand,
   LanguageCode,
 } from '@aws-sdk/client-transcribe-streaming';
-import {
+import type {
   ISpeechRecognizer,
   ISpeechRecoResult,
   ISpeechRecoItem,
-} from '../../interfaces/ISpeechRecognizer';
+} from 'sketch-thru-plan-sdk';
 
 /**
  * Target audio sample rate used for PCM encoding.

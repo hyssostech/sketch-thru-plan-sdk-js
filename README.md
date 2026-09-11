@@ -70,6 +70,24 @@ npm run build:docs # generate typedoc API documentation
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the version history and [`resources.md`](resources.md) for the publish checklist and developer notes.
 
+## Building
+
+The samples, quickstart and plugins are a **developer artifact you build first**.
+Plugin bundles are generated, not committed, so a fresh clone does not contain
+them:
+
+```
+npm ci
+npm run build:all
+```
+
+`build:all` builds the SDK and then every plugin (`npm run build --workspaces`).
+Build the SDK alone with `npm run build`, the plugins alone with
+`npm run build:plugins`.
+
+Opening a sample page straight from a fresh clone, without building, will fail
+to load its plugin bundles.
+
 ## Getting started
 
 The [quickstart](quickstart) folder contains introductory examples.
@@ -88,7 +106,9 @@ Components that can be swapped and/or reused are described in [plugins](plugins)
 
 a. Speech recognition using the Microsoft Cognitive Services Speech recognizer - `@hyssostech/azurespeech-plugin` - <https://www.npmjs.com/package/@hyssostech/azurespeech-plugin>
 
-b. Connection to STP via WebSockets - `@hyssostech/websockets-plugin`
+b. Connection to STP via WebSockets - built into the SDK as `StpWebSocketsConnector`.
+The former `@hyssostech/websockets-plugin` package duplicated that class and is retired;
+use the SDK export directly.
 
 ## Reference
 

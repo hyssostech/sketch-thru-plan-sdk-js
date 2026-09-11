@@ -10,7 +10,7 @@ import './mil-sym-js.js';
 declare const armyc2: any;
 declare const sec: any;
 import * as ms from 'milsymbol';
-import { IStpRenderer } from '../../interfaces/IStpRenderer';
+import type { IStpRenderer } from 'sketch-thru-plan-sdk';
 
 export enum RenderFormat {
   formatKML = 0,

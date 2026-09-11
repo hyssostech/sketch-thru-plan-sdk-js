@@ -1,6 +1,7 @@
 {
   "name": "ts",
   "version": "1.0.1",
+  "private": true,
   "description": "Sketch-thru-Plan typescript quickstart",
   "main": "./dist/index.js",
   "module": "./dist/index.min.js",
@@ -42,6 +43,6 @@
     "@hyssostech/azurespeech-plugin": "^0.3.2",
     "@types/geojson": "^7946.0.11",
     "milsymbol": "^2.2.0",
-    "sketch-thru-plan-sdk": "^0.6.12"
+    "sketch-thru-plan-sdk": "file:../.."
   }
 }

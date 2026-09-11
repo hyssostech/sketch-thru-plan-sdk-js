@@ -13,3 +13,12 @@ plugins/speech/awsspeech-plugin/hyssostech-awsspeech-plugin-0.1.0-alpha.0.tgz
 /coverage
 /interfaces
 /*.d.ts
+
+# Plugin build output. Regenerate with `npm run build:plugins` (or `build:all`).
+# Committed until 2026-09-10; un-committed because the samples are a developer
+# artifact you build first, not a clone-and-open demo. 42.9 MB across 47 files.
+plugins/*/*/dist/
+plugins/*/*/build/
+samples/*/*/dist/
+samples/*/dist/
+quickstart/*/dist/

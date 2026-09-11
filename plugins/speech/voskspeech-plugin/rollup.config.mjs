@@ -2,7 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import dts from 'rollup-plugin-dts';
 
-const input = 'build/voskspeech-plugin/src/stpvoskspeech.js';
+const input = 'build/stpvoskspeech.js';
 
 // vosk-browser ships a 5.7 MB UMD file (vosk.js) that includes the WASM runtime.
 // We externalize it so our plugin bundle stays small (~20 KB) and vosk.js is loaded
@@ -36,7 +36,7 @@ export default [
   },
   // Type declarations bundle
   {
-    input: 'build/voskspeech-plugin/src/stpvoskspeech.d.ts',
+    input: 'build/stpvoskspeech.d.ts',
     output: {
       file: 'dist/stpvoskspeech-bundle.d.ts',
       format: 'es',
