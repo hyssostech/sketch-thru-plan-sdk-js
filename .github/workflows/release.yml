@@ -45,13 +45,39 @@ on:
   # So: dispatch with a tag, and DO NOT touch the release by default. Every
   # gate, the SBOM, the scan, the manifest and the staged asset set all run;
   # the three steps that create, inspect or promote the GitHub Release are
-  # skipped unless 'publish' is explicitly true. That makes the first
-  # end-to-end exercise free and repeatable.
+  # skipped unless 'publish' is explicitly true.
+  #
+  # STP-730. That was supposed to make the first end-to-end exercise "free and
+  # repeatable". It did not, and the first attempt to use it proved so:
+  #
+  #   dispatch tag=sdk-v0.6.14 -> every scripts/* missing. The checkout takes
+  #     the TAG, and scripts/ landed on main five days AFTER that tag was cut.
+  #   dispatch tag=main        -> correctly refused, "tag 'main' does not start
+  #     with 'sdk-v'". The gate is right; it is not the bug.
+  #
+  # So the rehearsal needed an sdk-v* ref whose tree already contained the
+  # workflow's own scripts - which only the first real release tag would have.
+  # The path existed to de-risk a tag and could not run until after that tag.
+  #
+  # The fix separates the two jobs the input was doing. 'tag' still names the
+  # release and is what the version is derived from. 'ref' says what to CHECK
+  # OUT, defaulting to 'tag' so the push path and every existing dispatch are
+  # unchanged. Rehearse the release that is ABOUT to be cut with:
+  #
+  #   tag=sdk-v0.6.15  ref=main
+  #
+  # which derives 0.6.15 from the tag name and still asserts package.json
+  # agrees - so the version check keeps its teeth instead of being bypassed.
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing sdk-v* tag to build the evidence package from'
+        description: 'sdk-v* tag naming the release (the version is derived from it)'
         required: true
+        type: string
+      ref:
+        description: 'Ref to check out (branch, tag or SHA). Blank = use the tag. Set to main to rehearse an uncut release.'
+        required: false
+        default: ''
         type: string
       publish:
         description: 'Actually create and promote the GitHub Release (leave false to rehearse)'
@@ -104,10 +130,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Explicit so a rehearsal checks out the tag it was given rather than
-          # the branch the dispatch came from. On a tag push this resolves to
-          # the same ref as the default.
-          ref: ${{ inputs.tag || github.ref_name }}
+          # Explicit so a rehearsal checks out what it was given rather than the
+          # branch the dispatch came from. 'ref' wins when set (rehearse an
+          # UNCUT release from main); otherwise the tag. On a tag push both
+          # inputs are empty and this resolves to the pushed tag, unchanged.
+          ref: ${{ inputs.ref || inputs.tag || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -307,10 +334,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Explicit so a rehearsal checks out the tag it was given rather than
-          # the branch the dispatch came from. On a tag push this resolves to
-          # the same ref as the default.
-          ref: ${{ inputs.tag || github.ref_name }}
+          # Explicit so a rehearsal checks out what it was given rather than the
+          # branch the dispatch came from. 'ref' wins when set (rehearse an
+          # UNCUT release from main); otherwise the tag. On a tag push both
+          # inputs are empty and this resolves to the pushed tag, unchanged.
+          ref: ${{ inputs.ref || inputs.tag || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -416,10 +444,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Explicit so a rehearsal checks out the tag it was given rather than
-          # the branch the dispatch came from. On a tag push this resolves to
-          # the same ref as the default.
-          ref: ${{ inputs.tag || github.ref_name }}
+          # Explicit so a rehearsal checks out what it was given rather than the
+          # branch the dispatch came from. 'ref' wins when set (rehearse an
+          # UNCUT release from main); otherwise the tag. On a tag push both
+          # inputs are empty and this resolves to the pushed tag, unchanged.
+          ref: ${{ inputs.ref || inputs.tag || github.ref_name }}
 
       - name: Download build outputs
         if: ${{ !cancelled() }}
