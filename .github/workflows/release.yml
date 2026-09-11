@@ -616,6 +616,24 @@ jobs:
       # re-run cannot repair it because the tag already has a release. A draft
       # is not visible to consumers, so nothing is published until the asset
       # set has been checked against the manifest.
+      # STP-730. --prerelease is DERIVED from the version, the same way and for
+      # the same reason as the npm dist-tag in publish-sdk.yml.
+      #
+      # A release created without --prerelease is a FULL release, so GitHub
+      # makes it the repository's "Latest release" - the badge on the homepage
+      # and what /releases/latest returns to anything polling it. On an rc tag
+      # that is the mirror image of the dist-tag bug:
+      #
+      #   npm     'latest' correctly stays on the last stable
+      #   GitHub  "Latest release" jumps to the release candidate
+      #
+      # Two registries of record disagreeing about the current release, from
+      # one tag. Hardcoding --prerelease would invert it - the eventual stable
+      # release would be marked a prerelease and never become Latest - so it is
+      # derived, not fixed, and needs no second edit either way.
+      #
+      # Unlike a published package this IS recoverable (releases and tags can
+      # both be deleted), which lowers the stakes without making it right.
       - name: Create the GitHub Release as a draft
         if: steps.summary.outputs.publish_ok == 'true' && (github.event_name == 'push' || inputs.publish)
         env:
@@ -625,8 +643,20 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
         run: |
           set -euo pipefail
+
+          # The version already passed the tag/package.json agreement gate in
+          # the build job, so a hyphen here means a real prerelease identifier.
+          case "$VERSION" in
+            *-*) PRERELEASE_ARGS="--prerelease" ;;
+            *)   PRERELEASE_ARGS="" ;;
+          esac
+          echo "version=$VERSION -> release flags: ${PRERELEASE_ARGS:-<full release>}"
+
+          # shellcheck disable=SC2086 # deliberately unquoted: empty must expand
+          # to no argument at all, not to an empty one.
           gh release create "$TAG" \
             --draft \
+            $PRERELEASE_ARGS \
             --title "$PKG_NAME $VERSION" \
             --notes-file release/ci-summary.md \
             --verify-tag \
