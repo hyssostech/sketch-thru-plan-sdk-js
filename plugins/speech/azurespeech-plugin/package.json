@@ -42,7 +42,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/plugins/speech/azurespeech-plugin"
+    "url": "git+https://github.com/hyssostech/sketch-thru-plan-sdk-js.git",
+    "directory": "plugins/speech/azurespeech-plugin"
   },
   "author": "Hyssos Tech",
   "license": "MIT",
