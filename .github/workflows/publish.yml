@@ -7,6 +7,23 @@ on:
       # A shared 'v*' would publish both at unrelated versions.
       - 'plugins-v*'
 
+  # STP-736 parity. publish-sdk.yml got a rehearsal switch and this file did
+  # not, which left the plugins publish with no way to exercise it short of a
+  # real tag that really publishes six packages. That gap mattered more here
+  # than there: this path has fired twice - v0.1.0-alpha.2 and v0.1.0-alpha.3,
+  # March 2026, under the old bare 'v*' trigger - and FAILED BOTH TIMES. It
+  # has never succeeded once.
+  #
+  # dry_run defaults TRUE, so a bare dispatch rehearses and publishes nothing.
+  # A tag push leaves inputs.dry_run empty, which the step below reads as
+  # false, so the tag path is completely unchanged.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Rehearse only: pack and validate, publish nothing.'
+        type: boolean
+        default: true
+
 permissions:
   id-token: write      # required for npm Trusted Publishing (OIDC)
   contents: read
@@ -82,5 +99,18 @@ jobs:
       - name: Build
         run: npm run build --workspace ${{ matrix.package }}
 
+      # --dry-run exercises pack, the file list and the registry's metadata
+      # validation. It does NOT exercise the Trusted Publishing policy: no
+      # OIDC token is redeemed, so a missing or wrong connection for any of
+      # these six packages still passes here and fails on the real tag.
       - name: Publish to npm (Trusted Publishing)
-        run: npm publish --access public --workspace ${{ matrix.package }}
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ "${DRY_RUN:-false}" = "true" ]; then
+            echo 'REHEARSAL: --dry-run, nothing will be published.'
+            npm publish --access public --workspace ${{ matrix.package }} --dry-run
+          else
+            npm publish --access public --workspace ${{ matrix.package }}
+          fi
