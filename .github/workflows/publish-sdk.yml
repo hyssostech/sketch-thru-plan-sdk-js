@@ -9,7 +9,21 @@ on:
   push:
     tags:
       - 'sdk-v*'
+  # Rehearsal path (STP-736). This workflow had workflow_dispatch already,
+  # but the publish step was a bare 'npm publish' - so dispatching it
+  # published for real and there was no way to exercise it without cutting a
+  # tag. Its entire history is two runs, both on sdk-v0.6.14, the first a
+  # failure. It has succeeded exactly once.
+  #
+  # dry_run defaults to TRUE so a dispatch is safe by default. A tag push
+  # leaves the input empty and publishes for real, unchanged.
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Pack and validate without publishing (leave true to rehearse)'
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   id-token: write      # required for npm Trusted Publishing (OIDC)
@@ -23,10 +37,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
@@ -40,5 +54,23 @@ jobs:
       - name: Test
         run: npm test
 
+      # WHAT A DRY RUN DOES NOT COVER, stated so nobody over-trusts it:
+      # 'npm publish --dry-run' packs and reports the file list. It does NOT
+      # authenticate against the registry, so it does NOT exercise the Trusted
+      # Publishing policy - which is precisely what failed on 2026-09-04 (403,
+      # 'Allowed actions' was stage-only). A green rehearsal says the build and
+      # the packed contents are sound; it says nothing about whether the
+      # publish is authorised. Check the npm Trusted Publisher policy BEFORE
+      # tagging, not after.
       - name: Publish to npm (Trusted Publishing)
-        run: npm publish --access public
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          # Empty on a tag push (no inputs context), so a tag publishes for real.
+          if [ "${DRY_RUN:-false}" = "true" ]; then
+            echo 'REHEARSAL: --dry-run, nothing will be published.'
+            npm publish --access public --dry-run
+          else
+            npm publish --access public
+          fi

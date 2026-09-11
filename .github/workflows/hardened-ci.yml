@@ -18,7 +18,11 @@ name: Hardened CI
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    # Tag namespace RULED 2026-09-04: the SDK and the seven npm plugins
+    # version independently, each with its own release-tag prefix (see
+    # publish-sdk.yml and publish.yml). A bare 'v*' belongs to neither
+    # namespace and never matches, so list both real prefixes here.
+    tags: ['sdk-v*', 'plugins-v*']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -33,20 +37,40 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Install Gitleaks
+        env:
+          GITLEAKS_VERSION: 8.24.3
+          # sha256 of gitleaks_8.24.3_linux_x64.tar.gz from the release's
+          # published checksums file. Verified against the artifact actually
+          # downloaded, not copied from a web page.
+          GITLEAKS_SHA256: 9991e0b2903da4c8f6122b5c3186448b927a5da4deef1fe45271c3793f4ee29c
         run: |
-          GITLEAKS_VER="8.24.3"
-          curl -sL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VER}/gitleaks_${GITLEAKS_VER}_linux_x64.tar.gz" \
-            | tar xz -C /usr/local/bin gitleaks
-          gitleaks version
+          set -euo pipefail
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSL -o "$tarball" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${tarball}"
+          # Verify BEFORE extracting. This job previously piped curl straight
+          # into tar and executed the result over the whole repository and its
+          # full history. Pinning every action in this file to a commit SHA
+          # while installing an unverified binary in the same workflow left
+          # the supply chain open at its softest point.
+          echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum -c -
+          tar xzf "$tarball" -C /usr/local/bin gitleaks
+          # Assert the binary is the version just verified, so a failed or
+          # substituted install fails the job instead of scanning nothing
+          # and passing.
+          installed="$(gitleaks version)"
+          echo "gitleaks version: ${installed}"
+          test "${installed}" = "${GITLEAKS_VERSION}"
       - name: Gitleaks — secret scanning
         run: |
           gitleaks detect \
             --source . \
             --verbose \
+            --redact \
             --report-format sarif \
             --report-path gitleaks-report.sarif \
             --exit-code 1
@@ -67,7 +91,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Dependency review
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
@@ -83,7 +107,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -109,4 +133,25 @@ jobs:
           format: table
           exit-code: 1
           severity: CRITICAL,HIGH
-          ignore-unfixed: true
+          # SCOPE LIMIT, STATED DELIBERATELY: this job does not check out LFS
+          # content, so the fs scan walks a 133-byte pointer where
+          # plugins/speech/voskspeech-plugin/model/vosk-model-la-domain.zip
+          # sits - the repo's only genuine LFS payload. Trivy neither errors
+          # nor warns; it scans nothing there and goes green. That is accepted,
+          # not overlooked: the archive is speech-model data carrying no
+          # dependency manifest or package metadata, so scanning it would find
+          # nothing, and lfs: true would pull it on every push and PR to prove
+          # that. ci.yml's verify:speech-model already reads the POINTER on
+          # purpose for the same bandwidth reason. If that archive ever carries
+          # executable content, this decision has to be revisited and lfs: true
+          # added here. Recorded so the gap is a choice with a reason rather
+          # than an accident nobody noticed.
+          # NO ignore-unfixed. It answers "is a fix available", not "are we
+          # exposed", so it drops any advisory upstream has not patched. This
+          # workflow now runs on sdk-v* tags (see the trigger above), and the
+          # release workflow's own dependency gate deliberately omits the same
+          # flag. Leaving it here meant one tag ran two scans under opposite
+          # policies, and the stricter one could not redden the run. Measured
+          # 2026-09-09 before removing it: trivy fs over this repo reports 0
+          # CRITICAL/HIGH, 0 of them unfixed, so this is a no-op today and a
+          # real gate the first time an unpatched advisory lands.
