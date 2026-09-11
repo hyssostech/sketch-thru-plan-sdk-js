@@ -1,4 +1,4 @@
-# Dependabot — automated dependency update PRs
+# Dependabot - automated dependency update PRs
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
 version: 2
 updates:
