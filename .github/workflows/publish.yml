@@ -99,6 +99,18 @@ jobs:
       - name: Build
         run: npm run build --workspace ${{ matrix.package }}
 
+      # STP-741. Nothing compared what was BUILT to what gets PACKED, and on
+      # 2026-09-11 that shipped two plugins containing no dist/ at all - the
+      # build wrote it, the ignore rules dropped it at pack time because those
+      # packages declared no "files" array, and every signal stayed green:
+      # build OK, publish OK, workflow green, "+ @hyssostech/arcgis-plugin@0.1.2".
+      #
+      # This runs BEFORE the publish so a package that does not contain its own
+      # code cannot reach the registry. npm has no delete, so catching it here
+      # is the only place it can be caught.
+      - name: Assert the tarball contains the built output
+        run: node .github/scripts/assert-plugin-pack.mjs ${{ matrix.package }}
+
       # --dry-run exercises pack, the file list and the registry's metadata
       # validation. It does NOT exercise the Trusted Publishing policy: no
       # OIDC token is redeemed, so a missing or wrong connection for any of

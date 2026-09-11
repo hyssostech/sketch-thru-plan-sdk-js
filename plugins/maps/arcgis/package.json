@@ -1,6 +1,11 @@
 {
   "name": "@hyssostech/arcgis-plugin",
-  "version": "0.1.2",
+  "version": "0.1.3",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyssostech/sketch-thru-plan-sdk-js.git",
