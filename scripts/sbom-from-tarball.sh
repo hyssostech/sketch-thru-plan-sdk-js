@@ -77,13 +77,37 @@ printf 'sbom-from-tarball: resolving the published manifest'"'"'s dependencies\n
 # Guard the property this whole approach rests on. If a plugins/ path or a
 # sibling package ever turns up in this lockfile, the isolation has been
 # breached and the SBOM must not be trusted.
-leaked="$(node -e '
-const l = require(process.argv[1]);
-const bad = Object.keys(l.packages || {}).filter(
+#
+# STP-730. This used `require(process.argv[1])`. `require` treats a RELATIVE
+# path as a MODULE SPECIFIER and resolves it against node_modules, and
+# release.yml passes a relative dir ("sbom-work/package") - so on its first
+# real execution the guard died with MODULE_NOT_FOUND, having examined
+# nothing. It had never run. It failed CLOSED (`set -e` aborts, no SBOM is
+# produced), so nothing ever shipped unguarded - but the check this whole
+# approach rests on was not actually being performed. fs.readFileSync takes a
+# PATH rather than a specifier, which is what was meant all along.
+#
+# It now also reports how many entries it EXAMINED, and refuses at zero. A
+# guard that finds no leaks because it parsed nothing is precisely the defect
+# it exists to catch.
+guard="$(node -e '
+const fs = require("fs");
+const lock = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+const keys = Object.keys(lock.packages || {});
+const bad = keys.filter(
   (p) => p.startsWith("plugins/") || p.includes("@hyssostech"),
 );
-process.stdout.write(bad.join("\n"));
-' "$PKGDIR/package-lock.json")"
+process.stdout.write(String(keys.length) + "\n" + bad.join("\n"));
+' "$PKGDIR/package-lock.json")" || die "the isolation guard did not run"
+
+examined="$(printf '%s' "$guard" | head -n 1)"
+leaked="$(printf '%s' "$guard" | tail -n +2)"
+case "$examined" in
+  ''|*[!0-9]*) die "the isolation guard reported no entry count - it proved nothing" ;;
+esac
+[ "$examined" -gt 0 ] || die "the isolation guard examined 0 lockfile entries - it proved nothing"
+printf 'sbom-from-tarball: isolation guard examined %s lockfile entries\n' "$examined"
+
 if [ -n "$leaked" ]; then
   printf 'sbom-from-tarball: repository layout leaked into the extracted tree:\n' >&2
   printf '%s\n' "$leaked" | sed 's/^/    /' >&2
