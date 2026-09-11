@@ -1,0 +1,643 @@
+# Release evidence for the sketch-thru-plan-sdk npm package.
+#
+# Jira STP-708 (SBOM + scan), STP-709 (GitHub Release, checksums, provenance),
+# STP-710 (generated ci-summary.md), STP-711 (VERIFYING.md).
+#
+# WHAT THIS WORKFLOW IS FOR
+# Before it existed, an sdk-v* tag ran exactly one thing: publish-sdk.yml
+# pushed the package to npm and stopped. Three tags had been pushed and the
+# repository had published zero GitHub Releases - no SBOM, no checksums, no
+# provenance, and nothing telling a consumer how to verify what they had
+# downloaded. This workflow produces that evidence and refuses to publish it
+# when a gate fails.
+#
+# IT DOES NOT PUBLISH TO npm. publish-sdk.yml owns that, and runs on the same
+# tag. The two are independent: this workflow re-packs the tarball from the
+# same commit, and does not assert byte-identity with what npm received. That
+# limit is stated in ci-summary.md and in VERIFYING.md rather than papered
+# over.
+#
+# THE GATE DISCIPLINE, inherited from a sibling repository's release review:
+#   - the SBOM spec version is pinned AND the emitted document is asserted;
+#   - the vulnerability gate does NOT pass --ignore-unfixed;
+#   - every number in ci-summary.md comes from a job output, never a literal;
+#   - a gate that did not run says DID NOT RUN, never SKIP;
+#   - SHA256SUMS is re-verified against the staged asset set at upload time.
+#
+# Actions are pinned to 40-character commit SHAs. Each was resolved from its
+# tag on 2026-09-09 via the GitHub API, dereferencing annotated tag objects to
+# the underlying commit.
+
+name: Release evidence
+
+on:
+  push:
+    tags:
+      # Same namespace as publish-sdk.yml. The seven npm plugins publish from
+      # 'plugins-v*' (publish.yml) and are not covered by this workflow.
+      - 'sdk-v*'
+  # Rehearsal path. Until this workflow has run once, the only way to exercise
+  # it was to push a real tag - which is also the only way to find out whether
+  # it works, on an action that cannot be undone. Worse, a failure after
+  # 'gh release create' leaves a draft on the tag and a re-run then fails at
+  # create ("release already exists") with no way to self-heal.
+  #
+  # So: dispatch with a tag, and DO NOT touch the release by default. Every
+  # gate, the SBOM, the scan, the manifest and the staged asset set all run;
+  # the three steps that create, inspect or promote the GitHub Release are
+  # skipped unless 'publish' is explicitly true. That makes the first
+  # end-to-end exercise free and repeatable.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing sdk-v* tag to build the evidence package from'
+        required: true
+        type: string
+      publish:
+        description: 'Actually create and promote the GitHub Release (leave false to rehearse)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24'
+  # Pinned exactly. The generator's DEFAULT spec version is what drifted to 1.7
+  # in the sibling repository; pinning the generator and passing the spec
+  # explicitly are two separate protections, and the assertion below is a third.
+  CDX_NPM_PKG: '@cyclonedx/cyclonedx-npm@6.0.1'
+  CDX_SPEC_VERSION: '1.6'
+  TRIVY_ACTION_VERSION: 'v0.70.0'
+
+jobs:
+  # ===================================================================
+  # Build the package, pack it, and produce an SBOM that is asserted
+  # rather than trusted.  (STP-708)
+  # ===================================================================
+  build:
+    name: Build, pack and SBOM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      pkg_name: ${{ steps.version.outputs.pkg_name }}
+      tarball: ${{ steps.pack.outputs.tarball }}
+      install_result: ${{ steps.install.outcome }}
+      build_result: ${{ steps.build.outcome }}
+      test_result: ${{ steps.test.outcome }}
+      pack_result: ${{ steps.pack.outcome }}
+      extract_result: ${{ steps.extract.outcome }}
+      pack_contents_result: ${{ steps.pack_contents.outcome }}
+      tarball_sha256: ${{ steps.extract.outputs.tarball_sha256 }}
+      sbom_result: ${{ steps.sbom.outcome }}
+      sbom_assert_result: ${{ steps.sbom_assert.outcome }}
+      sbom_components: ${{ steps.sbom_assert.outputs.sbom_components }}
+      sbom_spec: ${{ steps.sbom_assert.outputs.sbom_spec }}
+      sbom_tool: ${{ steps.sbom_assert.outputs.sbom_tool }}
+      sbom_mc_name: ${{ steps.sbom_assert.outputs.sbom_mc_name }}
+      sbom_mc_version: ${{ steps.sbom_assert.outputs.sbom_mc_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Explicit so a rehearsal checks out the tag it was given rather than
+          # the branch the dispatch came from. On a tag push this resolves to
+          # the same ref as the default.
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # The tag is the only statement of intent about which version is being
+      # released. If package.json disagrees, every downstream artifact would be
+      # labelled with one version and contain another, so stop here.
+      - name: Derive the version from the tag and check package.json agrees
+        id: version
+        env:
+          # On a tag push this is the tag. On a dispatch the ref name is the
+          # branch the dispatch came from, so the tag has to come from the input
+          # or the sdk-v* check below would reject it for the wrong reason.
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          tag="${RELEASE_TAG}"
+          version="${tag#sdk-v}"
+          if [ "$version" = "$tag" ]; then
+            echo "::error::tag '$tag' does not start with 'sdk-v'"
+            exit 1
+          fi
+          pkg_version="$(node -p "require('./package.json').version")"
+          pkg_name="$(node -p "require('./package.json').name")"
+          echo "tag:             $tag"
+          echo "version from tag: $version"
+          echo "package.json:     $pkg_name@$pkg_version"
+          if [ "$version" != "$pkg_version" ]; then
+            echo "::error::tag says $version but package.json says $pkg_version"
+            exit 1
+          fi
+          {
+            echo "version=$version"
+            echo "pkg_name=$pkg_name"
+          } >>"$GITHUB_OUTPUT"
+
+      # Note: package.json defines a "prepare" script, so npm ci builds as a
+      # side effect. The explicit build step below is still worth having - it
+      # gives the build its own row in ci-summary.md instead of hiding a build
+      # failure inside an install failure.
+      - name: Install dependencies
+        id: install
+        run: npm ci
+
+      - name: Build
+        id: build
+        run: npm run build
+
+      - name: Test
+        id: test
+        run: npm test
+
+      - name: Pack the publishable tarball
+        id: pack
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Packed into the workspace root on purpose. upload-artifact roots an
+          # artifact at the least common ancestor of its path patterns, so
+          # keeping the tarball and the SBOM in the same directory keeps the
+          # downloaded layout flat and predictable.
+          npm pack
+          count="$(find . -maxdepth 1 -name '*.tgz' -type f | wc -l)"
+          if [ "$count" -ne 1 ]; then
+            echo "::error::expected exactly one tarball in the workspace root, found $count"
+            find . -maxdepth 1 -name '*.tgz' -type f || true
+            exit 1
+          fi
+          path="$(find . -maxdepth 1 -name '*.tgz' -type f)"
+          tarball="$(basename "$path")"
+          if [ ! -s "$path" ]; then
+            echo "::error::npm pack produced an empty tarball"
+            exit 1
+          fi
+          # Check the tarball's own manifest rather than trusting its file
+          # name: the name is a convention, the embedded package.json is what
+          # a consumer actually installs.
+          packed_version="$(tar -xzOf "$path" package/package.json | node -p \
+            "JSON.parse(require('fs').readFileSync(0,'utf8')).version")"
+          echo "packed: $tarball ($(stat -c%s "$path") bytes), manifest version $packed_version"
+          if [ "$packed_version" != "$VERSION" ]; then
+            echo "::error::tarball manifest says $packed_version but the tag says $VERSION"
+            exit 1
+          fi
+          tar -tzf "$path"
+          echo "tarball=$tarball" >>"$GITHUB_OUTPUT"
+
+      # Everything downstream describes THE TARBALL, not the repository. A
+      # root-scoped SBOM makes accuracy a function of repository layout, and
+      # the layout is changing: measured against the unpushed npm-workspaces
+      # conversion, the previous root-scoped command emitted 331 components
+      # including all eight @hyssostech plugins and the entire AWS SDK.
+      - name: Extract the packed tarball
+        id: extract
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: |
+          set -euo pipefail
+          rm -rf sbom-work
+          mkdir -p sbom-work
+          tar -xzf "$TARBALL" -C sbom-work
+          [ -f sbom-work/package/package.json ] ||
+            { echo "::error::no package/package.json inside $TARBALL"; exit 1; }
+          # Bind the SBOM to the exact tarball it describes. The release job
+          # re-checks this digest against the file it is about to attach, so
+          # the published SBOM and the published tarball cannot drift apart.
+          sha="$(sha256sum -- "$TARBALL" | cut -d' ' -f1)"
+          echo "tarball_sha256=$sha" >>"$GITHUB_OUTPUT"
+          echo "tarball sha256: $sha"
+
+      # An SBOM built from a tarball inherits whatever the tarball got wrong,
+      # so the tarball gets its own gate. Compared as a SET in BOTH directions
+      # against scripts/expected-release-contents.json - nothing missing and
+      # nothing unexpected - because a check that only looks for what it
+      # expects can be right about that and wrong about everything else.
+      - name: Assert the packed file set
+        id: pack_contents
+        run: |
+          node scripts/assert-pack-contents.mjs \
+            --extracted sbom-work \
+            --expected scripts/expected-release-contents.json
+
+      - name: Generate the CycloneDX SBOM from the packed tree
+        id: sbom
+        run: |
+          bash scripts/sbom-from-tarball.sh \
+            sbom-work/package \
+            sbom.cdx.json \
+            "$CDX_SPEC_VERSION" \
+            "$CDX_NPM_PKG"
+
+      # The generator's flags are not evidence that the generator obeyed them.
+      # --manifest is the SHIPPED package.json from inside the tarball, not the
+      # repository's, so the assertions describe what consumers receive.
+      - name: Assert the SBOM is what we asked for
+        id: sbom_assert
+        run: |
+          node scripts/assert-sbom.mjs \
+            --sbom sbom.cdx.json \
+            --manifest sbom-work/package/package.json \
+            --expected scripts/expected-release-contents.json \
+            --expect-spec "$CDX_SPEC_VERSION" \
+            --expect-version "${{ steps.version.outputs.version }}" \
+            --expect-tool "$CDX_NPM_PKG"
+
+      - name: Upload build outputs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-inputs
+          path: |
+            *.tgz
+            sbom.cdx.json
+          # error, not warn: these two files ARE the release. A silent
+          # no-op upload here surfaces much later as a confusing
+          # "primary artifact missing" in the release job.
+          if-no-files-found: error
+          retention-days: 7
+
+  # ===================================================================
+  # Scan the SBOM.  Deliberately WITHOUT --ignore-unfixed.  (STP-708)
+  # ===================================================================
+  scan:
+    name: Scan the SBOM
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # Belt and braces. The action only exports TRIVY_IGNORE_UNFIXED when its
+      # input differs from the action's own default, so setting the input to
+      # false exports nothing; this job-level variable pins the behaviour even
+      # if that default ever changes.
+      #
+      # DO NOT SET THIS TO true. --ignore-unfixed answers "is an upstream fix
+      # available", not "are we exposed". In the STP engine repository it
+      # dropped a High whose advisory had first_patched_version = null, and the
+      # release attested "0 CVEs in application dependencies" while shipping it.
+      TRIVY_IGNORE_UNFIXED: 'false'
+    outputs:
+      scan_result: ${{ steps.trivy.outcome }}
+      scan_gate_result: ${{ steps.gate.outcome }}
+      scan_measured: ${{ steps.gate.outputs.scan_measured }}
+      trivy_version: ${{ steps.gate.outputs.trivy_version }}
+      packages_scanned: ${{ steps.gate.outputs.packages_scanned }}
+      vuln_critical: ${{ steps.gate.outputs.vuln_critical }}
+      vuln_high: ${{ steps.gate.outputs.vuln_high }}
+      vuln_medium: ${{ steps.gate.outputs.vuln_medium }}
+      vuln_low: ${{ steps.gate.outputs.vuln_low }}
+      vuln_unknown: ${{ steps.gate.outputs.vuln_unknown }}
+      vuln_total: ${{ steps.gate.outputs.vuln_total }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Explicit so a rehearsal checks out the tag it was given rather than
+          # the branch the dispatch came from. On a tag push this resolves to
+          # the same ref as the default.
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build outputs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-inputs
+          path: inputs
+
+      # Do not assume the downloaded layout. It is a function of the least
+      # common ancestor of the uploaded path patterns, which changes the moment
+      # someone adds a path in a subdirectory. Flatten, then assert - a wrong
+      # assumption here would have Trivy scan a file that is not there, and the
+      # action would fail with a path error rather than a legible one.
+      - name: Locate the downloaded SBOM
+        run: |
+          set -euo pipefail
+          find inputs -mindepth 2 -type f -exec mv -t inputs -- {} +
+          if [ ! -s inputs/sbom.cdx.json ]; then
+            echo "::error::inputs/sbom.cdx.json is missing or empty after download"
+            find inputs -type f || true
+            exit 1
+          fi
+          ls -la inputs
+
+      - name: Trivy - scan the SBOM
+        id: trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: sbom
+          scan-ref: inputs/sbom.cdx.json
+          format: json
+          output: trivy-report.json
+          scanners: vuln
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          # Required: without it Trivy does not populate Packages, and the
+          # "did the scanner actually read the SBOM" assertion below has
+          # nothing to check.
+          list-all-pkgs: true
+          # See TRIVY_IGNORE_UNFIXED above.
+          ignore-unfixed: false
+          # This action must not decide the gate. Both the counts and the
+          # pass/fail decision come from the one script below, so the number
+          # printed in ci-summary.md and the decision to publish cannot
+          # disagree with each other.
+          exit-code: '0'
+          version: ${{ env.TRIVY_ACTION_VERSION }}
+
+      # The script is handed BOTH the report and the SBOM so it can prove
+      # COVERAGE: every component the SBOM declares must appear among the
+      # packages Trivy reports examining, and any that do not are named and
+      # fail the gate.
+      #
+      # An earlier version compared a count against the declared component
+      # total. That was the wrong shape and off by one - Trivy also counts the
+      # metadata root component, so a healthy scan reports components + 1, and
+      # exactly one real dependency could vanish unscanned while the count
+      # still cleared the floor. Measured with the pinned Trivy 0.70.0:
+      # removing lodash's purl dropped it from the package list entirely, and
+      # the old check exited 0 attesting HIGH: 0 over a scan that never looked
+      # at the only runtime dependency carrying executable code.
+      - name: Count findings, prove coverage, and gate on CRITICAL/HIGH
+        id: gate
+        if: ${{ !cancelled() }}
+        run: |
+          node scripts/trivy-summarize.mjs \
+            --report trivy-report.json \
+            --sbom inputs/sbom.cdx.json \
+            --fail-on CRITICAL,HIGH
+
+      - name: Upload the Trivy report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trivy-report
+          path: trivy-report.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  # ===================================================================
+  # Assemble the evidence, and publish it only if every gate passed.
+  # (STP-709, STP-710, STP-711)
+  # ===================================================================
+  release:
+    name: Publish the GitHub Release
+    needs: [build, scan]
+    # !cancelled(), not always(): the summary must be produced even when a gate
+    # failed, because a red run with no explanation is how gates rot unnoticed -
+    # but a CANCELLED run must stay cancelled. Under always() this job would
+    # still run and exit 1, reporting a deliberate cancellation as a failure.
+    # Publication is gated separately, on publish_ok.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release and upload assets
+      id-token: write # OIDC for the provenance attestation
+      attestations: write # write the attestation
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Explicit so a rehearsal checks out the tag it was given rather than
+          # the branch the dispatch came from. On a tag push this resolves to
+          # the same ref as the default.
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - name: Download build outputs
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-inputs
+          path: inputs
+
+      - name: Download the Trivy report
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: trivy-report
+          path: inputs
+
+      # STP-710. Every figure below is an expression referencing a job output.
+      # If a job did not run, its output is the empty string and the summary
+      # renders NOT MEASURED - never 0.
+      - name: Generate ci-summary.md
+        id: summary
+        env:
+          PKG_NAME: ${{ needs.build.outputs.pkg_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          INSTALL_RESULT: ${{ needs.build.outputs.install_result }}
+          BUILD_RESULT: ${{ needs.build.outputs.build_result }}
+          TEST_RESULT: ${{ needs.build.outputs.test_result }}
+          PACK_RESULT: ${{ needs.build.outputs.pack_result }}
+          PACK_CONTENTS_RESULT: ${{ needs.build.outputs.pack_contents_result }}
+          SBOM_RESULT: ${{ needs.build.outputs.sbom_result }}
+          SBOM_ASSERT_RESULT: ${{ needs.build.outputs.sbom_assert_result }}
+          SCAN_RESULT: ${{ needs.scan.outputs.scan_result }}
+          SCAN_GATE_RESULT: ${{ needs.scan.outputs.scan_gate_result }}
+          SBOM_SPEC: ${{ needs.build.outputs.sbom_spec }}
+          SBOM_TOOL: ${{ needs.build.outputs.sbom_tool }}
+          SBOM_MC_NAME: ${{ needs.build.outputs.sbom_mc_name }}
+          SBOM_MC_VERSION: ${{ needs.build.outputs.sbom_mc_version }}
+          SBOM_COMPONENTS: ${{ needs.build.outputs.sbom_components }}
+          SCAN_MEASURED: ${{ needs.scan.outputs.scan_measured }}
+          TRIVY_VERSION: ${{ needs.scan.outputs.trivy_version }}
+          PACKAGES_SCANNED: ${{ needs.scan.outputs.packages_scanned }}
+          VULN_CRITICAL: ${{ needs.scan.outputs.vuln_critical }}
+          VULN_HIGH: ${{ needs.scan.outputs.vuln_high }}
+          VULN_MEDIUM: ${{ needs.scan.outputs.vuln_medium }}
+          VULN_LOW: ${{ needs.scan.outputs.vuln_low }}
+          VULN_UNKNOWN: ${{ needs.scan.outputs.vuln_unknown }}
+          VULN_TOTAL: ${{ needs.scan.outputs.vuln_total }}
+        run: bash scripts/ci-summary.sh ci-summary.md
+
+      - name: Show the summary in the run
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -s ci-summary.md ]; then
+            cat ci-summary.md >>"$GITHUB_STEP_SUMMARY"
+          else
+            echo "ci-summary.md was not generated - the summary step itself failed." \
+              >>"$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload ci-summary.md
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-summary
+          path: ci-summary.md
+          if-no-files-found: warn
+          retention-days: 30
+
+      # -------- everything below runs only when every gate passed --------
+
+      # STP-709. Refuse to publish if the primary artifact is missing. The
+      # tarball IS the release; an SBOM and a summary describing a package
+      # nobody can download would be worse than no release at all.
+      - name: Stage the release assets
+        id: stage
+        if: steps.summary.outputs.publish_ok == 'true'
+        env:
+          TARBALL: ${{ needs.build.outputs.tarball }}
+          TARBALL_SHA256: ${{ needs.build.outputs.tarball_sha256 }}
+        run: |
+          set -euo pipefail
+          # Flatten first, for the same reason as in the scan job: the
+          # downloaded layout depends on the least common ancestor of the
+          # uploaded patterns and must not be assumed.
+          find inputs -mindepth 2 -type f -exec mv -t inputs -- {} + 2>/dev/null || true
+          if [ -z "$TARBALL" ]; then
+            echo "::error::no tarball name was reported by the build job - refusing to publish"
+            exit 1
+          fi
+          if [ ! -s "inputs/$TARBALL" ]; then
+            echo "::error::primary artifact inputs/$TARBALL is missing or empty - refusing to publish"
+            ls -laR inputs || true
+            exit 1
+          fi
+          # The SBOM describes one specific tarball. Attaching a different one
+          # would publish an SBOM of an artifact nobody can download.
+          actual_sha="$(sha256sum -- "inputs/$TARBALL" | cut -d' ' -f1)"
+          if [ "$actual_sha" != "$TARBALL_SHA256" ]; then
+            echo "::error::the tarball to be attached ($actual_sha) is not the one the SBOM describes ($TARBALL_SHA256)"
+            exit 1
+          fi
+          echo "tarball digest matches the SBOM's subject: $actual_sha"
+          mkdir -p release
+          cp "inputs/$TARBALL" release/
+          cp inputs/sbom.cdx.json release/
+          cp inputs/trivy-report.json release/
+          cp ci-summary.md release/
+          cp VERIFYING.md release/
+          for f in "$TARBALL" sbom.cdx.json trivy-report.json ci-summary.md VERIFYING.md; do
+            if [ ! -s "release/$f" ]; then
+              echo "::error::expected asset release/$f is missing or empty - refusing to publish"
+              exit 1
+            fi
+          done
+          echo "staged:"
+          ls -la release
+
+      # Generated HERE, at the point the asset set is final, and over exactly
+      # that set. Generating it earlier would produce a manifest describing
+      # different files than the release page carries.
+      - name: Generate SHA256SUMS over the final asset set
+        if: steps.summary.outputs.publish_ok == 'true'
+        run: bash scripts/release-manifest.sh generate release
+
+      # Attesting SHA256SUMS rather than each file binds the whole set through
+      # one signature: swap any listed asset and the digest check fails, swap
+      # the manifest and the attestation fails.
+      - name: Attest build provenance for SHA256SUMS
+        id: attest
+        if: steps.summary.outputs.publish_ok == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/SHA256SUMS
+
+      - name: Attach the attestation bundle
+        if: steps.summary.outputs.publish_ok == 'true'
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BUNDLE" ] || [ ! -s "$BUNDLE" ]; then
+            echo "::error::attest-build-provenance produced no bundle - refusing to publish"
+            exit 1
+          fi
+          cp "$BUNDLE" release/attestations.jsonl
+          wc -l release/attestations.jsonl
+
+      # THE gate this whole design turns on. 'generate' enumerated the
+      # directory, so it could never notice a file added afterwards - such as
+      # the attestation bundle just copied in. This step re-enumerates the
+      # directory and fails on any file present but unlisted, any file listed
+      # but absent, and any digest that no longer matches.
+      - name: Verify SHA256SUMS still describes the staged assets
+        if: steps.summary.outputs.publish_ok == 'true'
+        run: bash scripts/release-manifest.sh verify release
+
+      # Created as a DRAFT. 'gh release create' is not atomic - it creates the
+      # release, then uploads each asset - so a partial upload would otherwise
+      # leave a PUBLIC release whose assets do not match SHA256SUMS, and a
+      # re-run cannot repair it because the tag already has a release. A draft
+      # is not visible to consumers, so nothing is published until the asset
+      # set has been checked against the manifest.
+      - name: Create the GitHub Release as a draft
+        if: steps.summary.outputs.publish_ok == 'true' && (github.event_name == 'push' || inputs.publish)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+          PKG_NAME: ${{ needs.build.outputs.pkg_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            --draft \
+            --title "$PKG_NAME $VERSION" \
+            --notes-file release/ci-summary.md \
+            --verify-tag \
+            release/*
+
+      # Closes the loop the manifest opens: SHA256SUMS is only a claim about
+      # "the published set" if the published set is the set that was hashed.
+      # Runs against the draft, so a mismatch here means nothing was ever
+      # public.
+      - name: Check the draft's asset set matches the manifest
+        if: steps.summary.outputs.publish_ok == 'true' && (github.event_name == 'push' || inputs.publish)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" --json assets --jq '.assets[].name' | LC_ALL=C sort >uploaded.txt
+          ( cd release && ls -1 ) | LC_ALL=C sort >staged.txt
+          echo "uploaded to the draft:"; sed 's/^/  /' uploaded.txt
+          if ! diff -u staged.txt uploaded.txt; then
+            echo "::error::the draft's asset set differs from the staged, hashed set - not promoting"
+            exit 1
+          fi
+          echo "the draft carries exactly the files covered by SHA256SUMS (plus the manifest and the attestation bundle)."
+
+      # Only now does anything become visible to a consumer.
+      - name: Promote the draft to a published release
+        if: steps.summary.outputs.publish_ok == 'true' && (github.event_name == 'push' || inputs.publish)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release edit "$TAG" --draft=false
+          echo "published: $(gh release view "$TAG" --json url --jq '.url')"
+
+      # Last, so it cannot pre-empt the summary. A failed gate must still
+      # leave a red run behind.
+      - name: Fail the run when a gate did not pass
+        if: steps.summary.outputs.publish_ok != 'true'
+        run: |
+          echo "::error::one or more gates did not pass - no release was published. See the job summary."
+          exit 1
