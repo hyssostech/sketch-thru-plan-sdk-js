@@ -62,15 +62,54 @@ jobs:
       # the packed contents are sound; it says nothing about whether the
       # publish is authorised. Check the npm Trusted Publisher policy BEFORE
       # tagging, not after.
+      # STP-730. The dist-tag is DERIVED from the version, never hardcoded.
+      #
+      # A bare `npm publish` applies the `latest` dist-tag. That is correct for
+      # a stable release and wrong for a release candidate: it would point every
+      # `npm install sketch-thru-plan-sdk` at an rc. npm v11 refuses a bare
+      # publish of a prerelease for exactly that reason - measured on 11.13.0:
+      #
+      #   1.0.0-rc.1, bare      -> exit 1, "You must specify a tag using --tag
+      #                            when publishing a prerelease version."
+      #   1.0.0-rc.1, --tag rc  -> exit 0, "with tag rc"
+      #   1.0.0,      bare      -> exit 0, "with tag latest"
+      #
+      # So with package.json at 0.6.15-rc.1 this step FAILS without a --tag.
+      #
+      # Hardcoding `--tag rc` would fix that and create the opposite trap: the
+      # later STABLE publish would land on the rc dist-tag, leaving `latest`
+      # pointing at the old version, and someone would have to remember to
+      # change it back. Deriving from the version is correct in BOTH directions
+      # with no second edit, and `--tag latest` is identical to a bare publish.
+      #
+      # The identifier is taken from the version rather than assumed, so
+      # 0.6.15-beta.2 publishes under `beta`, not under `rc`.
       - name: Publish to npm (Trusted Publishing)
         env:
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
+
+          VERSION="$(node -p "require('./package.json').version")"
+          case "$VERSION" in
+            *-*) PRERELEASE="${VERSION#*-}"; DIST_TAG="${PRERELEASE%%.*}" ;;
+            *)   DIST_TAG="latest" ;;
+          esac
+
+          # A malformed identifier must stop the publish, not silently become a
+          # junk dist-tag that consumers can never find.
+          case "$DIST_TAG" in
+            ''|*[!A-Za-z0-9._-]*)
+              echo "::error::refusing to publish: derived dist-tag '$DIST_TAG' from version '$VERSION' is not a usable npm tag"
+              exit 1 ;;
+          esac
+
+          echo "version=$VERSION -> dist-tag=$DIST_TAG"
+
           # Empty on a tag push (no inputs context), so a tag publishes for real.
           if [ "${DRY_RUN:-false}" = "true" ]; then
             echo 'REHEARSAL: --dry-run, nothing will be published.'
-            npm publish --access public --dry-run
+            npm publish --access public --tag "$DIST_TAG" --dry-run
           else
-            npm publish --access public
+            npm publish --access public --tag "$DIST_TAG"
           fi
