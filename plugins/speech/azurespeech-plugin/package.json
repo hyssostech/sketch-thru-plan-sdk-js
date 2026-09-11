@@ -65,7 +65,7 @@
     "simple-lru-cache": "^0.0.2",
     "url-parse": "^1.5.10",
     "utf-8-validate": "^6.0.6",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "ws": "^8.19.0",
     "xmlhttprequest-ts": "^1.0.1"
   }
