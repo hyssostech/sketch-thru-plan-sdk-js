@@ -7,6 +7,23 @@ on:
       # A shared 'v*' would publish both at unrelated versions.
       - 'plugins-v*'
 
+  # STP-736 parity. publish-sdk.yml got a rehearsal switch and this file did
+  # not, which left the plugins publish with no way to exercise it short of a
+  # real tag that really publishes six packages. That gap mattered more here
+  # than there: this path has fired twice - v0.1.0-alpha.2 and v0.1.0-alpha.3,
+  # March 2026, under the old bare 'v*' trigger - and FAILED BOTH TIMES. It
+  # has never succeeded once.
+  #
+  # dry_run defaults TRUE, so a bare dispatch rehearses and publishes nothing.
+  # A tag push leaves inputs.dry_run empty, which the step below reads as
+  # false, so the tag path is completely unchanged.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Rehearse only: pack and validate, publish nothing.'
+        type: boolean
+        default: true
+
 permissions:
   id-token: write      # required for npm Trusted Publishing (OIDC)
   contents: read
@@ -22,7 +39,6 @@ jobs:
       fail-fast: false
       matrix:
         package:
-          - plugins/connectors/websockets-plugin
           - plugins/speech/azurespeech-plugin
           - plugins/speech/awsspeech-plugin
           - plugins/speech/voskspeech-plugin
@@ -41,14 +57,60 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        working-directory: ${{ matrix.package }}
-        run: npm install
+      # STP-723. These three steps used to run with
+      # working-directory: ${{ matrix.package }} and `npm install`.
+      #
+      # That was correct while each plugin owned a package-lock.json. Once the
+      # root package.json declares workspaces (STP-698) and the nine per-plugin
+      # lockfiles are deleted, `npm install` from inside a member resolves at
+      # the WORKSPACE ROOT, and - measured, not assumed - it does so silently:
+      #
+      #   npm install inside a plugin directory
+      #     -> exit 0, creates node_modules at the REPO ROOT (228 packages),
+      #        none in the plugin directory.
+      #   With package.json deliberately desynced from the lockfile
+      #     -> STILL exit 0, and it MUTATED the root package-lock.json.
+      #   npm ci at the root, same desync
+      #     -> exit 1, EUSAGE, naming the desync.
+      #
+      # So the old shape would let a release tag re-resolve dependencies,
+      # rewrite the lockfile inside the runner's checkout, and publish a
+      # tarball built from a tree that no lockfile in the repository
+      # describes - without ever failing. `npm ci` is the whole fix: it
+      # refuses to proceed when package.json and the lockfile disagree.
+      #
+      # Verified equivalent before changing: building and packing via
+      # --workspace produced a byte-identical file list to the old
+      # working-directory form - 28 files, 60.2 kB, 330.2 kB unpacked. That
+      # measurement was taken on @hyssostech/websockets-plugin, which STP-698
+      # has since RETIRED: the fork duplicated the SDK's own connector, its
+      # entire difference was the missing updateSolvables, and nothing in the
+      # repo used it.
+      #
+      # Its matrix entry is removed above. Leaving it would fail the publish
+      # job on a missing directory at the next plugins-v* tag - the deletion
+      # landed on the convention branch while this file lists the packages.
+      #
+      # --workspace accepts the PATH form that matrix.package holds, so the
+      # six remaining entries need no other change.
+      - name: Install dependencies (root, deterministic)
+        run: npm ci
 
       - name: Build
-        working-directory: ${{ matrix.package }}
-        run: npm run build
+        run: npm run build --workspace ${{ matrix.package }}
 
+      # --dry-run exercises pack, the file list and the registry's metadata
+      # validation. It does NOT exercise the Trusted Publishing policy: no
+      # OIDC token is redeemed, so a missing or wrong connection for any of
+      # these six packages still passes here and fails on the real tag.
       - name: Publish to npm (Trusted Publishing)
-        working-directory: ${{ matrix.package }}
-        run: npm publish --access public
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ "${DRY_RUN:-false}" = "true" ]; then
+            echo 'REHEARSAL: --dry-run, nothing will be published.'
+            npm publish --access public --workspace ${{ matrix.package }} --dry-run
+          else
+            npm publish --access public --workspace ${{ matrix.package }}
+          fi
