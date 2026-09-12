@@ -31,6 +31,30 @@ updates:
           - minor
           - patch
       # Everything else: minor and patch together, majors individually.
+      # The proxy-agent family moves TOGETHER, majors included.
+      #
+      # STP-728. Same lockstep shape as vitest above, but it hid better:
+      # https-proxy-agent@9.1.0 depends on agent-base at EXACTLY 9.0.0, and
+      # both are direct dependencies of azurespeech-plugin. Ungrouped they
+      # arrived as #66 (agent-base 7->9) and #67 (https-proxy-agent 7->9).
+      #
+      # Unlike the vitest pair, BOTH were green - 6/6 checks each - because
+      # npm simply nests a second copy of agent-base and nothing in this repo
+      # imports either package directly. So the checks could not see it.
+      # Merging #66 alone left main at agent-base ^9.0.0 with
+      # https-proxy-agent ^7.0.6: two copies in the tree and a declaration
+      # pair that no single PR could repair, since #67 then conflicted.
+      #
+      # A green check is not evidence the pair is consistent. The grouping is.
+      proxy-agent:
+        patterns:
+          - "agent-base"
+          - "*-proxy-agent"
+          - "proxy-agent"
+        update-types:
+          - major
+          - minor
+          - patch
       npm-minor-patch:
         update-types:
           - minor
