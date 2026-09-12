@@ -1,0 +1,108 @@
+STP-740 SonarQube baseline - measured 2026-09-12 17:05 UTC on a local
+SonarQube 26.9.0 container. These are the numbers the ratchet gate thresholds
+encode: the gate fails on REGRESSION past them, not on pre-existing debt.
+
+--- sdk-js-740 ---
+  blocker_violations           0
+  bugs                         21
+  code_smells                  185
+  coverage                     0.0
+  critical_violations          6
+  duplicated_lines_density     0.1
+  files                        46
+  ncloc                        6340
+  reliability_rating           3.0
+  security_rating              1.0
+  sqale_rating                 1.0
+  vulnerabilities              0
+
+--- sdk-js-740-full ---
+  blocker_violations           81
+  bugs                         48
+  code_smells                  628
+  coverage                     0.0
+  critical_violations          27
+  duplicated_lines_density     4.0
+  files                        123
+  ncloc                        16587
+  reliability_rating           4.0
+  security_rating              2.0
+  sqale_rating                 1.0
+  vulnerabilities              36
+
+--- sdk-net-740 ---
+  blocker_violations           1
+  bugs                         3
+  code_smells                  846
+  coverage                     0.0
+  critical_violations          8
+  duplicated_lines_density     0.0
+  files                        67
+  ncloc                        33294
+  reliability_rating           3.0
+  security_rating              2.0
+  sqale_rating                 1.0
+  vulnerabilities              1
+
+--- gate conditions installed (the ratchet itself) ---
+  sdk-js-ratchet:
+    vulnerabilities              GT 0
+    bugs                         GT 21
+    code_smells                  GT 185
+    duplicated_lines_density     GT 1
+    security_rating              GT 1
+    blocker_violations           GT 0
+    critical_violations          GT 6
+    (7 conditions)
+  sdk-net-ratchet:
+    vulnerabilities              GT 1
+    bugs                         GT 3
+    code_smells                  GT 846
+    duplicated_lines_density     GT 1
+    security_rating              GT 2
+    blocker_violations           GT 1
+    critical_violations          GT 8
+    (7 conditions)
+
+================================================================
+CALIBRATION DEFECT - READ BEFORE WIRING THIS GATE INTO CI
+================================================================
+
+The sdk-js-ratchet thresholds above were derived from sdk-js-740, which
+is a NARROW scan: 46 files, 6,340 ncloc, 0 vulnerabilities.
+
+The full sdk-js codebase is sdk-js-740-full: 123 files, 16,587 ncloc,
+and 36 vulnerabilities. That is 2.7x the files and 2.6x the code, and
+the vulnerability count goes from 0 to 36.
+
+So the gate as it stands is calibrated against roughly a third of the
+repository. Wired to a full-repo scan it would trip "vulnerabilities
+GT 0" on day one and stay red - and a permanently red gate is a gate
+somebody switches off, which is worse than no gate.
+
+This is the same failure the narrow scan already produced once as a
+REPORT: "all clean" was stated on the strength of 46 files and 0 vulns,
+and the full-codebase numbers contradicted it. The instrument measured
+a third of the subject and the result was read as covering all of it.
+
+Two things must be settled before this gate goes live, and neither is
+mine to settle alone:
+
+  1. SCOPE. What should the gate scan? Candidates:
+       - what SHIPS (src/ plus the six plugins), or
+       - the whole repository including samples/ and quickstart/.
+     The 36 vulnerabilities are concentrated in the half that does not
+     ship, which is exactly why the narrow scan looked clean. But the
+     samples are the surface the XSS and missing-SRI findings came from
+     (fixed in #62), so "does not ship" is not "does not matter".
+
+  2. THRESHOLDS. Whichever scope is chosen, re-derive the numbers
+     against THAT scope. Do not carry the sdk-js-ratchet numbers above
+     forward - they belong to sdk-js-740 and to nothing else.
+
+sdk-net-740 does not have this problem: 67 files / 33,294 ncloc is the
+whole of that repository, and sdk-net-ratchet is calibrated to it.
+
+Recorded on STP-740. The gate was demonstrated to pass AND to fail on
+the local container before these objects were deleted; what is
+unsettled is the scope it should judge, not whether it functions.
