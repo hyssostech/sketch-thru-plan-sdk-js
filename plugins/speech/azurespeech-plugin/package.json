@@ -51,7 +51,7 @@
     "sketch-thru-plan-sdk": "^0.6.15"
   },
   "devDependencies": {
-    "cpx2": "^8.0.0",
+    "cpx2": "^9.0.3",
     "sketch-thru-plan-sdk": "file:../../.."
   },
   "dependencies": {
