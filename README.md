@@ -110,6 +110,36 @@ b. Connection to STP via WebSockets - built into the SDK as `StpWebSocketsConnec
 The former `@hyssostech/websockets-plugin` package duplicated that class and is retired;
 use the SDK export directly.
 
+## Verifying a release
+
+Every published version of this package carries a genuine SLSA v1 provenance
+attestation. It is minted by npm Trusted Publishing (OIDC) from
+`.github/workflows/publish-sdk.yml`, and it has been produced since 0.6.14 -
+you do not need to wait for anything to start checking it.
+
+Check the version you installed:
+
+```sh
+npm view sketch-thru-plan-sdk@<version> dist.attestations
+```
+
+Or check every installed package in one pass, this one included:
+
+```sh
+npm audit signatures
+```
+
+That proves the registry holds a signed statement that a specific workflow, in
+this repository, at a specific commit, built the exact tarball the registry is
+serving. It does **not** prove the source that went in was good - no
+attestation can.
+
+Release tags additionally publish a `SHA256SUMS` manifest, an SBOM and a
+vulnerability scan as GitHub Release assets. The full procedure - and, for
+each check, what it does *not* prove - is in
+[VERIFYING.md](https://github.com/hyssostech/sketch-thru-plan-sdk-js/blob/main/VERIFYING.md).
+It is linked rather than reproduced because it is not part of the npm tarball.
+
 ## Reference
 
 [Sketch-Thru-Plan SDK Documentation](https://hyssostech.github.io/stp-docs/)
