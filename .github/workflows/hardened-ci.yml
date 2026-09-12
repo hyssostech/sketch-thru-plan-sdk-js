@@ -18,7 +18,7 @@ name: Hardened CI
 on:
   push:
     branches: [main]
-    # Tag namespace RULED 2026-09-04: the SDK and the seven npm plugins
+    # Tag namespace RULED 2026-09-04: the SDK and the six published npm plugins
     # version independently, each with its own release-tag prefix (see
     # publish-sdk.yml and publish.yml). A bare 'v*' belongs to neither
     # namespace and never matches, so list both real prefixes here.
