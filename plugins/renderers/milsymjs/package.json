@@ -28,6 +28,6 @@
     "sketch-thru-plan-sdk": "file:../../.."
   },
   "dependencies": {
-    "milsymbol": "^2.0.0"
+    "milsymbol": "^3.0.4"
   }
 }
