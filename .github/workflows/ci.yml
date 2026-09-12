@@ -31,6 +31,14 @@ jobs:
         run: npm run build
       - name: Test
         run: npm test
+
+      # STP-742. The plugin pack gate has its own unit tests, driven by
+      # synthetic payloads - one of which reproduces exactly what
+      # @hyssostech/arcgis-plugin@0.1.2 shipped to npm with no dist/. Running
+      # them here means the gate's failure modes are re-proven on every PR
+      # rather than once, by hand, at the time it was written.
+      - name: Test the plugin pack gate
+        run: node .github/scripts/tests/test-assert-plugin-pack.mjs
       - name: Coverage
         run: npm run test:coverage
       - name: Upload coverage report

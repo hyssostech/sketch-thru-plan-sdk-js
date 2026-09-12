@@ -1,6 +1,12 @@
 {
   "name": "@hyssostech/googlemaps-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "NOTICES.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hyssostech/sketch-thru-plan-sdk-js.git",

@@ -1,6 +1,14 @@
 {
   "name": "@hyssostech/awsspeech-plugin",
   "version": "0.1.1",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "NOTICES.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "description": "Amazon Transcribe Streaming Speech plugin for Sketch-thru-Plan",
   "main": "dist/stpawsspeech-bundle-min.js",
   "types": "dist/stpawsspeech-bundle.d.ts",
