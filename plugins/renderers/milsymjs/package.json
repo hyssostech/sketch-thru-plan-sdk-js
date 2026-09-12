@@ -23,7 +23,7 @@
     "sketch-thru-plan-sdk": "^0.6.15"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-commonjs": "^29.0.3",
     "sketch-thru-plan-sdk": "file:../../.."
   },
