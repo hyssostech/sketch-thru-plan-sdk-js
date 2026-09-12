@@ -39,6 +39,15 @@ jobs:
       # rather than once, by hand, at the time it was written.
       - name: Test the plugin pack gate
         run: node .github/scripts/tests/test-assert-plugin-pack.mjs
+
+      # STP-728. STP-707 SHA-pinned every action; nothing enforced it, so a
+      # `uses: foo@v1` would merge green and the convention would decay. It
+      # already had: main carried a version comment wrong by THREE majors.
+      - name: Assert actions are SHA-pinned
+        run: node .github/scripts/assert-action-pins.mjs .github/workflows
+
+      - name: Test the action pin check
+        run: node .github/scripts/tests/test-assert-action-pins.mjs
       - name: Coverage
         run: npm run test:coverage
       - name: Upload coverage report
