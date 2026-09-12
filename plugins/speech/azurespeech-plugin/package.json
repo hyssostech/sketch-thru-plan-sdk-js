@@ -55,7 +55,7 @@
     "sketch-thru-plan-sdk": "file:../../.."
   },
   "dependencies": {
-    "agent-base": "^7.1.4",
+    "agent-base": "^9.0.0",
     "asn1.js-rfc2560": "^5.0.1",
     "asn1.js-rfc5280": "^3.0.0",
     "async-disk-cache": "^2.1.0",
