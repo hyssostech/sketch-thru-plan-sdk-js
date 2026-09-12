@@ -10,6 +10,27 @@ updates:
       day: monday
     open-pull-requests-limit: 10
     groups:
+      # Test tooling moves TOGETHER, majors included.
+      #
+      # STP-728. vitest and @vitest/coverage-v8 are version-locked: the
+      # coverage provider must match the runner's major. Ungrouped, each
+      # arrived as its own PR (#53 and #52, both 4.1.11 -> 5.0.0) and BOTH
+      # failed - 2 checks red each - because merging either alone pairs a
+      # v5 runner with a v4 provider. Neither can merge first.
+      #
+      # Same shape as the NU1605 deadlock in sdk-net, where JMSML and StpSDK
+      # referenced one package at versions that could not move separately.
+      # The lesson generalises: a family that must move in lockstep needs a
+      # group spanning MAJORS, because the major is exactly when it breaks.
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+        update-types:
+          - major
+          - minor
+          - patch
+      # Everything else: minor and patch together, majors individually.
       npm-minor-patch:
         update-types:
           - minor
