@@ -115,14 +115,47 @@ jobs:
       # validation. It does NOT exercise the Trusted Publishing policy: no
       # OIDC token is redeemed, so a missing or wrong connection for any of
       # these six packages still passes here and fails on the real tag.
+      # STP-742. This tag publishes a SET of six packages that version
+      # INDEPENDENTLY by design, so any given tag will usually carry changes to
+      # only some of them. Without the check below, every unchanged package
+      # fails on "cannot publish over the previously published version" and the
+      # run goes red while having done exactly the right thing. That is a red
+      # nobody can act on, which is how real reds get ignored.
+      #
+      # The skip is decided by a POSITIVE lookup - "the registry already serves
+      # this exact name@version" - never by swallowing a publish error. That
+      # distinction is the whole point: `dotnet nuget push --skip-duplicate`
+      # exits 0 having shipped nothing and is indistinguishable from success,
+      # and this must not become that.
+      #
+      # It also prints SKIPPED vs PUBLISHED explicitly, so a green run says
+      # which of the two happened rather than leaving them to look alike.
       - name: Publish to npm (Trusted Publishing)
         env:
           DRY_RUN: ${{ inputs.dry_run }}
+          PKG_DIR: ${{ matrix.package }}
         run: |
           set -euo pipefail
+
+          NAME="$(node -p "require('./$PKG_DIR/package.json').name")"
+          VERSION="$(node -p "require('./$PKG_DIR/package.json').version")"
+          echo "package: $NAME@$VERSION"
+
+          # Positive check. `npm view <name>@<version> version` prints the
+          # version only when that exact version exists; anything else (missing
+          # package, missing version, network failure) leaves EXISTING empty and
+          # we fall through to publishing, where npm is the authority.
+          EXISTING="$(npm view "$NAME@$VERSION" version 2>/dev/null | tr -d '\r' || true)"
+
+          if [ "$EXISTING" = "$VERSION" ]; then
+            echo "SKIPPED: $NAME@$VERSION is already on the registry - this package did not change in this release."
+            exit 0
+          fi
+
           if [ "${DRY_RUN:-false}" = "true" ]; then
             echo 'REHEARSAL: --dry-run, nothing will be published.'
-            npm publish --access public --workspace ${{ matrix.package }} --dry-run
+            npm publish --access public --workspace "$PKG_DIR" --dry-run
           else
-            npm publish --access public --workspace ${{ matrix.package }}
+            npm publish --access public --workspace "$PKG_DIR"
+            echo "PUBLISHED: $NAME@$VERSION"
           fi
