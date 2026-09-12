@@ -21,7 +21,7 @@
   "author": "Hyssos Tech",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "cpx2": "^8.0.0",
     "rimraf": "^6.1.2",
@@ -37,7 +37,7 @@
     }
   },
   "dependencies": {
-    "sketch-thru-plan-sdk": "file:../../..",
-    "@hyssostech/azurespeech-plugin": "^0.3.2"
+    "@hyssostech/azurespeech-plugin": "^0.3.2",
+    "sketch-thru-plan-sdk": "file:../../.."
   }
 }

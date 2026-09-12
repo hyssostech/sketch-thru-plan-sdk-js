@@ -21,7 +21,7 @@
   "author": "Hyssos Tech",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@types/google.maps": "3.66.2",
     "cpx2": "^8.0.0",
