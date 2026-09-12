@@ -39,7 +39,7 @@
     }
   },
   "dependencies": {
-    "@googlemaps/js-api-loader": "^1.16.2",
+    "@googlemaps/js-api-loader": "^2.1.1",
     "@hyssostech/azurespeech-plugin": "^0.3.2",
     "@types/geojson": "^7946.0.11",
     "milsymbol": "^3.0.4",
