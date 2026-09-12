@@ -659,7 +659,7 @@ function log(msg, level='Info', showAlert = false) {
     if (! control) {
         throw new Error("Html page must contain a 'messages' div");
     }
-    control.innerHTML=msg;
+    control.textContent=msg;
     control.style.color =  level === "Error" ? "red" : "black";
 }
 //#endregion

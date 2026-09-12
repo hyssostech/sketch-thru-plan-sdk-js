@@ -335,6 +335,6 @@ function log(msg, level='Info', showAlert = false) {
   if (showAlert) { alert(msg); }
   const control = document.getElementById('messages');
   if (! control) { throw new Error("Html page must contain a 'messages' div"); }
-  control.innerHTML = msg;
+  control.textContent = msg;
   control.style.color =  level === 'Error' ? 'red' : 'black';
 }
