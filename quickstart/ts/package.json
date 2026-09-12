@@ -24,7 +24,7 @@
     "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@types/google.maps": "3.66.2",
-    "cpx2": "^8.0.0",
+    "cpx2": "^9.0.3",
     "gzip": "^0.1.0",
     "rimraf": "^6.1.2",
     "rollup": "^4.57.1",
