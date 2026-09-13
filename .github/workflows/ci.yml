@@ -29,6 +29,53 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+
+      # STP-760. The step above is `tsc` over a tsconfig whose include list is
+      # `src` only, so a green build-and-test proved the SDK compiled and
+      # NOTHING ELSE. All 11 declared workspaces - the six published plugins,
+      # two private renderers, the quickstart and two samples - went unbuilt.
+      #
+      # That is not academic. samples/basic loads
+      # plugins/maps/{arcgis,googlemaps,leaflet}/dist/*-bundle-min.js at
+      # runtime, and the publish workflow packs what these builds produce. Two
+      # plugins shipped to npm with NO dist/ at all (STP-742) and nothing
+      # compared built to packed, because nothing built them here.
+      #
+      # RULING 2026-09-12: samples are product, even if not packaged. So the
+      # gate covers every declared workspace, not just the published ones.
+      #
+      # Measured before wiring this: all 11 build clean on origin/main, so the
+      # gate lands green rather than red-on-arrival. A gate that is red the day
+      # it ships is one somebody switches off - that is how the engine ended up
+      # with a quality gate evaluating zero conditions (STP-741).
+      - name: Build every declared workspace
+        run: |
+          set -euo pipefail
+
+          # Derive the list from package.json rather than restating it, so the
+          # gate cannot drift from the manifest it claims to cover.
+          mapfile -t workspaces < <(node -e '
+            const {execSync} = require("child_process");
+            const out = execSync("npm query .workspace", {encoding:"utf8"});
+            for (const w of JSON.parse(out)) console.log(w.location);
+          ')
+
+          built=0
+          for w in "${workspaces[@]}"; do
+            echo "--- building $w"
+            npm run build --workspace "$w" --if-present
+            built=$((built + 1))
+          done
+
+          # A gate that examined NOTHING is a broken instrument, not a pass.
+          # If the query above ever returns empty this step would otherwise
+          # succeed loudly while building nothing at all.
+          if [ "$built" -eq 0 ]; then
+            echo "::error::built ZERO workspaces - the workspace query returned nothing, so this check measured nothing."
+            exit 1
+          fi
+          echo "PASS: built $built declared workspace(s)."
+
       - name: Test
         run: npm test
 
