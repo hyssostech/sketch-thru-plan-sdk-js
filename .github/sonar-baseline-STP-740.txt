@@ -45,15 +45,34 @@ encode: the gate fails on REGRESSION past them, not on pre-existing debt.
   vulnerabilities              1
 
 --- gate conditions installed (the ratchet itself) ---
-  sdk-js-ratchet:
-    vulnerabilities              GT 0
-    bugs                         GT 21
-    code_smells                  GT 185
-    duplicated_lines_density     GT 1
-    security_rating              GT 1
-    blocker_violations           GT 0
-    critical_violations          GT 6
+  sdk-js-ratchet:  SUPERSEDED 2026-09-14 - calibrated on a partial scope.
+    vulnerabilities              GT 0        <- full scope measures 36
+    bugs                         GT 21       <- full scope measures 48
+    code_smells                  GT 185      <- full scope measures 633
+    duplicated_lines_density     GT 1        <- full scope measures 4.0
+    security_rating              GT 1        <- full scope measures B (2)
+    blocker_violations           GT 0        <- full scope measures 81
+    critical_violations          GT 6        <- full scope measures 28
     (7 conditions)
+    ALL SEVEN trip on day one now. Use the re-derived set below.
+
+  sdk-js-ratchet-v2:  re-derived 2026-09-14 against the FULL tree.
+    vulnerabilities              GT 36
+    bugs                         GT 48
+    code_smells                  GT 633
+    duplicated_lines_density     GT 4.0
+    security_rating              GT 2        (currently B)
+    blocker_violations           GT 81
+    critical_violations          GT 28
+    (7 conditions)
+
+    A ratchet: every threshold sits AT the current value, so the gate fires on
+    the next regression rather than on the debt already there.
+
+    reliability_rating is D and sqale_rating is A; neither is in the gate. A
+    rating condition that the project already fails would be red from the day
+    it is switched on, and a gate that is red on arrival is one somebody turns
+    off - which is how STP-741 happened.
   sdk-net-ratchet:  SUPERSEDED 2026-09-14 - calibrated on a partial scope.
     vulnerabilities              GT 1        <- full scope measures 14
     bugs                         GT 3        <- full scope measures 28
@@ -148,8 +167,29 @@ Re-scanned 2026-09-14 with the samples in the solution:
     reliability_rating           -                  E
     sqale_rating                 -                  A
 
-sdk-JS has NOT been re-scanned; its ratchet above is still the partial-scope
-one and still trips on day one. That half of STP-740 remains open.
+sdk-js RE-SCANNED 2026-09-14, main at 9308268 plus the merges of that morning,
+same local SonarQube 26.9.0 on :29000:
+
+    files                        126        (partial scan saw 46)
+    ncloc                        16,773     (partial scan saw 6,340)
+    vulnerabilities              36
+    bugs                         48
+    code_smells                  633
+    duplicated_lines_density     4.0
+    blocker_violations           81
+    critical_violations          28
+    security_rating              B
+    reliability_rating           D
+    sqale_rating                 A
+
+Those figures reproduce the full-tree numbers this file already predicted
+(123 files / 16,587 ncloc / 36 / 81 / 48 / 628 / 4.0 / D / B) to within the
+drift of the commits since, which is the corroboration that BOTH measurements
+were sound.
+
+Both halves of STP-740 are now derived against the scope that actually ships.
+What remains is wiring the gate - and whoever does must assert it EVALUATED its
+conditions, not merely that it returned OK. See STP-741.
 
 Recorded on STP-740. The gate was demonstrated to pass AND to fail on
 the local container before these objects were deleted; what is
