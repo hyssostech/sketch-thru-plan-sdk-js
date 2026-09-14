@@ -90,6 +90,55 @@ jobs:
       # STP-728. STP-707 SHA-pinned every action; nothing enforced it, so a
       # `uses: foo@v1` would merge green and the convention would decay. It
       # already had: main carried a version comment wrong by THREE majors.
+      # STP-754. Twelve sample pages loaded Microsoft's speech SDK from
+      # `@latest` with no integrity attribute - whatever the CDN served that day
+      # executed unverified in a page users are invited to run.
+      #
+      # Offline on purpose. The hashes were verified against live bytes once,
+      # when they were authored (21 attributes, re-fetched on a second
+      # connection to prove the CDN is byte-stable for a pinned version). A gate
+      # that reaches the network on every run goes red on a CDN hiccup, and a
+      # gate that cries wolf gets switched off. This asserts the structure,
+      # which is what regresses: a new script tag, unpinned or unhashed.
+      - name: Assert CDN subresources are pinned and carry SRI
+        run: node .github/scripts/assert-cdn-pinned-and-sri.mjs .
+
+      # The check must be able to FAIL. sdk-js PR #62 shipped a WRONG SRI hash,
+      # which does not error a build - it just makes the browser refuse the
+      # script - so "it passed" is worth nothing without showing it can reject.
+      - name: Test the CDN pin/SRI check
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          mkdir -p "$tmp/pages"
+
+          cat >"$tmp/pages/unpinned.html" <<'HTML'
+          <script src="https://cdn.jsdelivr.net/npm/some-pkg@latest/x.js"></script>
+          HTML
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp" >/dev/null 2>&1; then
+            echo "::error::the check ACCEPTED an @latest script - it is not gating."
+            exit 1
+          fi
+
+          cat >"$tmp/pages/unpinned.html" <<'HTML'
+          <script src="https://cdn.jsdelivr.net/npm/some-pkg@1.2.3/x.js"></script>
+          HTML
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp" >/dev/null 2>&1; then
+            echo "::error::the check ACCEPTED a pinned script with no integrity."
+            exit 1
+          fi
+
+          cat >"$tmp/pages/unpinned.html" <<'HTML'
+          <script src="https://cdn.jsdelivr.net/npm/some-pkg@1.2.3/x.js" integrity="sha384-AAAA" crossorigin="anonymous"></script>
+          HTML
+          if ! node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp" >/dev/null 2>&1; then
+            echo "::error::the check REJECTED a correctly pinned+hashed script."
+            exit 1
+          fi
+
+          rm -rf "$tmp"
+          echo "PASS: the CDN check rejects unpinned and unhashed subresources, and accepts a good one."
+
       - name: Assert actions are SHA-pinned
         run: node .github/scripts/assert-action-pins.mjs .github/workflows
 
