@@ -291,11 +291,18 @@ Not drift - a 2x divergence on sdk-net, and in both directions by category
 (Cloud reports 17 bugs where local reports 6; local reports 1,560 smells where
 Cloud reports 806). Two causes, both understood:
 
-  - Community Build is deliberately rule-reduced. It drops the advanced .NET
-    dataflow rules and advanced SAST that Cloud runs, so Cloud finds real
-    defects local cannot see.
-  - Correct test classification (sonar.tests) moves hundreds of findings out
-    of the main measurement.
+  - ANALYSER difference. Community Build is deliberately rule-reduced: it drops
+    the advanced .NET dataflow rules and advanced SAST that Cloud runs, so Cloud
+    finds real defects local cannot see. This half is NOT reproducible locally
+    at any configuration - the rules are simply absent.
+  - CONFIGURATION difference. Correct test classification (sonar.tests) moves
+    hundreds of findings out of the main measurement. This half IS reproducible
+    locally once tests are classified the same way, and it is not evidence of
+    anything about the analysers.
+
+Keep those two apart when reasoning about a discrepancy. Conflating them leads
+to blaming the tool for a config error, or vice versa - and only the first is a
+reason to distrust a local number.
 
 A local scanner is a PRE-FLIGHT, not a gate. Use it to answer presence and
 absence in minutes - "did my suppression actually fire?" - and never to set a
