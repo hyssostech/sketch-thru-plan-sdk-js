@@ -326,8 +326,21 @@ export class StpRecognizer{
       };
       this.onStpMessage(pp.message, pp.level);
     } else {
-      // TODO: log error
-      console.log('Received message with no handler: ' + msg.method);
+      // Reached for BOTH an unknown method and a known one the consumer
+      // did not subscribe to. The second is ordinary traffic - a consumer
+      // who wires three of the thirty-odd events lands here for all the
+      // rest - so this is Debug, and it goes through onStpMessage rather
+      // than the console.
+      //
+      // It used to be an unconditional console.log, which a browser
+      // consumer could neither route nor silence, and which fired for
+      // events they had simply chosen not to handle. sdk-net reports the
+      // same situation through its own channel at Debug level.
+      if (this.onStpMessage) {
+        this.onStpMessage(
+          'Received a message with no handler: ' + msg.method,
+          StpType.StpMessageLevel.Debug);
+      }
     }
     /* 
   onCoaAdded: ((string name, string affiliation, string poid) => void) | undefined;
