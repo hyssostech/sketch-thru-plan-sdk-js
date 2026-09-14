@@ -249,3 +249,70 @@ is misspelled or unset - there will be no other sign.
 The scan parameters now live in sonar-project.properties at the repository
 root rather than in an untracked shell script, so the figures in this file can
 be re-derived by someone other than whoever first took them.
+
+================================================================
+SUPERSEDED 2026-09-14 - THE RATCHET IN THIS FILE IS NO LONGER THE GATE
+================================================================
+
+Read this before using any threshold above. Those numbers are now a historical
+measurement, not live guidance, and acting on them would be a mistake.
+
+WHAT REPLACED THEM
+
+SonarQube Cloud automatic analysis is live on this repository and applies the
+built-in "Sonar way" quality gate. Its five conditions are all on NEW code:
+
+    new_reliability_rating        <= A
+    new_security_rating           <= A
+    new_maintainability_rating    <= A
+    new_duplicated_lines_density  <= 3%
+    new_security_hotspots_reviewed = 100%
+
+That is strictly better than the absolute-count ratchet this file describes,
+and for a reason worth stating: a new-code gate does not require the existing
+debt to be paid before it becomes useful. The ratchet had to be re-derived
+every time the codebase moved; this does not. The ~600 pre-existing findings
+gate nothing, and the next regression still goes red.
+
+The gate is confirmed to EVALUATE its conditions - all five come back with
+actual values, not the empty `conditions: []` that made the engine's gate
+incapable of failing for sixty runs (STP-741). Check that property, not just
+the OK.
+
+WHY THE NUMBERS ABOVE MUST NOT BE USED AS THRESHOLDS
+
+They came from a LOCAL SonarQube Community Build container. Measured the same
+day against Cloud, the same code produces materially different numbers:
+
+    sdk-js     local 617 issues     Cloud 646
+    sdk-net    local 1,580 issues   Cloud 840
+
+Not drift - a 2x divergence on sdk-net, and in both directions by category
+(Cloud reports 17 bugs where local reports 6; local reports 1,560 smells where
+Cloud reports 806). Two causes, both understood:
+
+  - Community Build is deliberately rule-reduced. It drops the advanced .NET
+    dataflow rules and advanced SAST that Cloud runs, so Cloud finds real
+    defects local cannot see.
+  - Correct test classification (sonar.tests) moves hundreds of findings out
+    of the main measurement.
+
+A local scanner is a PRE-FLIGHT, not a gate. Use it to answer presence and
+absence in minutes - "did my suppression actually fire?" - and never to set a
+threshold. Threshold numbers come from the analysis that actually gates.
+
+WHERE CONFIGURATION LIVES NOW
+
+    .sonarcloud.properties     read by Cloud AUTOMATIC ANALYSIS. This is the
+                               one that affects the gate.
+    sonar-project.properties   IGNORED by automatic analysis. Still correct for
+                               local scans and any future CI-based analysis,
+                               which is why it remains.
+
+Automatic analysis cannot import coverage at all, so the lcov wiring described
+earlier in this file produces no Cloud coverage figure. That is a known and
+accepted cost of this analysis method, not a defect - the numbers are still
+produced and uploaded as CI artifacts.
+
+Everything above this section is kept because the measurements were real and
+the reasoning about scope still holds. It is history, not instruction.
