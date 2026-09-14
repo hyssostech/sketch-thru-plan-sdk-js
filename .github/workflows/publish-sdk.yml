@@ -25,8 +25,13 @@ on:
         default: true
         type: boolean
 
+# Workflow-level default is now the LEAST privilege, and id-token is granted
+# only to the one job that publishes. It used to be granted here, which meant
+# any job added later inherited the ability to mint a publish token unless
+# someone remembered to override it - a footgun that only fires long after the
+# person who set it has moved on. Both jobs below declare their own
+# permissions, so this line is the safety net rather than the mechanism.
 permissions:
-  id-token: write      # required for npm Trusted Publishing (OIDC)
   contents: read
 
 # SPLIT INTO TWO JOBS ON PURPOSE - see githubactions:S6505.
