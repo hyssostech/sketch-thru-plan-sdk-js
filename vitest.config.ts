@@ -6,7 +6,10 @@ export default defineConfig({
     include: ['test/**/*.vitest.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
+      // 'lcov' is what SonarQube's JavaScript analyser imports; without it the
+      // scanner reports 0.0% coverage no matter how much the suite actually
+      // covers, which is exactly what the STP-740 baseline recorded.
+      reporter: ['text', 'html', 'lcov'],
       reportsDirectory: 'coverage',
       thresholds: {
         statements: 75,
