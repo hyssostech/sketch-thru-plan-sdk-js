@@ -27,17 +27,44 @@ const root = process.argv[2] ?? '.';
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', '.git', 'coverage', 'docs-site']);
 
 // Hosts that serve versioned, immutable assets - the ones SRI is designed for.
-const CDN_HOSTS = [
+// Hosts this repository is KNOWN to load from. This list is for reporting
+// only - it is deliberately NOT the gate's scope.
+//
+// It used to be the scope, and that was a defect: `if (!CDN_HOSTS.includes(host))
+// continue;` ran BEFORE the loader-exemption check below, so js.arcgis.com was
+// skipped entirely - four live subresources with no integrity attribute at all,
+// including a plain stylesheet - while this script printed "every third-party
+// CDN subresource is pinned and carries SRI". It measured four hosts and
+// reported on all of them. SonarQube found what it could not.
+//
+// An allowlist is the wrong shape for this check. Adding a script tag from a
+// new host is exactly the event worth catching, and an allowlist is silent
+// precisely then. Every absolute http(s) subresource is now in scope, and new
+// hosts are called out so they are a decision rather than a default.
+const KNOWN_CDN_HOSTS = [
   'cdn.jsdelivr.net',
   'unpkg.com',
   'cdnjs.cloudflare.com',
   'code.jquery.com',
+  'js.arcgis.com',
 ];
 
 // Loaders that bootstrap further scripts at runtime. SRI on these is not
-// meaningful: the hash covers the loader, not what it goes on to fetch, and
-// the ArcGIS loader is versioned in its own path. Pinning is still required.
-const LOADER_EXEMPT = [/^https:\/\/js\.arcgis\.com\/\d+\.\d+\//];
+// meaningful: the hash would cover the loader, not what it goes on to fetch.
+// The ArcGIS loader URL is additionally a 301 redirect, and a hash over a
+// redirect target is a hash over something that can change without notice.
+//
+// Pinning IS still required - the version must be in the path - and that is
+// enforced below rather than merely asserted here, which is what the previous
+// version of this comment did while the code never reached this constant.
+//
+// Exempt subresources are COUNTED AND LISTED on every run. An exemption nobody
+// sees is indistinguishable from a blind spot, which is the failure this whole
+// script exists to avoid.
+// The trailing $ is load-bearing. Without it this matched every asset served
+// UNDER /<version>/ too - so the ArcGIS stylesheet was silently exempted as
+// though it were a loader. A stylesheet is not a loader and can carry SRI.
+const LOADER_EXEMPT = [/^https:\/\/js\.arcgis\.com\/\d+\.\d+\/$/];
 
 // This repository's OWN published bundle. STP-754 ruling (option 2): pin the
 // third-party dependency, and leave ours floating for now.
@@ -84,6 +111,8 @@ const problems = [];
 const own = [];
 let checked = 0;
 let commentedTemplates = 0;
+const loaders = [];
+const newHosts = new Set();
 
 for (const file of walk(root)) {
   const html = readFileSync(file, 'utf8');
@@ -94,7 +123,6 @@ for (const file of walk(root)) {
   for (const [tag] of html.matchAll(TAG)) {
     const url = attr(tag, 'src') ?? attr(tag, 'href');
     if (!url || !/^https?:\/\//i.test(url)) continue;
-    if (!CDN_HOSTS.includes(new URL(url).host)) continue;
     if (!live.includes(tag)) commentedTemplates++;
   }
 
@@ -105,7 +133,7 @@ for (const file of walk(root)) {
     if (!url || !/^https?:\/\//i.test(url)) continue;
 
     const host = new URL(url).host;
-    if (!CDN_HOSTS.includes(host)) continue;
+    if (!KNOWN_CDN_HOSTS.includes(host)) newHosts.add(host);
 
     // A stylesheet link is in scope; a preconnect/icon is not.
     if (/^<link/i.test(tag)) {
@@ -127,7 +155,15 @@ for (const file of walk(root)) {
       continue; // an unpinned URL cannot meaningfully carry a hash
     }
 
-    if (exempt) continue;
+    if (exempt) {
+      // Still must be version-pinned, which is the half SRI cannot cover here.
+      if (!/\/\d+\.\d+\//.test(url)) {
+        problems.push(`${where}: runtime loader is not version-pinned -> ${url}`);
+      } else {
+        loaders.push(`${where} -> ${url}`);
+      }
+      continue;
+    }
 
     if (!attr(tag, 'integrity')) {
       problems.push(`${where}: pinned but no integrity attribute -> ${url}`);
@@ -164,6 +200,22 @@ if (own.length) {
   console.log('couples every release to a sample bump, which the release workflow does not');
   console.log('automate yet. Listed so the decision stays visible:');
   for (const o of own) console.log(`  ${o}`);
+}
+
+if (loaders.length) {
+  console.log('');
+  console.log(`${loaders.length} runtime loader(s) exempt from SRI - a hash would cover the`);
+  console.log('loader, not what it fetches, and this URL is a redirect. Version pinning IS');
+  console.log('enforced on them. Listed so the exemption stays a decision, not a blind spot:');
+  for (const l of loaders) console.log(`  ${l}`);
+}
+
+if (newHosts.size) {
+  console.log('');
+  console.log(`NOTE: subresource(s) loaded from ${newHosts.size} host(s) not in the known list:`);
+  for (const h of newHosts) console.log(`  ${h}`);
+  console.log('They are gated exactly like the rest - this note exists so a NEW third-party');
+  console.log('origin is noticed when it appears, rather than blending in.');
 }
 
 if (commentedTemplates) {
