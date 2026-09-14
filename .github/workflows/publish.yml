@@ -287,13 +287,47 @@ jobs:
             exit 0
           fi
 
+          # STP-730, ported from publish-sdk.yml where this ruling was already
+          # applied. It was never applied here, and the gap is not cosmetic:
+          #
+          # A bare `npm publish` assigns the `latest` dist-tag. That is right
+          # for a stable release and wrong for a release candidate - it would
+          # point every `npm install @hyssostech/<plugin>` at an rc. npm v11
+          # refuses a bare prerelease publish for exactly that reason (measured
+          # on 11.13.0: 1.0.0-rc.1 bare -> exit 1, --tag rc -> exit 0), so today
+          # this workflow simply CANNOT publish a plugin prerelease at all. The
+          # failure is at least safe, but it means the rehearsal path that
+          # exists for the SDK has never existed for the plugins.
+          #
+          # Hardcoding `--tag rc` would invert the trap: the later STABLE
+          # publish would land on the rc tag, leaving `latest` on the old
+          # version until someone remembered to change it back. Deriving from
+          # the version is correct in BOTH directions with no second edit, and
+          # `--tag latest` is identical to a bare publish.
+          #
+          # The identifier comes from the version rather than being assumed, so
+          # 0.1.2-beta.2 publishes under `beta`, not under `rc`.
+          case "$VERSION" in
+            *-*) PRERELEASE="${VERSION#*-}"; DIST_TAG="${PRERELEASE%%.*}" ;;
+            *)   DIST_TAG="latest" ;;
+          esac
+
+          # A malformed identifier must stop the publish, not silently become a
+          # junk dist-tag that consumers can never find.
+          case "$DIST_TAG" in
+            ''|*[!A-Za-z0-9._-]*)
+              echo "::error::refusing to publish: derived dist-tag '$DIST_TAG' from version '$VERSION' is not a usable npm tag"
+              exit 1 ;;
+          esac
+          echo "dist-tag: $DIST_TAG"
+
           if [ "${DRY_RUN:-false}" = "true" ]; then
             echo 'REHEARSAL: --dry-run, nothing will be published.'
-            npm publish "$TARBALL" --access public --dry-run
+            npm publish "$TARBALL" --access public --tag "$DIST_TAG" --dry-run
             echo "published=false" >>"$GITHUB_OUTPUT"
           else
-            npm publish "$TARBALL" --access public
-            echo "PUBLISHED: $NAME@$VERSION"
+            npm publish "$TARBALL" --access public --tag "$DIST_TAG"
+            echo "PUBLISHED: $NAME@$VERSION (dist-tag $DIST_TAG)"
             echo "published=true" >>"$GITHUB_OUTPUT"
             echo "spec=$NAME@$VERSION" >>"$GITHUB_OUTPUT"
           fi

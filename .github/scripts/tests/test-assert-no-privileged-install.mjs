@@ -180,6 +180,27 @@ jobs:
 );
 
 check(
+  'an install mentioned only in a COMMENT must not count',
+  scenario('commented', `name: t
+on:
+  push:
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Publish
+        run: |
+          # Consumers who run \`npm install some-pkg\` are unaffected by this.
+          # We deliberately do not npm ci here.
+          npm publish pkg.tgz
+`),
+  true,
+  ['PASS'],
+);
+
+check(
   'an unprivileged job may install freely',
   scenario('unprivileged', `name: t
 on:

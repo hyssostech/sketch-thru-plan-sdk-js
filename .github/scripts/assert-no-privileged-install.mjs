@@ -144,7 +144,18 @@ for (const file of walk(root)) {
     const priv = isPrivileged(effective);
     const inherited = job.perms == null && priv.length > 0;
 
-    const installs = job.runs.filter((r) => INSTALL.test(r) && !IGNORES_SCRIPTS.test(r));
+    // Shell COMMENTS are not commands. Without this the checker flags its own
+    // rationale: a comment reading "would point every `npm install <pkg>` at an
+    // rc" is prose, not an install, and matching it makes the check fire on the
+    // very documentation that explains it. Exactly the blind spot the CDN
+    // subresource checker had with commented-out <script> tags.
+    //
+    // Only FULL-LINE comments are stripped. A trailing comment after a real
+    // command still leaves the command matchable, which is what we want.
+    const isComment = (line) => /^\s*#/.test(line);
+    const installs = job.runs
+      .filter((r) => !isComment(r))
+      .filter((r) => INSTALL.test(r) && !IGNORES_SCRIPTS.test(r));
     if (priv.length && installs.length) {
       problems.push(
         `${where}: job "${job.name}" holds ${priv.map((p) => `${p}: write`).join(', ')}` +
