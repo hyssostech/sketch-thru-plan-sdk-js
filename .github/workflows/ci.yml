@@ -144,6 +144,21 @@ jobs:
 
       - name: Test the action pin check
         run: node .github/scripts/tests/test-assert-action-pins.mjs
+
+      # STP-709. scripts/release-manifest.sh is what makes SHA256SUMS a claim
+      # about the PUBLISHED asset set rather than about whatever happened to be
+      # on disk when it was written - and it shipped with no tests, in both
+      # SDKs, which made the central release-integrity control of each one a
+      # thing taken on trust.
+      #
+      # The load-bearing case is a file present in the release directory but
+      # absent from the manifest. `sha256sum -c` walks the manifest and so
+      # cannot see it, and that exact state occurs on EVERY release the moment
+      # attestations.jsonl is copied in after the manifest is generated. One of
+      # the controls asserts that `sha256sum -c` STILL fails to catch it, so the
+      # reason this script exists cannot quietly evaporate.
+      - name: Test the release manifest gate
+        run: bash .github/scripts/tests/test-release-manifest.sh
       - name: Coverage
         run: npm run test:coverage
       - name: Upload coverage report
