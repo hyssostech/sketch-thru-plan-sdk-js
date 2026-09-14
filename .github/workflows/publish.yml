@@ -130,6 +130,26 @@ jobs:
       - name: Install dependencies (root, deterministic)
         run: npm ci --ignore-scripts
 
+      # EVERY plugin compiles against the root SDK - each declares
+      # "sketch-thru-plan-sdk": "file:../../.." - so the SDK's type declarations
+      # must exist before any plugin's tsc runs.
+      #
+      # This step is NEW, and it is here because --ignore-scripts exposed that
+      # the build was previously happening by ACCIDENT. `npm ci` used to run the
+      # root package's `prepare: npm run build` hook, which built the SDK as a
+      # side effect of installing. Nothing in this workflow said so, nothing
+      # depended on it explicitly, and suppressing install scripts broke all six
+      # plugins at once with
+      #
+      #     error TS2307: Cannot find module 'sketch-thru-plan-sdk'
+      #
+      # That is precisely the argument for preferring an explicit build over one
+      # hidden in a lifecycle hook: the hook worked right up until something
+      # unrelated stopped invoking it, and then the failure named a missing
+      # module rather than a missing step.
+      - name: Build the SDK that every plugin compiles against
+        run: npm run build
+
       - name: Build
         run: npm run build --workspace ${{ matrix.package }}
 
