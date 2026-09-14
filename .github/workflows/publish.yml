@@ -24,15 +24,35 @@ on:
         type: boolean
         default: true
 
+# Workflow-level default is LEAST PRIVILEGE. id-token is granted only to the one
+# job that publishes. It used to be granted here, which meant any job added
+# later inherited the ability to mint a publish token unless someone remembered
+# to override it - a footgun that only fires long after whoever set it moved on.
 permissions:
-  id-token: write      # required for npm Trusted Publishing (OIDC)
   contents: read
 
+# SPLIT INTO TWO JOBS ON PURPOSE - githubactions:S6505, ported from
+# publish-sdk.yml where the same split was proven end-to-end by a real rc
+# publish (0.6.16-rc.1) that came back carrying its SLSA provenance.
+#
+# This used to be one job holding `id-token: write` and running a bare
+# `npm ci`. Those two facts together were the problem. `npm ci` executes
+# preinstall/install/postinstall scripts from every dependency in the tree, and
+# a job granted id-token gets ACTIONS_ID_TOKEN_REQUEST_URL and _TOKEN as
+# ordinary environment variables visible to every process in it. So a lifecycle
+# script in any transitive dependency could mint an OIDC token and publish any
+# of these six packages under the project's identity, never touching the
+# publish step.
+#
+# Trusted Publishing removed the long-lived token, which was right, but the
+# OIDC capability is scoped to the JOB, not to the publish command. So: build
+# where there is no token, publish where there is no third-party code.
 jobs:
-  publish:
+  # No id-token. Runs third-party install scripts and builds; has no credential
+  # worth stealing.
+  build:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: read
 
     strategy:
@@ -93,8 +113,22 @@ jobs:
       #
       # --workspace accepts the PATH form that matrix.package holds, so the
       # six remaining entries need no other change.
+      # --ignore-scripts: measured across 6,347 installed packages, exactly TWO
+      # declare a registry install hook - bufferutil and utf-8-validate, both
+      # `node-gyp-build`, both optional native accelerators for ws reached
+      # through the azurespeech plugin. ws wraps both requires in try/catch and
+      # continues regardless, so skipping them costs a pure-JS fallback in a job
+      # that opens no sockets.
+      #
+      # It also skips the root package's own `prepare: npm run build`, which is
+      # not a loss - the Build step below runs the same command explicitly, and
+      # a build that happens visibly beats one hidden in an install hook.
+      #
+      # NOT passed to `npm publish`: every plugin declares
+      # `prepublishOnly: npm run build`, so suppressing scripts there would ship
+      # an unbuilt package.
       - name: Install dependencies (root, deterministic)
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Build
         run: npm run build --workspace ${{ matrix.package }}
@@ -111,10 +145,88 @@ jobs:
       - name: Assert the tarball contains the built output
         run: node .github/scripts/assert-plugin-pack.mjs ${{ matrix.package }}
 
+      # Pack HERE so the bytes that get published are the ones this job built and
+      # checked, rather than a re-resolution of the tree inside a job that holds
+      # a token. npm pack --workspace writes the tarball to the repo root and
+      # prints only its filename - verified, not assumed.
+      - name: Pack the tarball
+        id: pack
+        env:
+          PKG_DIR: ${{ matrix.package }}
+        run: |
+          set -euo pipefail
+
+          NAME="$(node -p "require('./$PKG_DIR/package.json').name")"
+          VERSION="$(node -p "require('./$PKG_DIR/package.json').version")"
+          TARBALL="$(npm pack --workspace "$PKG_DIR" --silent | tr -d '\r')"
+          test -f "$TARBALL" || { echo "::error::npm pack produced no $TARBALL"; ls -la; exit 1; }
+
+          mkdir -p staged
+          mv "$TARBALL" staged/
+          # Metadata travels WITH the tarball. A matrix job cannot set per-entry
+          # job outputs - later entries overwrite earlier ones - so the publish
+          # job reads what it needs out of the artifact instead.
+          {
+            echo "NAME=$NAME"
+            echo "VERSION=$VERSION"
+            echo "TARBALL=$TARBALL"
+          } >staged/meta.env
+
+          # Artifact names cannot contain '/', and the matrix entries are paths.
+          echo "slug=${PKG_DIR//\//-}" >>"$GITHUB_OUTPUT"
+          echo "packed $NAME@$VERSION -> $TARBALL"
+
+      - name: Upload the packed tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: plugin-${{ steps.pack.outputs.slug }}
+          path: staged/
+          if-no-files-found: error
+          retention-days: 1
+
+  # The ONLY job with id-token. No checkout, no npm ci, so no third-party code
+  # runs while the OIDC capability is available.
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - plugins/speech/azurespeech-plugin
+          - plugins/speech/awsspeech-plugin
+          - plugins/speech/voskspeech-plugin
+          - plugins/maps/leaflet
+          - plugins/maps/arcgis
+          - plugins/maps/googlemaps
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Derive the artifact name
+        id: slug
+        env:
+          PKG_DIR: ${{ matrix.package }}
+        run: echo "slug=${PKG_DIR//\//-}" >>"$GITHUB_OUTPUT"
+
+      - name: Download the packed tarball
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: plugin-${{ steps.slug.outputs.slug }}
+
       # --dry-run exercises pack, the file list and the registry's metadata
       # validation. It does NOT exercise the Trusted Publishing policy: no
       # OIDC token is redeemed, so a missing or wrong connection for any of
       # these six packages still passes here and fails on the real tag.
+      #
       # STP-742. This tag publishes a SET of six packages that version
       # INDEPENDENTLY by design, so any given tag will usually carry changes to
       # only some of them. Without the check below, every unchanged package
@@ -131,15 +243,17 @@ jobs:
       # It also prints SKIPPED vs PUBLISHED explicitly, so a green run says
       # which of the two happened rather than leaving them to look alike.
       - name: Publish to npm (Trusted Publishing)
+        id: pub
         env:
           DRY_RUN: ${{ inputs.dry_run }}
-          PKG_DIR: ${{ matrix.package }}
         run: |
           set -euo pipefail
 
-          NAME="$(node -p "require('./$PKG_DIR/package.json').name")"
-          VERSION="$(node -p "require('./$PKG_DIR/package.json').version")"
-          echo "package: $NAME@$VERSION"
+          test -f meta.env || { echo "::error::meta.env missing from the artifact"; ls -la; exit 1; }
+          # shellcheck disable=SC1091
+          . ./meta.env
+          echo "package: $NAME@$VERSION   artifact: $TARBALL"
+          test -f "$TARBALL" || { echo "::error::$TARBALL missing from the artifact"; ls -la; exit 1; }
 
           # Positive check. `npm view <name>@<version> version` prints the
           # version only when that exact version exists; anything else (missing
@@ -149,13 +263,56 @@ jobs:
 
           if [ "$EXISTING" = "$VERSION" ]; then
             echo "SKIPPED: $NAME@$VERSION is already on the registry - this package did not change in this release."
+            echo "published=false" >>"$GITHUB_OUTPUT"
             exit 0
           fi
 
           if [ "${DRY_RUN:-false}" = "true" ]; then
             echo 'REHEARSAL: --dry-run, nothing will be published.'
-            npm publish --access public --workspace "$PKG_DIR" --dry-run
+            npm publish "$TARBALL" --access public --dry-run
+            echo "published=false" >>"$GITHUB_OUTPUT"
           else
-            npm publish --access public --workspace "$PKG_DIR"
+            npm publish "$TARBALL" --access public
             echo "PUBLISHED: $NAME@$VERSION"
+            echo "published=true" >>"$GITHUB_OUTPUT"
+            echo "spec=$NAME@$VERSION" >>"$GITHUB_OUTPUT"
           fi
+
+      # THE ONLY QUIET FAILURE HERE, made loud - same reasoning as
+      # publish-sdk.yml. `--provenance` is never passed; npm auto-enables it
+      # under Trusted Publishing. If it ever stops being attached the package
+      # publishes perfectly, every step stays green, and the SLSA attestation
+      # VERIFYING.md tells consumers to check is simply absent.
+      #
+      # Only runs when this matrix entry actually published, so a SKIPPED
+      # package is not asserted against.
+      - name: Assert the published version carries provenance
+        if: steps.pub.outputs.published == 'true'
+        env:
+          SPEC: ${{ steps.pub.outputs.spec }}
+        run: |
+          set -euo pipefail
+          echo "checking provenance for $SPEC"
+
+          PREDICATE=''
+          for attempt in $(seq 1 10); do
+            PREDICATE="$(npm view "$SPEC" dist.attestations.provenance.predicateType 2>/dev/null | tr -d '\r' || true)"
+            if [ -n "$PREDICATE" ]; then
+              echo "attempt $attempt: $PREDICATE"
+              break
+            fi
+            echo "attempt $attempt: not visible yet, waiting"
+            sleep 15
+          done
+
+          if [ -z "$PREDICATE" ]; then
+            echo "::error::$SPEC published WITHOUT a provenance attestation, or it did"
+            echo "::error::not become visible within ~150s. Before calling this a flake:"
+            echo "::error::  npm view $SPEC dist.attestations --json"
+            exit 1
+          fi
+
+          case "$PREDICATE" in
+            https://slsa.dev/provenance/*) echo "provenance present: $PREDICATE" ;;
+            *) echo "::error::unexpected predicateType '$PREDICATE'"; exit 1 ;;
+          esac
