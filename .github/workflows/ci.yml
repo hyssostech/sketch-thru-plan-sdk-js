@@ -196,6 +196,23 @@ jobs:
       # reason this script exists cannot quietly evaporate.
       - name: Test the release manifest gate
         run: bash .github/scripts/tests/test-release-manifest.sh
+
+      # githubactions:S6505. `npm ci` runs preinstall/install/postinstall scripts
+      # from every dependency; a job with id-token: write exposes
+      # ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN to every process in it. Together, a
+      # lifecycle script in any transitive dependency can mint an OIDC token and
+      # publish under this project's identity without touching the publish step.
+      #
+      # Both publish workflows were split by hand so that never happens. Nothing
+      # stopped the next person merging the jobs back for convenience, or adding
+      # an `npm ci` to the publish job to get a tool on PATH - both entirely
+      # reasonable-looking changes that silently restore the problem. This makes
+      # it a property the repository keeps rather than two one-off fixes.
+      - name: Assert no job installs dependencies while privileged
+        run: node .github/scripts/assert-no-privileged-install.mjs .github/workflows
+
+      - name: Test the privileged-install check
+        run: node .github/scripts/tests/test-assert-no-privileged-install.mjs
       - name: Coverage
         run: npm run test:coverage
       - name: Upload coverage report
