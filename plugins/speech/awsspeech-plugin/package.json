@@ -47,6 +47,6 @@
     "sketch-thru-plan-sdk": "file:../../.."
   },
   "dependencies": {
-    "@aws-sdk/client-transcribe-streaming": "^3.998.0"
+    "@aws-sdk/client-transcribe-streaming": "^3.1130.0"
   }
 }
