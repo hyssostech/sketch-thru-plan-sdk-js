@@ -263,3 +263,59 @@ jobs:
           else
             npm publish "$TARBALL" --access public --tag "$DIST_TAG"
           fi
+
+      # THE ONLY QUIET FAILURE IN THIS WORKFLOW, made loud.
+      #
+      # Every other way this can go wrong is noisy: a bad build fails the build
+      # step, a duplicate version fails the publish, a Trusted Publishing policy
+      # mismatch returns 403. Provenance is different. `--provenance` is never
+      # passed here - npm auto-enables it under Trusted Publishing - so if it
+      # ever stops being attached, the package publishes perfectly, every step
+      # stays green, and the SLSA attestation that VERIFYING.md tells consumers
+      # to check is simply absent. Nobody would find out from CI.
+      #
+      # Until this step existed, NOTHING ran after the publish at all.
+      #
+      # Polls rather than checking once: registry metadata propagates a little
+      # after a publish returns, so a single immediate check would be a bet on
+      # timing rather than a measurement. Bounded, and a timeout is a FAILURE -
+      # "could not confirm" must not read as "confirmed".
+      - name: Assert the published version carries provenance
+        if: ${{ inputs.dry_run != true }}
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          # This workflow publishes exactly one package - the file is
+          # publish-sdk.yml and its tag namespace is sdk-v*.
+          SPEC="sketch-thru-plan-sdk@${VERSION}"
+          echo "checking provenance for $SPEC"
+
+          PREDICATE=''
+          for attempt in $(seq 1 10); do
+            PREDICATE="$(npm view "$SPEC" dist.attestations.provenance.predicateType 2>/dev/null || true)"
+            if [ -n "$PREDICATE" ]; then
+              echo "attempt $attempt: $PREDICATE"
+              break
+            fi
+            echo "attempt $attempt: not visible yet, waiting"
+            sleep 15
+          done
+
+          if [ -z "$PREDICATE" ]; then
+            echo "::error::$SPEC published WITHOUT a provenance attestation, or it did not"
+            echo "::error::become visible within ~150s. VERIFYING.md tells consumers to check"
+            echo "::error::dist.attestations.provenance - that instruction is now wrong for"
+            echo "::error::this version. Do not treat this as a flake without checking:"
+            echo "::error::  npm view $SPEC dist.attestations --json"
+            exit 1
+          fi
+
+          case "$PREDICATE" in
+            https://slsa.dev/provenance/*)
+              echo "provenance present: $PREDICATE" ;;
+            *)
+              echo "::error::unexpected predicateType '$PREDICATE' - expected a SLSA provenance type"
+              exit 1 ;;
+          esac
