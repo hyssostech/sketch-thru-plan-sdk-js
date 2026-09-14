@@ -54,15 +54,34 @@ encode: the gate fails on REGRESSION past them, not on pre-existing debt.
     blocker_violations           GT 0
     critical_violations          GT 6
     (7 conditions)
-  sdk-net-ratchet:
-    vulnerabilities              GT 1
-    bugs                         GT 3
-    code_smells                  GT 846
-    duplicated_lines_density     GT 1
+  sdk-net-ratchet:  SUPERSEDED 2026-09-14 - calibrated on a partial scope.
+    vulnerabilities              GT 1        <- full scope measures 14
+    bugs                         GT 3        <- full scope measures 28
+    code_smells                  GT 846      <- full scope measures 1688
+    duplicated_lines_density     GT 1        <- full scope measures 18.8
     security_rating              GT 2
-    blocker_violations           GT 1
-    critical_violations          GT 8
+    blocker_violations           GT 1        <- full scope measures 24
+    critical_violations          GT 8        <- full scope measures 78
     (7 conditions)
+    Six of the seven trip on day one now. Use the re-derived set below.
+
+  sdk-net-ratchet-v2:  re-derived 2026-09-14 against the FULL solution scope.
+    vulnerabilities              GT 14
+    bugs                         GT 28
+    code_smells                  GT 1688
+    duplicated_lines_density     GT 18.8
+    security_rating              GT 2        (currently B)
+    blocker_violations           GT 24
+    critical_violations          GT 78
+    (7 conditions)
+
+    A ratchet, so every threshold sits AT the current value: the gate fires on
+    the next regression, not on the existing debt. Tighten deliberately, as
+    debt is paid down.
+
+    reliability_rating is E and sqale_rating is A. Neither is in the gate:
+    E cannot get worse, so a condition on it could never fail - and a
+    condition that cannot fail is the exact defect STP-741 documented.
 
 ================================================================
 CALIBRATION DEFECT - READ BEFORE WIRING THIS GATE INTO CI
@@ -100,8 +119,37 @@ mine to settle alone:
      against THAT scope. Do not carry the sdk-js-ratchet numbers above
      forward - they belong to sdk-js-740 and to nothing else.
 
-sdk-net-740 does not have this problem: 67 files / 33,294 ncloc is the
-whole of that repository, and sdk-net-ratchet is calibrated to it.
+CORRECTION 2026-09-14. The line that stood here said sdk-net had no scope
+problem - "67 files / 33,294 ncloc is the whole of that repository". That was
+FALSE, and it was the same defect as sdk-js's, not an exemption from it.
+
+sdk-net's scan follows StpSDK.sln, and the solution contained THREE projects:
+StpSDK, JMSML and the tests. Samples, quickstart and plugins - 12 more
+first-party projects - were outside it and therefore invisible to any
+solution-based analysis. That is STP-756, fixed in sdk-net #52.
+
+It was not academic. Nine samples did not compile at all, for two independent
+reasons found while investigating: an NU1605 package downgrade and a plugin
+path casing that cannot resolve off Windows. Nothing noticed, because nothing
+built them.
+
+Re-scanned 2026-09-14 with the samples in the solution:
+
+                            before (partial)   after (full scope)
+    files                        67                 149
+    ncloc                        33,294             50,384
+    vulnerabilities              -                  14
+    bugs                         -                  28
+    code_smells                  846                1,688
+    duplicated_lines_density     -                  18.8
+    blocker_violations           -                  24
+    critical_violations          -                  78
+    security_rating              -                  B
+    reliability_rating           -                  E
+    sqale_rating                 -                  A
+
+sdk-JS has NOT been re-scanned; its ratchet above is still the partial-scope
+one and still trips on day one. That half of STP-740 remains open.
 
 Recorded on STP-740. The gate was demonstrated to pass AND to fail on
 the local container before these objects were deleted; what is
