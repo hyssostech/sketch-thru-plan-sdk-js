@@ -84,7 +84,7 @@ function walk(dir, out = []) {
     const p = join(dir, entry);
     if (statSync(p).isDirectory()) {
       if (!SKIP_DIRS.has(entry)) walk(p, out);
-    } else if (entry.endsWith('.html')) {
+    } else if (entry.endsWith('.html') || entry.endsWith('.js') || entry.endsWith('.ts')) {
       out.push(p);
     }
   }
@@ -114,8 +114,82 @@ let commentedTemplates = 0;
 const loaders = [];
 const newHosts = new Set();
 
+// Subresources fetched by JavaScript at runtime rather than declared as tags.
+//
+// THE SECOND BLIND SPOT THIS SCRIPT HAS HAD. The first was HTML comments being
+// counted as live tags. This one is the mirror image: real, executing loads that
+// the scanner could not see because it only parsed HTML. A floating
+// "@1.x" range against unpkg survived the whole of STP-754 inside a
+// loadScript() call, in the sample that is the project's primary demo.
+//
+// Deliberately narrow: named loader helpers and dynamic import() with a literal
+// URL. It does NOT try to track variables or template strings - a checker that
+// pretends to do taint analysis and quietly fails at it is worse than one with
+// a stated boundary. What it catches is the shape that actually occurs here.
+const DYNAMIC = /(?:loadScript|loadCss|loadStyle|import)\(\s*['"](https?:\/\/[^'"]+)['"]/g;
+
+// SRI on a dynamic load is passed as an argument, not an attribute, so its
+// presence is checked by looking for a digest literal near the call. This is a
+// heuristic and is stated as one: it can be fooled by a digest that belongs to a
+// neighbouring call. It cannot be fooled by the case that matters - no digest
+// anywhere near the call site.
+const NEARBY_DIGEST = /sha(?:256|384|512)-[A-Za-z0-9+/=]{20,}/;
+const DIGEST_LOOKAHEAD = 3;
+
+function scanDynamic(file, text, where) {
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, i) => {
+    for (const m of line.matchAll(DYNAMIC)) {
+      const url = m[1];
+      let host;
+      try {
+        host = new URL(url).host;
+      } catch {
+        continue;
+      }
+      dynamicChecked++;
+      if (!KNOWN_CDN_HOSTS.includes(host)) newHosts.add(host);
+
+      const floating = /@latest\b/.test(url) || /@\^|@~/.test(url) || /@\d+\.x\b/.test(url);
+      if (floating) {
+        problems.push(
+          `${where}:${i + 1}: dynamically loaded and NOT pinned to an exact version -> ${url}\n` +
+            '        A floating range against a CDN changes the executing bytes with no commit, ' +
+            'no review and no notice, and cannot carry SRI at all.'
+        );
+        continue;
+      }
+
+      if (LOADER_EXEMPT.some((re) => re.test(url))) {
+        if (!/\/\d+\.\d+\//.test(url)) {
+          problems.push(`${where}:${i + 1}: runtime loader is not version-pinned -> ${url}`);
+        } else {
+          loaders.push(`${where}:${i + 1} -> ${url}`);
+        }
+        continue;
+      }
+
+      const window_ = lines.slice(i, i + 1 + DIGEST_LOOKAHEAD).join('\n');
+      if (!NEARBY_DIGEST.test(window_)) {
+        problems.push(
+          `${where}:${i + 1}: dynamically loaded with no integrity digest -> ${url}\n` +
+            `        Pass one as the second argument; none found within ${DIGEST_LOOKAHEAD} lines.`
+        );
+      }
+    }
+  });
+}
+
+let dynamicChecked = 0;
+
 for (const file of walk(root)) {
-  const html = readFileSync(file, 'utf8');
+  const text0 = readFileSync(file, 'utf8');
+  const where0 = relative(root, file).split(sep).join('/');
+  if (!file.endsWith('.html')) {
+    scanDynamic(file, text0, where0);
+    continue;
+  }
+  const html = text0;
   const live = maskComments(html);
 
   // Commented-out CDN tags are documentation, not traffic. Counted so the
@@ -176,7 +250,13 @@ for (const file of walk(root)) {
   }
 }
 
-console.log(`Checked ${checked} CDN subresource(s) across ${walk(root).length} HTML file(s).`);
+const files = walk(root);
+console.log(
+  `Checked ${checked} CDN subresource(s) in tags across ` +
+    `${files.filter((f) => f.endsWith('.html')).length} HTML file(s), plus ` +
+    `${dynamicChecked} loaded dynamically from ` +
+    `${files.filter((f) => !f.endsWith('.html')).length} JS/TS file(s).`
+);
 
 if (problems.length) {
   console.error('');
@@ -188,7 +268,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-if (checked === 0) {
+if (checked + dynamicChecked === 0) {
   console.error('FAIL: examined ZERO CDN subresources. This check measured nothing.');
   process.exit(1);
 }

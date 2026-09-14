@@ -171,10 +171,41 @@ jobs:
             exit 1
           fi
 
+          # THE SECOND BLIND SPOT, and the one that let a floating range live in
+          # the primary demo sample through the whole of STP-754. These loads are
+          # created from JavaScript at runtime rather than declared as tags, so a
+          # scanner that parses HTML only cannot see them at all.
+          mkdir -p "$tmp/dyn"
+          cat >"$tmp/dyn/a.js" <<'JS'
+          loadScript("https://unpkg.com/@googlemaps/js-api-loader@1.x/dist/index.min.js");
+          JS
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp/dyn" >/dev/null 2>&1; then
+            echo "::error::the check IGNORED a FLOATING version in a dynamic loadScript()."
+            echo "::error::Scope has been narrowed back to HTML tags - that is the bug this control exists for."
+            exit 1
+          fi
+
+          cat >"$tmp/dyn/a.js" <<'JS'
+          loadScript("https://cdn.jsdelivr.net/npm/pkg@1.2.3/x.js");
+          JS
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp/dyn" >/dev/null 2>&1; then
+            echo "::error::the check ACCEPTED a dynamic load carrying no integrity digest."
+            exit 1
+          fi
+
+          cat >"$tmp/dyn/a.js" <<'JS'
+          loadScript("https://cdn.jsdelivr.net/npm/pkg@1.2.3/x.js",
+            "sha384-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+          JS
+          if ! node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp/dyn" >/dev/null 2>&1; then
+            echo "::error::the check REJECTED a correctly pinned dynamic load carrying a digest."
+            exit 1
+          fi
+
           rm -rf "$tmp"
-          echo "PASS: the CDN check rejects unpinned and unhashed subresources, gates"
-          echo "      unlisted origins, scopes the loader exemption to the loader itself,"
-          echo "      and accepts a good one."
+          echo "PASS: the CDN check rejects unpinned and unhashed subresources in BOTH"
+          echo "      tags and dynamic loadScript() calls, gates unlisted origins, scopes"
+          echo "      the loader exemption to the loader itself, and accepts a good one."
 
       - name: Assert actions are SHA-pinned
         run: node .github/scripts/assert-action-pins.mjs .github/workflows
