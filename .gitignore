@@ -22,3 +22,7 @@ plugins/*/*/build/
 samples/*/*/dist/
 samples/*/dist/
 quickstart/*/dist/
+# SonarScanner working directory
+.scannerwork/
+# vitest coverage output (text/html/lcov)
+coverage/

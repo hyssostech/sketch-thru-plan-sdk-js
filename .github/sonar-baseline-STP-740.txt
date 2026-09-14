@@ -194,3 +194,58 @@ conditions, not merely that it returned OK. See STP-741.
 Recorded on STP-740. The gate was demonstrated to pass AND to fail on
 the local container before these objects were deleted; what is
 unsettled is the scope it should judge, not whether it functions.
+
+================================================================
+CORRECTION 2026-09-14 - the "coverage 0.0" figures above
+================================================================
+
+All three scopes above record coverage as 0.0. That number was real but it
+was not a measurement of the test suite: it was a measurement of a property
+name with a typo in it.
+
+The scan set
+
+    sonar.javascript.lcov.reportsPaths      <- WRONG, note the 's' on 'reports'
+
+and the correct key is
+
+    sonar.javascript.lcov.reportPaths
+
+SonarJS 13.8 registers its coverage sensor behind
+`.onlyWhenConfiguration(conf -> conf.hasKey(LCOV_REPORT_PATHS) || ...)`, so an
+unrecognised key does not produce a warning, a "file not found", or any other
+symptom. The sensor is simply left out of the execution list, and the string
+"lcov" never appears in the scanner log at all. A misconfiguration that
+reports 0.0% is indistinguishable on a dashboard from an honest 0.0%.
+
+Two things were wrong at once and each hid the other: vitest was also not
+emitting an lcov report (its `reporter` list was ['text', 'html']), so even
+the correct property would have found nothing. Fixing only one of them would
+have produced the same 0.0 and looked like the fix had failed.
+
+Both fixed. Re-measured on the same local SonarQube 26.9.0 on :29000, same
+scope as the sdk-js figures above (126 files, 16,773 ncloc):
+
+    coverage          0.0  ->  11.2
+    lines_to_cover    6983 ->  7168
+    uncovered_lines   6983 ->  6617
+
+with `INFO: Sensor JavaScript/TypeScript Coverage` and `INFO: Analysing
+[...coverage/lcov.info]` now present in the log, and no "could not resolve"
+warnings - every SF: path in the report matched an indexed file.
+
+11.2% is low because the scope is the whole repository while the suite covers
+src/ only: src/ itself measures 94.2% statements, and samples/, quickstart/
+and the plugins have no tests at all. That is an honest number for the scope,
+and it is the first one this project has had.
+
+None of the seven ratchet conditions is a coverage condition, so no threshold
+above needs re-deriving because of this change.
+
+How to check this has not silently regressed again: grep the scanner log for
+`Sensor JavaScript/TypeScript Coverage`. If that line is absent, the property
+is misspelled or unset - there will be no other sign.
+
+The scan parameters now live in sonar-project.properties at the repository
+root rather than in an untracked shell script, so the figures in this file can
+be re-derived by someone other than whoever first took them.
