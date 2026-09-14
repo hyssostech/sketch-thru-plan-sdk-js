@@ -136,8 +136,45 @@ jobs:
             exit 1
           fi
 
+          # THE REGRESSION THAT ACTUALLY HAPPENED. This check used to filter by a
+          # four-host allowlist before doing anything else, so a subresource
+          # from any other origin was skipped in silence - js.arcgis.com was
+          # serving four of them with no integrity attribute at all while this
+          # script reported "every third-party CDN subresource is pinned and
+          # carries SRI". SonarQube found what the gate could not.
+          #
+          # An allowlist is the wrong shape here: a script tag from a NEW origin
+          # is precisely the event worth catching, and an allowlist is quiet
+          # exactly then. This control fails if scope is ever narrowed again.
+          cat >"$tmp/pages/unpinned.html" <<'HTML'
+          <script src="https://totally-new-origin.example.com/x.js"></script>
+          HTML
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp" >/dev/null 2>&1; then
+            echo "::error::the check IGNORED a subresource from an unlisted host."
+            echo "::error::Scope has been narrowed to an allowlist again - that is the bug this control exists for."
+            exit 1
+          fi
+
+          # And the companion: a runtime loader is legitimately exempt from SRI
+          # (the hash would cover the loader, not what it fetches) but must
+          # still be version-pinned, and must not drag everything served under
+          # its path into the exemption. That second half was a real bug: the
+          # exemption regex lacked an end anchor, so a stylesheet under the
+          # loader's version path was silently exempted as if it were a loader.
+          cat >"$tmp/pages/unpinned.html" <<'HTML'
+          <script src="https://js.arcgis.com/4.29/"></script>
+          <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+          HTML
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp" >/dev/null 2>&1; then
+            echo "::error::the check EXEMPTED a stylesheet served under a loader's path."
+            echo "::error::The loader exemption must match the loader URL only."
+            exit 1
+          fi
+
           rm -rf "$tmp"
-          echo "PASS: the CDN check rejects unpinned and unhashed subresources, and accepts a good one."
+          echo "PASS: the CDN check rejects unpinned and unhashed subresources, gates"
+          echo "      unlisted origins, scopes the loader exemption to the loader itself,"
+          echo "      and accepts a good one."
 
       - name: Assert actions are SHA-pinned
         run: node .github/scripts/assert-action-pins.mjs .github/workflows
