@@ -1,15 +1,24 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
-azureServiceRegion = "<Enter Azure's subscription region>"; 
-azureLanguage = "en-US"; 
-azureEndPoint = null;
+let azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
+let azureServiceRegion = "<Enter Azure's subscription region>"; 
+let azureLanguage = "en-US"; 
+let azureEndPoint = null;
 
-googleMapsKey = "<Enter your Google Maps API key here>";
-mapCenter = { lat: 58.967774948, lon: 11.196062412 };
-zoomLevel = 13; 
+let googleMapsKey = "<Enter your Google Maps API key here>";
+let mapCenter = { lat: 58.967774948, lon: 11.196062412 };
+let zoomLevel = 13; 
 
-webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+let webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
+
+// Declared here rather than at each assignment site. These are assigned inside
+// functions but read across them, so they are deliberately global; adding a
+// declaration at the assignment would quietly make them function-local and
+// break the other readers - a behaviour change wearing the clothes of a style
+// fix. `let` is safe in this position: nothing reads them before these lines
+// run, no code reads them off `window`, and these are classic scripts rather
+// than modules, so the cross-function visibility is unchanged.
+let currentRoleBtn, roleBtn, rb;
 
 window.onload = () => start();
 

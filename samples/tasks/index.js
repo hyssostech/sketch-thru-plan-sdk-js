@@ -1,14 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
-azureServiceRegion = "<Enter Azure's subscription region>"; 
-azureLanguage = "en-US"; 
-azureEndPoint = null;
+let azureSubscriptionKey = "<Enter your Azure Speech subscription key here>";
+let azureServiceRegion = "<Enter Azure's subscription region>"; 
+let azureLanguage = "en-US"; 
+let azureEndPoint = null;
 
-googleMapsKey = "<Enter your Google Maps API key here>";
-mapCenter = { lat: 58.967774948, lon: 11.196062412 };
-zoomLevel = 13; 
+let googleMapsKey = "<Enter your Google Maps API key here>";
+let mapCenter = { lat: 58.967774948, lon: 11.196062412 };
+let zoomLevel = 13; 
 
-webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+let webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
 //////////////////////////////////////////////////////////////////////////////////////////////////////+*/
 
 window.onload = () => start();
