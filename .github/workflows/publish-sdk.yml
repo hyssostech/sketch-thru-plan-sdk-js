@@ -165,13 +165,29 @@ jobs:
           # explicit Build step is gone. Without something here, deleting the
           # Build step would publish an unbuilt package with every check green.
           # This asserts the packed artifact actually carries the built output.
-          if ! tar -tzf "$TARBALL" | grep -q '^package/dist/'; then
-            echo "::error::the packed tarball contains no dist/ - refusing to publish an unbuilt package"
-            tar -tzf "$TARBALL" | head -20
-            exit 1
-          fi
-          echo "dist/ present in the tarball:"
-          tar -tzf "$TARBALL" | grep '^package/dist/' | head -5
+          # Listing captured ONCE into a variable and tested with `case`, with no
+          # pipeline anywhere. The obvious form is a trap under `set -o pipefail`:
+          #
+          #     tar -tzf "$TARBALL" | grep -q '^package/dist/'
+          #
+          # grep -q exits at the first match and closes the pipe, tar then dies
+          # writing to a closed descriptor, and pipefail reports the PIPELINE as
+          # failed. So that guard fails precisely when what it looks for IS
+          # present - and prints the matching paths in its own error output while
+          # claiming they are absent. Caught by a dry-run rehearsal; it would
+          # have blocked every publish. `| head -N` has the same hazard.
+          LISTING="$(tar -tzf "$TARBALL")"
+          case "$LISTING" in
+            *"package/dist/"*)
+              echo "dist/ present in the tarball:"
+              printf '%s\n' "$LISTING" | grep '^package/dist/' || true
+              ;;
+            *)
+              echo "::error::the packed tarball contains no dist/ - refusing to publish an unbuilt package"
+              printf '%s\n' "$LISTING"
+              exit 1
+              ;;
+          esac
 
           {
             echo "version=$VERSION"
