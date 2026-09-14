@@ -65,6 +65,16 @@ function walk(dir, out = []) {
 }
 
 const TAG = /<(script|link)\b[^>]*>/gi;
+
+// Blank out the CONTENTS of HTML comments while preserving offsets and line
+// structure, so a tag inside <!-- --> is not mistaken for one the browser will
+// fetch. Measured before adding this: all 11 own-bundle references this script
+// reported were commented-out copy-paste templates, 0 live, while the 30
+// third-party ones it gates are all live. Reporting the 11 as unpinned
+// subresources overstated the exposure, and an overstating gate is one people
+// learn to discount.
+const maskComments = (html) =>
+  html.replace(/<!--[\s\S]*?-->/g, (block) => block.replace(/[^\n]/g, ' '));
 const attr = (tag, name) => {
   const m = tag.match(new RegExp(`${name}\\s*=\\s*"([^"]*)"`, 'i'));
   return m ? m[1] : null;
@@ -73,10 +83,24 @@ const attr = (tag, name) => {
 const problems = [];
 const own = [];
 let checked = 0;
+let commentedTemplates = 0;
 
 for (const file of walk(root)) {
   const html = readFileSync(file, 'utf8');
+  const live = maskComments(html);
+
+  // Commented-out CDN tags are documentation, not traffic. Counted so the
+  // report can say so, rather than staying silent about them entirely.
   for (const [tag] of html.matchAll(TAG)) {
+    const url = attr(tag, 'src') ?? attr(tag, 'href');
+    if (!url || !/^https?:\/\//i.test(url)) continue;
+    if (!CDN_HOSTS.includes(new URL(url).host)) continue;
+    if (!live.includes(tag)) commentedTemplates++;
+  }
+
+  // Iterate the MASKED text: commented-out tags collapse to whitespace and
+  // simply do not match, so they are neither gated nor counted.
+  for (const [tag] of live.matchAll(TAG)) {
     const url = attr(tag, 'src') ?? attr(tag, 'href');
     if (!url || !/^https?:\/\//i.test(url)) continue;
 
@@ -135,11 +159,19 @@ if (checked === 0) {
 
 if (own.length) {
   console.log('');
-  console.log(`NOTE: ${own.length} reference(s) to this repository's own bundle are still`);
+  console.log(`NOTE: ${own.length} LIVE reference(s) to this repository's own bundle are`);
   console.log('unpinned. That is the STP-754 option-2 ruling, not an accident: pinning them');
   console.log('couples every release to a sample bump, which the release workflow does not');
   console.log('automate yet. Listed so the decision stays visible:');
   for (const o of own) console.log(`  ${o}`);
+}
+
+if (commentedTemplates) {
+  console.log('');
+  console.log(`(${commentedTemplates} CDN reference(s) sit inside HTML comments - copy-paste`);
+  console.log(' templates showing how to load the published package. They are not fetched,');
+  console.log(' so they are not gated. Mentioned only so their absence from the counts above');
+  console.log(' is deliberate rather than a blind spot.)');
 }
 
 console.log('');
