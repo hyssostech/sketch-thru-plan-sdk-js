@@ -2,10 +2,17 @@
 npm config list
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
-  instance - the early-exit branch resolved the caller and then fell through
-- A redundant `connect()` now updates the registration in place (as
-  `updateSolvables()` does) instead of reconnecting; the automatic reconnect path
-  is unchanged
+  instance; a redundant `connect()` now updates the registration in place
+- Hardened the release path: publish credentials and third-party install code no
+  longer share a job, GitHub Actions are SHA-pinned and enforced, the plugin pack
+  surface and release manifest are gated, and a package whose content changed
+  without a version bump now fails the build
+- CDN subresources in the samples are pinned to exact versions and carry SRI,
+  including those loaded dynamically from JavaScript rather than script tags
+- SonarQube analysis configured, its coverage import fixed, and the XSS sinks in
+  the samples closed
+- Documentation corrected for the workspace build - bundles are generated rather
+  than committed - and the generated API index links fixed
 
 ## Version 0.6.15
 - Added 17 methods matching dispatch arms the engine already exposed:
@@ -18,15 +25,17 @@ npm config list
   receive: `onNewScenario`, `onSpeechDiscarded`, `onSpeechParsed`
 - Restored `onCoaSwitched`, whose dispatch arm was commented out
 - Added `refreshSubscriptions()`, so handlers attached after `connect()` are routed
-- JSON-RPC contract raised to 0.4.0, documenting the added methods
+- OpenRPC contract raised to 0.4.0: the added methods documented, transport-level
+  messages marked `x-layer`, and the C2SIM `options` keys enumerated
 
 ## Version 0.6.14 - BREAKING: symbology enum values renamed on the wire
-- Four symbology enums renamed to match the values STP's symbol tables author, so
-  the strings on the wire changed: `assumedfriend` -> `assumed_friend`,
-  `suspected` -> `suspect`, `armygroup` -> `army_group`, and the `dummy*` modifiers
-  -> `feint_dummy*`. Update any comparison keyed on the old strings
+- BREAKING: `assumedfriend` -> `assumed_friend`, `suspected` -> `suspect`,
+  `armygroup` -> `army_group`, `dummy*` -> `feint_dummy*`. Update any comparison
+  keyed on the old strings
+- The SDK source and its tests now live in this repository as the canonical
+  `sketch-thru-plan-sdk`; they were previously maintained separately
 - Fixed the `modifier` union declaring `'task_force '` with a trailing space, so
-  `modifier === 'task_force'` - the value STP actually sends - could never match
+  `modifier === 'task_force'` could never match
 
 ## Version 0.6.13-alpha.0
 - Added `sendSimulatedSpeechRecognition()` method to send typed text as simulated speech recognition
