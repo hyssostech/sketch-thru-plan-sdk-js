@@ -263,6 +263,19 @@ jobs:
 
       - name: Test the changelog-agreement check
         run: node .github/scripts/tests/test-assert-changelog-matches-version.mjs
+
+      # STP-698 Phase 5. The assertion itself lives in publish.yml's BUILD job -
+      # it needs the packed tarball, and the publish job deliberately has no
+      # checkout so no repository code runs while id-token is available. Its
+      # CONTROLS run here instead, because a control that only fires on a
+      # plugins-v* tag rots between releases, which is the exact failure these
+      # controls exist to catch.
+      #
+      # They are offline: the comparison branches are driven through
+      # --published-manifest, and the hand-rolled tar reader is exercised against
+      # archives built in the test. Nothing here needs npm to be reachable.
+      - name: Test the published-content check
+        run: node .github/scripts/tests/test-assert-published-content-matches.mjs
       - name: Coverage
         run: npm run test:coverage
       - name: Upload coverage report

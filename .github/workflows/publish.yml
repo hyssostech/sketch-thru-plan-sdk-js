@@ -237,9 +237,6 @@ jobs:
           TARBALL="$(ls staged/*.tgz)"
           node .github/scripts/assert-published-content-matches.mjs "$NAME" "$VERSION" "$TARBALL"
 
-      - name: Test the published-content check
-        run: node .github/scripts/tests/test-assert-published-content-matches.mjs
-
       - name: Upload the packed tarball
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
