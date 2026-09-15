@@ -14,10 +14,10 @@ Plans designed in STP are executable with little additional user intervention ot
 
 | Class                   | Description                                                             |
 | ----------------------- | ----------------------------------------------------------------------- |
-| [StpRecognizer](classes/stprecognizer.html) | Main class exposing the SDK services |
-| [IStpConnector](interfaces/isptpconnector.html) | Interface to STP connector plugins |
-| [StpConnector](classes/stpwebsocketsconnector.html) | STP connector plugin implementation - Websockets connection to STP's Publish/Subscribe system|
-| [ISpeechRecognizer](interfaces/ispeechrecognizer.html) | Interface to speech recognition plugins |
+| [StpRecognizer](classes/StpRecognizer.html) | Main class exposing the SDK services |
+| [IStpConnector](interfaces/IStpConnector.html) | Interface to STP connector plugins |
+| [StpConnector](classes/StpWebSocketsConnector.html) | STP connector plugin implementation - Websockets connection to STP's Publish/Subscribe system|
+| [ISpeechRecognizer](interfaces/ISpeechRecognizer.html) | Interface to speech recognition plugins |
 
 
 ## Resources 
