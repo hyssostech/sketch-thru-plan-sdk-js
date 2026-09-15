@@ -1,5 +1,22 @@
 # Sketch-Thru-Plan Change Log
 npm config list
+## Version 0.6.16
+
+- **Fixes `connect()` opening a second WebSocket when called on an
+  already-connected instance.** The early-exit branch resolved the caller's
+  promise and then fell through to the end of the function - there was no
+  `return` under the comment that said "bail out". So the caller was told it had
+  succeeded, was handed a session id that was about to become stale, and a
+  second socket was opened underneath it with every handler reassigned to it.
+- **A redundant `connect()` now updates the registration in place** rather than
+  reconnecting: the supplied `solvables` (and `machineId` / `sessionId` when
+  given) are applied and re-registered, exactly as `updateSolvables()` does, and
+  the returned sessionId is the one in force afterwards. Falling through used to
+  have that side effect by accident; making it a plain no-op would have silently
+  stopped subscription changes from taking effect for anyone relying on it.
+- The automatic reconnect path is unchanged. It self-calls from `socket.onclose`
+  where the socket is CLOSED, so the already-connected branch does not fire.
+
 ## Version 0.6.15
 
 Closes the wire-surface gap with the STP engine. Everything below is additive;
