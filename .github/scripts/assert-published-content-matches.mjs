@@ -130,7 +130,14 @@ async function publishedManifest() {
     return JSON.parse(raw.toString('utf8'));
   }
 
-  const doc = await get(`https://registry.npmjs.org/${name.replace('/', '%2f')}`);
+  // encodeURIComponent, not `.replace('/', '%2f')`. CodeQL flagged the latter as
+  // js/incomplete-sanitization and it is right: String.replace with a string
+  // pattern rewrites only the FIRST occurrence, so a name with more than one
+  // slash would build a URL with a real path separator still in it. A scoped
+  // package has exactly one today, which is precisely the kind of "works now"
+  // that stops working silently. Verified against the live registry: all of
+  // @scope%2fname, @scope%2Fname and %40scope%2Fname return the correct package.
+  const doc = await get(`https://registry.npmjs.org/${encodeURIComponent(name)}`);
   if (doc.statusCode === 404) return null; // never published at all
   if (doc.statusCode !== 200) {
     die(`registry answered HTTP ${doc.statusCode} for ${name}. Cannot verify, so not skipping.`);
