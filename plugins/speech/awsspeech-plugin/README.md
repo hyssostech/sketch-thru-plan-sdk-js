@@ -78,12 +78,18 @@ The [basic](../../../samples/basic/README.md) sample provides a dropdown for sel
 
 ## Building the project
 
-The repository includes a pre-built `dist` folder that can be used directly for testing. If changes are made to the sample and there is a need to rebuild, run:
+This package's `dist/` is **generated, not committed** - a fresh clone does
+not contain it, so the plugin must be built before it will run.
+
+This repository is an npm workspace, so install once at the **repository
+root**, not here:
 
 ```
-npm install
-npm run build
+npm ci                                  # at the repository root
+npm run build --workspace plugins/speech/awsspeech-plugin
 ```
+
+`npm run build:all` at the root builds the SDK and every plugin in one step.
 
 **Note:** Unlike the Azure plugin, the AWS Transcribe Streaming client SDK is bundled into the output (there is no separate CDN script to include). This results in a larger bundle but simplifies usage.
 

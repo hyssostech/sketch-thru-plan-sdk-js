@@ -38,12 +38,18 @@ npm install --save @hyssostech/azurespeech-plugin
 
 ## Building the typescript project
 
-The repository includes a pre-built [`dist`](dist) folder that can be used directly for testing. If changes are made to the sample and there is a need to rebuild, change to the `quickstart/ts` directory and run:
+This package's `dist/` is **generated, not committed** - a fresh clone does
+not contain it, so the quickstart must be built before it will run.
+
+This repository is an npm workspace, so install once at the **repository
+root**, not here:
 
 ```
-npm install
-npm run build
+npm ci                                  # at the repository root
+npm run build --workspace quickstart/ts
 ```
+
+`npm run build:all` at the root builds the SDK and every plugin in one step.
 
 To rebuild with an updated version of the STP SDK:
 
