@@ -196,6 +196,47 @@ jobs:
           echo "slug=${PKG_DIR//\//-}" >>"$GITHUB_OUTPUT"
           echo "packed $NAME@$VERSION -> $TARBALL"
 
+      # STP-698 Phase 5. The publish job skips a package whose version is already
+      # on the registry and prints:
+      #
+      #     SKIPPED: <name>@<version> is already on the registry -
+      #              this package did not change in this release.
+      #
+      # The skip is right - this tag publishes a SET that versions independently,
+      # and failing on each unchanged member would be a red nobody can act on.
+      # The SENTENCE was never checked, and when it is false the skip is exactly
+      # how a real change fails to ship: green run, nothing published, no signal.
+      #
+      # It was false. Measured against the tarballs npm was serving:
+      #
+      #   @hyssostech/awsspeech-plugin 0.1.1
+      #       npm  : @aws-sdk/client-transcribe-streaming ^3.998.0
+      #       repo : @aws-sdk/client-transcribe-streaming ^3.1130.0
+      #
+      #   @hyssostech/azurespeech-plugin 0.3.4
+      #       npm  : agent-base ^7.1.4  https-proxy-agent ^7.0.6  uuid ^13.0.0
+      #       repo : agent-base ^9.0.0  https-proxy-agent ^9.1.0  uuid ^14.0.2
+      #
+      # Three major RUNTIME bumps under an unchanged version number, arriving one
+      # Dependabot PR at a time, each individually reasonable.
+      #
+      # It runs HERE and not in the publish job on purpose: that job has no
+      # checkout precisely so no repository or third-party code runs while the
+      # OIDC capability is available. Failing here stops the artifact before it
+      # reaches the privileged job at all.
+      #
+      # The local side is the packed tarball rather than the working tree, so
+      # both sides of the comparison are read the same way.
+      - name: Assert the packed content is not an unversioned change to a published one
+        env:
+          PKG_DIR: ${{ matrix.package }}
+        run: |
+          set -euo pipefail
+          NAME="$(node -p "require('./$PKG_DIR/package.json').name")"
+          VERSION="$(node -p "require('./$PKG_DIR/package.json').version")"
+          TARBALL="$(ls staged/*.tgz)"
+          node .github/scripts/assert-published-content-matches.mjs "$NAME" "$VERSION" "$TARBALL"
+
       - name: Upload the packed tarball
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
