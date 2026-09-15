@@ -36,7 +36,8 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.js.map"
+    "!dist/**/*.js.map",
+    "CHANGELOG.md"
   ],
   "workspaces": [
     "plugins/*/*",
