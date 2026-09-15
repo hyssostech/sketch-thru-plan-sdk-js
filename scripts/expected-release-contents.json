@@ -39,6 +39,7 @@
     "covered by the vulnerability scan instead."
   ],
   "packedFiles": [
+    "CHANGELOG.md",
     "LICENSE",
     "README.md",
     "dist/sketch-thru-plan-sdk-bundle-min.js",

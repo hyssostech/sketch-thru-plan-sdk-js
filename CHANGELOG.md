@@ -1,5 +1,4 @@
 # Sketch-Thru-Plan Change Log
-npm config list
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
   instance; a redundant `connect()` now updates the registration in place
