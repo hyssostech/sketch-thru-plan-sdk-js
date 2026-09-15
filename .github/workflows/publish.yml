@@ -325,6 +325,11 @@ jobs:
           if [ "$EXISTING" = "$VERSION" ]; then
             echo "SKIPPED: $NAME@$VERSION is already on the registry - this package did not change in this release."
             echo "published=false" >>"$GITHUB_OUTPUT"
+            # The spec is recorded even when skipping, so the provenance
+            # assertion below still runs. Without this, a re-run after a
+            # provenance timeout skips the publish, skips the assertion, and
+            # goes green having verified nothing.
+            echo "spec=$NAME@$VERSION" >>"$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -382,28 +387,47 @@ jobs:
       # Only runs when this matrix entry actually published, so a SKIPPED
       # package is not asserted against.
       - name: Assert the published version carries provenance
-        if: steps.pub.outputs.published == 'true'
+        if: steps.pub.outputs.spec != ''
         env:
           SPEC: ${{ steps.pub.outputs.spec }}
         run: |
           set -euo pipefail
           echo "checking provenance for $SPEC"
 
+          # Up to ~450s: ten attempts at 15s, then ten at 30s. The previous
+          # ceiling was 150s and it failed a release that had entirely
+          # succeeded - plugins-v1.0.2+sdk0.6.16, where awsspeech-plugin
+          # published correctly, with provenance, and the attestation simply
+          # had not surfaced yet. Waiting costs minutes; a false red on a
+          # publish workflow costs someone re-running a job that must not be
+          # re-run casually.
           PREDICATE=''
-          for attempt in $(seq 1 10); do
+          for attempt in $(seq 1 20); do
             PREDICATE="$(npm view "$SPEC" dist.attestations.provenance.predicateType 2>/dev/null | tr -d '\r' || true)"
             if [ -n "$PREDICATE" ]; then
               echo "attempt $attempt: $PREDICATE"
               break
             fi
-            echo "attempt $attempt: not visible yet, waiting"
-            sleep 15
+            if [ "$attempt" -le 10 ]; then delay=15; else delay=30; fi
+            echo "attempt $attempt: not visible yet, waiting ${delay}s"
+            sleep "$delay"
           done
 
           if [ -z "$PREDICATE" ]; then
-            echo "::error::$SPEC published WITHOUT a provenance attestation, or it did"
-            echo "::error::not become visible within ~150s. Before calling this a flake:"
+            echo "::error::$SPEC has no visible provenance attestation after ~450s."
+            echo "::error::"
+            echo "::error::THE PACKAGE IS PUBLISHED. This step runs after a successful"
+            echo "::error::publish, or against a version already on the registry, so this"
+            echo "::error::is a VERIFICATION failure and never a reason to publish again -"
+            echo "::error::npm has no delete, and a re-publish of the same version is"
+            echo "::error::refused anyway."
+            echo "::error::"
+            echo "::error::Check by hand before treating it as a security finding:"
             echo "::error::  npm view $SPEC dist.attestations --json"
+            echo "::error::If that shows a slsa.dev predicateType, this was a slow"
+            echo "::error::attestation and the release is sound. If it shows nothing,"
+            echo "::error::Trusted Publishing did not attach provenance and that IS the"
+            echo "::error::finding VERIFYING.md depends on."
             exit 1
           fi
 
