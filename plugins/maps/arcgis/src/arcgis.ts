@@ -84,7 +84,15 @@ export class ArcGISMap implements IMapAdapter {
           'esri/geometry/SpatialReference',
           'esri/config'
         ], (
-          Map: any,
+          // EsriMap, not Map. These are AMD callback parameters, matched
+          // POSITIONALLY to the module list above, so the name is ours to
+          // choose - and calling it Map shadowed the built-in across the whole
+          // 253-line callback body. This class uses the real Map (`assets` is a
+          // Map<string, Array<any>>) and this parameter is typed `any`, so a
+          // `new Map()` added anywhere in that body would silently construct an
+          // Esri map with TypeScript raising nothing. Both uses are correct
+          // today; the shadow is what made that luck rather than design.
+          EsriMap: any,
           MapView: any,
           FeatureLayer: any,
           DictionaryRenderer: any,
@@ -175,7 +183,7 @@ export class ArcGISMap implements IMapAdapter {
           // For point layer
           this.symbolLayerPoint = new FeatureLayer({
             title: 'STP Symbols (Point)',
-            source: [dummyPointGraphic],  // ← Add dummy
+            source: [dummyPointGraphic],  // <- Add dummy
             fields,
             objectIdField: 'objectid',
             geometryType: 'point',
@@ -194,7 +202,7 @@ export class ArcGISMap implements IMapAdapter {
 
           this.symbolLayerMultipoint = new FeatureLayer({
             title: 'STP Symbols (Multipoint)',
-            source: [dummyMultipointGraphic],  // ← Add dummy
+            source: [dummyMultipointGraphic],  // <- Add dummy
             fields,
             objectIdField: 'objectid',
             geometryType: 'multipoint',
@@ -221,7 +229,7 @@ export class ArcGISMap implements IMapAdapter {
           });
 
           // Create map + view
-          this.mapRef = new Map({ basemap: this.basemap });
+          this.mapRef = new EsriMap({ basemap: this.basemap });
           this.viewRef = new MapView({
             container: mapDiv,
             map: this.mapRef,
@@ -251,7 +259,7 @@ export class ArcGISMap implements IMapAdapter {
             projection.load();
             // Symbol layers
             this.mapRef.addMany([this.symbolLayerPoint, this.symbolLayerMultipoint, this.symbolLayerLine, this.symbolLayerPolygon]);
-            // Suppress panning during drags — except when Ctrl is held (Ctrl+drag pans)
+            // Suppress panning during drags - except when Ctrl is held (Ctrl+drag pans)
             this.viewRef.on("drag", (event: any) => {
               if (!event.native?.ctrlKey) {
                 event.stopPropagation();
