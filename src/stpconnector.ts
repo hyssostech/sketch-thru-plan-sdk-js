@@ -86,6 +86,11 @@ export class StpWebSocketsConnector implements IStpConnector {
    *  1. the suffix to the WebSocket connection string is used 
    *  2. otherwise STP assigns its default session (the host's id)
    * @returns The actual sessionId used - the one provided here or a default set by STP
+   *
+   * If this instance is ALREADY connected, the existing connection is kept and the
+   * registration is updated in place with the supplied `solvables` (and `machineId` /
+   * `sessionId` when given) - equivalent to calling `updateSolvables`. No second socket
+   * is opened, and the returned sessionId is the one in force after that update.
    */
   async connect(
     serviceName: string,
@@ -95,11 +100,53 @@ export class StpWebSocketsConnector implements IStpConnector {
     sessionId: string | null = null
   ): Promise<string | undefined> {
     return new Promise<string | undefined>(async (resolve, reject) => {
-      // Bail out if already connected
-      if (this.isConnected) {
-        resolve(this.sessionId);
+      // Set timeout if needed
+      if (timeout <= 0) {
+        timeout = this.DEFAULT_TIMEOUT;
       }
-      // Save the connection parameters inc ase there is a need to reconnect
+
+      // STP-755. Already connected: update the registration, do NOT reconnect.
+      //
+      // This branch used to `resolve(this.sessionId)` and then FALL THROUGH -
+      // there was no `return` under the comment that said "bail out". So a
+      // redundant connect() handed the caller a stale session id, opened a
+      // SECOND WebSocket underneath it, reassigned every socket handler to the
+      // new socket, and changed this.sessionId after the caller had already
+      // been given the old one.
+      //
+      // It does not simply `return`, though. Falling through also had the
+      // useful side effect of applying the new solvables and re-registering,
+      // and a caller may be relying on that; a bare return would turn that into
+      // silence - no error, subscriptions just stop updating.
+      // updateSolvables() is precisely that operation without the socket, so
+      // the redundant call delegates to it. The subscription change still takes
+      // effect, the live connection is left alone, and the caller gets the
+      // session id that is actually current.
+      //
+      // The reconnect path is unaffected: it self-calls from socket.onclose,
+      // where the socket is CLOSED, so isConnected is false and this branch
+      // does not fire.
+      if (this.isConnected) {
+        this.serviceName = serviceName;
+        if (machineId != null) {
+          this.machineId = machineId;
+        }
+        if (sessionId != null) {
+          this.sessionId = sessionId;
+        }
+        try {
+          resolve(await this.updateSolvables(solvables, timeout));
+        } catch (e) {
+          reject(
+            new Error(
+              'Failed to update an existing connection: ' + (e as Error).message
+            )
+          );
+        }
+        return;
+      }
+
+      // Save the connection parameters in case there is a need to reconnect
       this.serviceName = serviceName;
       this.solvables = solvables;
       if (machineId != null) {
@@ -107,11 +154,6 @@ export class StpWebSocketsConnector implements IStpConnector {
       }
       if (sessionId != null) {
         this.sessionId = sessionId;
-      }
-
-      // Set timeout if needed
-      if (timeout <= 0) {
-        timeout = this.DEFAULT_TIMEOUT;
       }
 
       // Connect and register

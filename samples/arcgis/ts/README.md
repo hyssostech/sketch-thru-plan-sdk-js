@@ -7,11 +7,14 @@ This sample mirrors the `samples/c2sim` functionality, but uses the ArcGIS map a
 - STP Engine reachable via WebSocket (e.g. `ws://localhost:9599`).
 
 ## Setup
-From this folder:
+
+This repository is an npm workspace, and this sample's bundle is generated
+rather than committed. Install once at the **repository root**, then build
+this sample:
 
 ```bash
-npm install
-npm run build
+npm ci                                        # at the repository root
+npm run build --workspace samples/arcgis/ts
 ```
 
 ## Prerequisites
@@ -19,7 +22,7 @@ npm run build
 - STP server URL, Azure Speech subscription (optional) configured via querystring or in `index.js`.
 
 ## Run
-Open `index.html`. If ope via `file://`, the browser requires authorization for microphone access for each symbol. 
+Open `index.html`. If opened via `file://`, the browser requires authorization for microphone access for each symbol. 
 Use a server to avoid that (e.g. Vite - `npm run dev`).
 
 Provide query params:

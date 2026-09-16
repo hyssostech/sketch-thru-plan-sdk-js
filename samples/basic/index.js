@@ -101,10 +101,10 @@ async function start(){
   } catch {
     if (voskOption) {
       voskOption.disabled = true;
-      voskOption.textContent = 'Vosk (offline — model not found)';
+      voskOption.textContent = 'Vosk (offline - model not found)';
     }
     if (speechProvider === 'vosk') {
-      log('Vosk model not found at "' + voskModelPath + '". Deploy the model .tar.gz file — see README.', 'Error', true);
+      log('Vosk model not found at "' + voskModelPath + '". Deploy the model .tar.gz file - see README.', 'Error', true);
       speechProvider = 'azure';
       speechSelector.value = speechProvider;
     }
@@ -171,7 +171,7 @@ async function start(){
   } else if (speechProvider === 'vosk') {
     speechreco = new StpVS.VoskSpeechRecognizer(voskModelPath, undefined, '../../plugins/speech/voskspeech-plugin/vosk-processor.js');
     setStatus('Vosk: loading model...');
-    speechreco.onModelReady = () => { setStatus('Vosk: model ready — draw to speak'); };
+    speechreco.onModelReady = () => { setStatus('Vosk: model ready - draw to speak'); };
     speechreco.onRecognized = (recoResult) => {
       if (recoResult && recoResult.results && recoResult.results.length > 0) {
         speechreco.stopRecognizing();
@@ -211,20 +211,38 @@ async function loadAdapterAndInit(target, speechreco) {
   setStatus("Loading " + currentAdapter + "...");
 
   if (currentAdapter === 'arcgis') {
-    // Load ArcGIS CSS, JS API (AMD loader), then adapter bundle
-    await loadCss("https://js.arcgis.com/4.29/esri/themes/light/main.css");
+    // Load ArcGIS CSS, JS API (AMD loader), then adapter bundle.
+    //
+    // The loader URL carries no integrity ON PURPOSE: it is a 301 redirect and
+    // an AMD loader, so a hash would cover the redirect target rather than what
+    // it goes on to fetch. It IS version-pinned in its path, which is the half
+    // that can be enforced. The stylesheet is ordinary bytes and is hashed.
+    await loadCss("https://js.arcgis.com/4.29/esri/themes/light/main.css",
+      "sha384-f8NuhFNMt2lrnbQ6jdNBW6hKxHKLYtpdjcsOCTSsZ5EjQhZV5dNWU7T1WSqHF7qT");
     await loadScript("https://js.arcgis.com/4.29/");
     await loadScript("../../plugins/maps/arcgis/dist/arcgis-bundle-min.js");
     map = new ArcGISMap(arcgisApiKey, 'map', mapCenter, zoomLevel);
   } else if (currentAdapter === 'leaflet') {
     // Load Leaflet CSS/JS via CDN, then adapter bundle
-    await loadCss("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
-    await loadScript("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js");
+    await loadCss("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+      "sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H");
+    await loadScript("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+      "sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH");
     await loadScript("../../plugins/maps/leaflet/dist/leaflet-bundle-min.js");
     map = new LeafletMap(null, 'map', mapCenter, zoomLevel);
   } else {
-    // Load Google Maps loader, then adapter bundle
-    await loadScript("https://unpkg.com/@googlemaps/js-api-loader@1.x/dist/index.min.js");
+    // Load Google Maps loader, then adapter bundle.
+    //
+    // Pinned to an EXACT version. This was "@1.x", a floating range against a
+    // CDN: the bytes executed could change at any time with no commit, no
+    // review and no notice, and a floating URL cannot carry SRI at all because
+    // SRI is a hash of specific bytes.
+    //
+    // 1.16.10 is the newest 1.x. v2 exists and drops the UMD build this page
+    // needs, so the major stays pinned deliberately - moving to v2 is a code
+    // change here, not a silent resolution.
+    await loadScript("https://unpkg.com/@googlemaps/js-api-loader@1.16.10/dist/index.min.js",
+      "sha384-nd3GjZgzKioOjW8EFVdftA2jPz3lhIn2o1YrOD71R3F+STMg5I1dhoBHTLEcu7Rf");
     await loadScript("../../plugins/maps/googlemaps/dist/googlemaps-bundle-min.js");
     map = new GoogleMap(googleMapsKey, 'map', mapCenter, zoomLevel);
   }
@@ -273,22 +291,34 @@ function setStatus(text) {
   if (el) el.textContent = text || '';
 }
 
-function loadScript(src) {
+// `integrity` is optional so local, same-origin bundles need no hash - only
+// third-party CDN loads do. When it IS supplied, crossOrigin must be set too:
+// without CORS the browser cannot read the bytes to hash them and blocks the
+// request outright, which fails closed rather than silently unverified.
+function loadScript(src, integrity) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = src;
     s.async = true;
+    if (integrity) {
+      s.integrity = integrity;
+      s.crossOrigin = 'anonymous';
+    }
     s.onload = () => resolve();
     s.onerror = () => reject(new Error('Failed to load script ' + src));
     document.head.appendChild(s);
   });
 }
 
-function loadCss(href) {
+function loadCss(href, integrity) {
   return new Promise((resolve, reject) => {
     const l = document.createElement('link');
     l.rel = 'stylesheet';
     l.href = href;
+    if (integrity) {
+      l.integrity = integrity;
+      l.crossOrigin = 'anonymous';
+    }
     l.onload = () => resolve();
     l.onerror = () => reject(new Error('Failed to load css ' + href));
     document.head.appendChild(l);

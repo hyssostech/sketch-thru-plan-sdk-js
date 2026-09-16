@@ -52,30 +52,29 @@ import { StpWebSocketsConnector, StpRecognizer, StpSymbol } from "sketch-thru-pl
 const stpsdk = new StpRecognizer(stpconn);
 ```
 
-## Building the SDK
+## Building
 
 The SDK source lives under [`src`](src), with tests under [`test`](test).
+The samples, quickstart and plugins are a **developer artifact you build
+first**: their bundles are generated, not committed, so a fresh clone does not
+contain them.
+
+This repository is an npm workspace - install once at the root:
 
 ```
-npm install        # install dependencies
-npm run build      # clean, compile (tsc) and bundle (rollup) into dist/
-npm test           # run the vitest test suite
+npm ci             # install every workspace, once, at the root
+npm run build:all  # the SDK, then every plugin
+```
+
+```
+npm run build         # the SDK alone: clean, tsc, bundle into dist/
+npm run build:plugins # the plugins alone
+npm test              # the vitest suite
 npm run test:coverage
-npm run build:docs # generate typedoc API documentation
+npm run build:docs    # typedoc API documentation
 ```
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the version history and [`resources.md`](resources.md) for the publish checklist and developer notes.
-
-## Building
-
-The samples, quickstart and plugins are a **developer artifact you build first**.
-Plugin bundles are generated, not committed, so a fresh clone does not contain
-them:
-
-```
-npm ci
-npm run build:all
-```
 
 `build:all` builds the SDK and then every plugin (`npm run build --workspaces`).
 Build the SDK alone with `npm run build`, the plugins alone with

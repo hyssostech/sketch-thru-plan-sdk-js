@@ -1,59 +1,40 @@
 # Sketch-Thru-Plan Change Log
-npm config list
+## Version 0.6.16
+- Fixed `connect()` opening a second WebSocket when called on an already-connected
+  instance; a redundant `connect()` now updates the registration in place
+- Hardened the release path: publish credentials and third-party install code no
+  longer share a job, GitHub Actions are SHA-pinned and enforced, the plugin pack
+  surface and release manifest are gated, and a package whose content changed
+  without a version bump now fails the build
+- CDN subresources in the samples are pinned to exact versions and carry SRI,
+  including those loaded dynamically from JavaScript rather than script tags
+- SonarQube analysis configured, its coverage import fixed, and the XSS sinks in
+  the samples closed
+- Documentation corrected for the workspace build - bundles are generated rather
+  than committed - and the generated API index links fixed
+
 ## Version 0.6.15
-
-Closes the wire-surface gap with the STP engine. Everything below is additive;
-no existing API changed.
-
-- **Seventeen methods added**, matching dispatch arms the engine bridge already
-  exposed: `advertiseViewport`, `changeTimeOut`, `getActiveScenarioDescription`,
-  `getAllObjects`, `getDeletedObjects`, `getPoidObject`,
-  `getScenarioTaskOrgList`, `getTaskOrgObjects`, `recognizeNow`, `resetRole`,
-  `resetSegmentationTimeout`, `resetStpScenario`, `sendAudioCaptureState`,
-  `sendListen`, `setAutoTasking`, `setSpeechListening`, `undoLastOp`
-- **Three events the engine emits but this SDK could never receive** are now
-  handled: `onNewScenario`, `onSpeechDiscarded`, `onSpeechParsed`. No handler
-  was declared for them, so `buildSolvables()` left them out of the
-  subscription set and the engine never sent them
-- **`onCoaSwitched` restored.** Its dispatch arm sat inside a `/* */` block with
-  invalid syntax and its property declaration was dead alongside it, despite a
-  comment claiming the arm was live
-- **`refreshSubscriptions()` added**, with `updateSolvables()` as an optional
-  method on `IStpConnector`, so a handler attached after `connect()` is picked
-  up instead of staying silently unrouted for the life of the connection
-- JSON-RPC contract `json-api/sketch-thru-plan-api.json` raised to **0.4.0**:
-  the 17 methods documented, transport-level messages marked `x-layer`, and the
-  C2SIM `options` key set documented in place of "implementation-defined"
+- Added 17 methods matching dispatch arms the engine already exposed:
+  `advertiseViewport`, `changeTimeOut`, `getActiveScenarioDescription`,
+  `getAllObjects`, `getDeletedObjects`, `getPoidObject`, `getScenarioTaskOrgList`,
+  `getTaskOrgObjects`, `recognizeNow`, `resetRole`, `resetSegmentationTimeout`,
+  `resetStpScenario`, `sendAudioCaptureState`, `sendListen`, `setAutoTasking`,
+  `setSpeechListening`, `undoLastOp`
+- Added handling for three events the engine emits but the SDK could never
+  receive: `onNewScenario`, `onSpeechDiscarded`, `onSpeechParsed`
+- Restored `onCoaSwitched`, whose dispatch arm was commented out
+- Added `refreshSubscriptions()`, so handlers attached after `connect()` are routed
+- OpenRPC contract raised to 0.4.0: the added methods documented, transport-level
+  messages marked `x-layer`, and the C2SIM `options` keys enumerated
 
 ## Version 0.6.14 - BREAKING: symbology enum values renamed on the wire
-
-**Breaking change.** The STP engine renamed four symbology enums so their names match the values
-its symbol tables have always authored. Those names go onto the JSON wire verbatim (the bridge
-serializes them with `.ToString()`), so the strings STP sends have changed. The type definitions
-in `stptypes.ts` are updated to match; code comparing against the OLD strings will no longer
-match, and TypeScript will now reject them.
-
-| property | was | now |
-|---|---|---|
-| `affiliation` | `assumedfriend` | `assumed_friend` |
-| `affiliation` | `suspected` | `suspect` |
-| `echelon` | `armygroup` | `army_group` |
-| `modifier` | `dummy` | `feint_dummy` |
-| `modifier` | `dummy_hq` | `feint_dummy_hq` |
-| `modifier` | `dummy_task_force` | `feint_dummy_task_force` |
-| `modifier` | `dummytask_force_hq` | `feint_dummy_task_force_hq` (also gains the missing underscore) |
-
-To migrate, update any string comparison or lookup keyed on the old values - e.g.
-`symbol.affiliation === 'assumedfriend'` becomes `=== 'assumed_friend'`. The renames are
-mechanical and one-to-one; no value was added, removed or merged.
-
-Why: the SDK's enum member names had drifted from the vocabulary the engine's tables author, so
-the same concept was spelled two ways depending on which side you asked. `feint_dummy` and
-`suspect` are the doctrinal terms; the old names lost meaning.
-
-**Also fixed, unrelated to the rename:** the `modifier` union declared `'task_force '` with a
-TRAILING SPACE, so `modifier === 'task_force'` - the value STP actually sends - was a type error
-and could never match. It is now `'task_force'`.
+- BREAKING: `assumedfriend` -> `assumed_friend`, `suspected` -> `suspect`,
+  `armygroup` -> `army_group`, `dummy*` -> `feint_dummy*`. Update any comparison
+  keyed on the old strings
+- The SDK source and its tests now live in this repository as the canonical
+  `sketch-thru-plan-sdk`; they were previously maintained separately
+- Fixed the `modifier` union declaring `'task_force '` with a trailing space, so
+  `modifier === 'task_force'` could never match
 
 ## Version 0.6.13-alpha.0
 - Added `sendSimulatedSpeechRecognition()` method to send typed text as simulated speech recognition

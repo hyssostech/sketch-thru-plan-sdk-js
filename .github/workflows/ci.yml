@@ -171,10 +171,41 @@ jobs:
             exit 1
           fi
 
+          # THE SECOND BLIND SPOT, and the one that let a floating range live in
+          # the primary demo sample through the whole of STP-754. These loads are
+          # created from JavaScript at runtime rather than declared as tags, so a
+          # scanner that parses HTML only cannot see them at all.
+          mkdir -p "$tmp/dyn"
+          cat >"$tmp/dyn/a.js" <<'JS'
+          loadScript("https://unpkg.com/@googlemaps/js-api-loader@1.x/dist/index.min.js");
+          JS
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp/dyn" >/dev/null 2>&1; then
+            echo "::error::the check IGNORED a FLOATING version in a dynamic loadScript()."
+            echo "::error::Scope has been narrowed back to HTML tags - that is the bug this control exists for."
+            exit 1
+          fi
+
+          cat >"$tmp/dyn/a.js" <<'JS'
+          loadScript("https://cdn.jsdelivr.net/npm/pkg@1.2.3/x.js");
+          JS
+          if node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp/dyn" >/dev/null 2>&1; then
+            echo "::error::the check ACCEPTED a dynamic load carrying no integrity digest."
+            exit 1
+          fi
+
+          cat >"$tmp/dyn/a.js" <<'JS'
+          loadScript("https://cdn.jsdelivr.net/npm/pkg@1.2.3/x.js",
+            "sha384-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+          JS
+          if ! node .github/scripts/assert-cdn-pinned-and-sri.mjs "$tmp/dyn" >/dev/null 2>&1; then
+            echo "::error::the check REJECTED a correctly pinned dynamic load carrying a digest."
+            exit 1
+          fi
+
           rm -rf "$tmp"
-          echo "PASS: the CDN check rejects unpinned and unhashed subresources, gates"
-          echo "      unlisted origins, scopes the loader exemption to the loader itself,"
-          echo "      and accepts a good one."
+          echo "PASS: the CDN check rejects unpinned and unhashed subresources in BOTH"
+          echo "      tags and dynamic loadScript() calls, gates unlisted origins, scopes"
+          echo "      the loader exemption to the loader itself, and accepts a good one."
 
       - name: Assert actions are SHA-pinned
         run: node .github/scripts/assert-action-pins.mjs .github/workflows
@@ -196,6 +227,55 @@ jobs:
       # reason this script exists cannot quietly evaporate.
       - name: Test the release manifest gate
         run: bash .github/scripts/tests/test-release-manifest.sh
+
+      # githubactions:S6505. `npm ci` runs preinstall/install/postinstall scripts
+      # from every dependency; a job with id-token: write exposes
+      # ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN to every process in it. Together, a
+      # lifecycle script in any transitive dependency can mint an OIDC token and
+      # publish under this project's identity without touching the publish step.
+      #
+      # Both publish workflows were split by hand so that never happens. Nothing
+      # stopped the next person merging the jobs back for convenience, or adding
+      # an `npm ci` to the publish job to get a tool on PATH - both entirely
+      # reasonable-looking changes that silently restore the problem. This makes
+      # it a property the repository keeps rather than two one-off fixes.
+      - name: Assert no job installs dependencies while privileged
+        run: node .github/scripts/assert-no-privileged-install.mjs .github/workflows
+
+      - name: Test the privileged-install check
+        run: node .github/scripts/tests/test-assert-no-privileged-install.mjs
+
+      # STP-698 / STP-700 parity. The .NET sibling shipped 0.6.0-rc.1 to
+      # nuget.org while every document in the repository still said 0.5.0. The
+      # same defect is here, quieter because it is in the plugins: two published
+      # speech plugins carried a CHANGELOG.md that topped out one and two
+      # versions behind what npm was serving - and both ship that file INSIDE
+      # the tarball, verified by downloading them, so a consumer reading the
+      # changelog for the version they installed found no mention of it.
+      #
+      # Scoped narrowly on purpose. Only published packages, and only ones that
+      # already HAVE a changelog: four published plugins have none at all, which
+      # is arguably worse, but requiring one is a process decision for the owner
+      # and a gate that invents process is a gate that gets disabled. This
+      # enforces something unarguable - a changelog that exists must not lie.
+      - name: Assert every changelog names the version it ships with
+        run: node .github/scripts/assert-changelog-matches-version.mjs .
+
+      - name: Test the changelog-agreement check
+        run: node .github/scripts/tests/test-assert-changelog-matches-version.mjs
+
+      # STP-698 Phase 5. The assertion itself lives in publish.yml's BUILD job -
+      # it needs the packed tarball, and the publish job deliberately has no
+      # checkout so no repository code runs while id-token is available. Its
+      # CONTROLS run here instead, because a control that only fires on a
+      # plugins-v* tag rots between releases, which is the exact failure these
+      # controls exist to catch.
+      #
+      # They are offline: the comparison branches are driven through
+      # --published-manifest, and the hand-rolled tar reader is exercised against
+      # archives built in the test. Nothing here needs npm to be reachable.
+      - name: Test the published-content check
+        run: node .github/scripts/tests/test-assert-published-content-matches.mjs
       - name: Coverage
         run: npm run test:coverage
       - name: Upload coverage report
