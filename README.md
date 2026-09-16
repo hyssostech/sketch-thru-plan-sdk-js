@@ -1,9 +1,5 @@
 # Sketch-thru-Plan Javascript SDK
 
-This repository hosts the Hyssos Tech Sketch-Thru-Plan (STP) Natural Language Planning Engine SDK for JavaScript/TypeScript, published to npm as [`sketch-thru-plan-sdk`](https://www.npmjs.com/package/sketch-thru-plan-sdk), together with the developer resources (quickstart, samples, JSON API and plugins) that illustrate its use.
-
-## Sketch-thru-Plan
-
 Sketch-thru-Plan (STP) is a Natural Language Planning Engine that analyzes combined speech and sketches and produces interpretations of user intentions in terms of symbols placed on a map, and higher-level constructs that correlate multiple symbols into intended actions (or tasks).
 
 STP is a *multimodal* system - it produces interpretations based on multiple kinds of user input, most commonly speech and sketch. The interpretations fuse these modalities, for example, identifying a location from the sketch, and the intended semantics from the speech, for instance when a user sketches a line and says "phase line blue". The interpretation of multiple modalities also makes the recognizer more robust through *mutual disambiguation* - if there is high confidence for example that the user sketched an area, rather than a line, then those speech hypotheses that are known to refer to areas are considered more likely, even if they did not rank too well as an independent interpretation of the speech.
