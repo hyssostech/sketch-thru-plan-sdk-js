@@ -99,11 +99,46 @@ Describes the [JSON API](json-api) that is wrapped by the SDK.
 
 Components that can be swapped and/or reused are described in [plugins](plugins):
 
-a. Speech recognition using the Microsoft Cognitive Services Speech recognizer - `@hyssostech/azurespeech-plugin` - <https://www.npmjs.com/package/@hyssostech/azurespeech-plugin>
+### Speech recognition
 
-b. Connection to STP via WebSockets - built into the SDK as `StpWebSocketsConnector`.
-The former `@hyssostech/websockets-plugin` package duplicated that class and is retired;
-use the SDK export directly.
+STP apps can be configured to use an extensible set of speech recognizers, encapsulated as plugins. The following plugins are available in source code and as packages:
+
+a. Microsoft Cognitive Services Speech recognizer - `@hyssostech/azurespeech-plugin` - <https://www.npmjs.com/package/@hyssostech/azurespeech-plugin>
+
+b. Amazon Transcribe Speech recognizer - `@hyssostech/awsspeech-plugin` - <https://www.npmjs.com/package/@hyssostech/awsspeech-plugin>
+
+c. Vosk Offline Speech recognizer - `@hyssostech/voskspeech-plugin` - <https://www.npmjs.com/package/@hyssostech/voskspeech-plugin>
+
+
+### Maps
+
+STP is map‑agnostic: any mapping library can be used as the sketching surface as long as latitude/longitude coordinates (decimal degrees) are available for user input and feature placement.  The following plugins are available in source code and as packages:
+
+d. Leaflet  - `@hyssostech/leaflet-plugin` - <https://www.npmjs.com/package/@hyssostech/leaflet-plugin>
+
+e. ArcGIS  - `@hyssostech/arcgis-plugin` - <https://www.npmjs.com/package/@hyssostech/arcgis-plugin>
+
+f. Google Maps (requires a key)  - `@hyssostech/googlemaps-plugin` - <https://www.npmjs.com/package/@hyssostech/googlemaps-plugin>
+
+
+### Renderers
+
+Similarly to maps and speech recognizers, renderers can be swapped via plugins.
+
+g. MilSymJS - `@hyssostech/milsymjs-plugin` - <https://www.npmjs.com/package/@hyssostech/milsymjs-plugin>
+
+STP's MilSymJS renderer combines the capabilities of two open source renderers,:
+
+* [Spatial Illusions milsymbol](https://github.com/spatialillusions/milsymbol) renders single‑point symbols to SVG, including anchors and hit‑shapes.
+* [Mission Command mil‑sym‑js](https://github.com/missioncommand/mil-sym-ts/wiki/2525C-Renderer-Overview)
+
+STP's JmsRenderer adds robust SVG label rendering (font, outline, rotation) and anchor/hit‑shape computation not available in the baseline multipoint renderer.
+
+### Connectors
+
+b. Connection to STP via WebSockets - that is the standard, built into the SDK as `StpWebSocketsConnector`.
+The source code is available within the repository as a sample to illustrate how custom connectors can be developed to extend STP, in case the STP Server is running behind a different infrastructure, for example some queueing mechanism.
+
 
 ## Verifying a release
 
