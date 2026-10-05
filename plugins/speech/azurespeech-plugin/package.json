@@ -61,12 +61,12 @@
     "async-disk-cache": "^2.1.0",
     "bufferutil": "^4.1.0",
     "https-proxy-agent": "^9.1.0",
-    "microsoft-cognitiveservices-speech-sdk": "^1.48.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.52.0",
     "simple-lru-cache": "^0.0.2",
     "url-parse": "^1.5.10",
     "utf-8-validate": "^6.0.6",
     "uuid": "^14.0.2",
-    "ws": "^8.19.0",
+    "ws": "^8.22.0",
     "xmlhttprequest-ts": "^1.0.1"
   }
 }
