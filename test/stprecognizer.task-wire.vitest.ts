@@ -21,14 +21,14 @@ class MockConnector implements IStpConnector {
   onInform: ((message: string) => void) | undefined;
   onRequest: ((message: string) => string[]) | undefined;
   onError: ((error: string) => void) | undefined;
-  async connect(serviceName: string): Promise<string | undefined> {
+  connect(serviceName: string): Promise<string | undefined> {
     this.name = serviceName;
     this.isConnected = true;
-    return 'TASK-WIRE';
+    return Promise.resolve('TASK-WIRE');
   }
-  async disconnect(): Promise<void> { this.isConnected = false; }
-  async inform(message: string): Promise<void> { this.sent.push(message); }
-  async request(): Promise<any> { return { ok: true }; }
+  disconnect(): Promise<void> { this.isConnected = false; return Promise.resolve(); }
+  inform(message: string): Promise<void> { this.sent.push(message); return Promise.resolve(); }
+  request(): Promise<any> { return Promise.resolve({ ok: true }); }
 }
 
 // The keys and value spellings of StpJsonClient.JsonTask.
@@ -74,7 +74,7 @@ describe('task wire format (STP-1024)', () => {
     task.rulesOfEngagement = StpType.TaskROE.Free; // the old name still writes through
     recognizer.addTask(task);
 
-    const sent = JSON.parse(connector.sent[connector.sent.length - 1]);
+    const sent = JSON.parse(connector.sent.at(-1)!);
     expect(sent.params.task.what).toBe('AMBUSH');
     expect(sent.params.task.roe).toBe('Free');
     expect(sent.params.task).not.toHaveProperty('rulesOfEngagement');
@@ -87,6 +87,6 @@ describe('task wire format (STP-1024)', () => {
       }
     }
     // ROE's engine members are mixed case.
-    expect(Object.values(StpType.TaskROE).sort()).toEqual(['Free', 'Hold', 'NOT_SPECIFIED', 'Tight']);
+    expect(new Set(Object.values(StpType.TaskROE))).toEqual(new Set(['NOT_SPECIFIED', 'Hold', 'Free', 'Tight']));
   });
 });
