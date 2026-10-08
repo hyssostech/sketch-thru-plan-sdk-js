@@ -2339,23 +2339,23 @@
       },
       "TaskWhat": {
         "type": "string",
-        "description": "Task objective (enumerated in STP: e.g., secure, seize, delay)."
+        "description": "Task objective: the engine's TaskWhat member name, e.g. SECURE, SEIZE, DELAY."
       },
       "TaskHow": {
         "type": "string",
-        "description": "Method or approach (enumerated in STP: e.g., defend, attack, cordon_and_search)."
+        "description": "Method or approach: the engine's TaskHow member name, e.g. DEFEND, ATTACK, CORDON_AND_SEARCH."
       },
       "TaskWhy": {
         "type": "string",
-        "description": "Purpose/intent (enumerated in STP: e.g., enable, protect, prevent)."
+        "description": "Purpose/intent: the engine's TaskWhy member name, e.g. ENABLE, PROTECT, PREVENT."
       },
       "TaskROE": {
         "type": "string",
         "enum": [
-          "not_specified",
-          "hold",
-          "tight",
-          "free"
+          "NOT_SPECIFIED",
+          "Hold",
+          "Tight",
+          "Free"
         ]
       },
       "StpTask": {

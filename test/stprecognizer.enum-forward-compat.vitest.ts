@@ -82,7 +82,7 @@ describe('enum forward compatibility', () => {
     recognizer.onTaskAdded = (_poid, a) => { alts = a; };
     await recognizer.connect('Svc', 1);
 
-    const known = StpType.TaskWhat.AMBUSH;
+    const known = StpType.TaskWhat.Ambush;
     connector.onInform?.(JSON.stringify({
       method: 'TaskAdded',
       params: {

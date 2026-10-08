@@ -12,19 +12,19 @@ import * as StpType from '../src/stptypes';
  */
 describe('task enums (STP-1001, STP-1019)', () => {
   it('has the corrected HarassmentFires spelling', () => {
-    expect(StpType.TaskWhat.HarassmentFires).toBe('harassment_fires');
+    expect(StpType.TaskWhat.HarassmentFires).toBe('HARASSMENT_FIRES');
   });
 
   it('keeps the deprecated TaskWhat members', () => {
-    expect(StpType.TaskWhat.HarrassmentFires).toBe('harrassment_fires');
-    expect(StpType.TaskWhat.Looting).toBe('looting');
-    expect(StpType.TaskWhat.Rioting).toBe('rioting');
-    expect(StpType.TaskWhat.SeekRefuge).toBe('seek_refuge');
+    expect(StpType.TaskWhat.HarrassmentFires).toBe('HARRASSMENT_FIRES');
+    expect(StpType.TaskWhat.Looting).toBe('LOOTING');
+    expect(StpType.TaskWhat.Rioting).toBe('RIOTING');
+    expect(StpType.TaskWhat.SeekRefuge).toBe('SEEK_REFUGE');
   });
 
   it('keeps the deprecated TaskHow members', () => {
-    expect(StpType.TaskHow.Civilian).toBe('civilian');
-    expect(StpType.TaskHow.Insurgent).toBe('insurgent');
-    expect(StpType.TaskHow.NgoOperation).toBe('ngo_operation');
+    expect(StpType.TaskHow.Civilian).toBe('CIVILIAN');
+    expect(StpType.TaskHow.Insurgent).toBe('INSURGENT');
+    expect(StpType.TaskHow.NgoOperation).toBe('NGO_OPERATION');
   });
 });
