@@ -1,11 +1,27 @@
 # Sketch-Thru-Plan Change Log
-## Version 0.6.17
-- Added `TaskWhat.HarassmentFires` (`harassment_fires`), the corrected spelling the
+## Version 0.6.17 - BREAKING: task enum values now match the wire
+- BREAKING: `TaskWhat`, `TaskHow`, `TaskWhy` and `TaskROE` values are now the engine's
+  member names, which is what the engine sends: `"ambush"` -> `"AMBUSH"`,
+  `"cordon_and_search"` -> `"CORDON_AND_SEARCH"`, `"hold"` -> `"Hold"`. The old
+  lower-case values never matched a live task, so `task.what === TaskWhat.Ambush` was
+  always false; it now works. Update any comparison keyed on the old strings
+- Fixed rules of engagement never arriving: the engine sends and reads it as `roe`,
+  and `StpTask` declared `rulesOfEngagement`. `StpTask.roe` added;
+  `rulesOfEngagement` is a deprecated alias of it, and a task sent with `addTask` or
+  `updateTask` now carries `roe` where the engine reads it
+- `@deprecated` tags now reach the published type definitions; the build had been
+  stripping every doc comment from them
+- Added `TaskWhat.HarassmentFires` (`HARASSMENT_FIRES`), the corrected spelling the
   engine uses since STP-1019; `TaskWhat.HarrassmentFires` is deprecated
+- Added the 11 `TaskWhat` members the engine had that this SDK lacked: `Canalize`,
+  `Contain`, `Control`, `Counterreconnaissance`, `Disengage`, `Exfiltrate`, `Interdict`,
+  `Isolate`, `Reduce`, `Suppress`, and `Demonstrating` (deprecated)
 - Deprecated the task values the engine no longer produces: `TaskWhat.Looting`,
-  `Rioting`, `SeekRefuge` and `TaskHow.Civilian` (STP-1001), `TaskHow.Insurgent`
-  and `NgoOperation` (STP-1019). They stay until the next major release so older
-  servers and saved data still compare
+  `Rioting`, `SeekRefuge`, `Demonstrating` and `TaskHow.Civilian` (STP-1001),
+  `TaskHow.Insurgent` and `NgoOperation` (STP-1019). They stay until the next major
+  release so older servers and saved data still compare
+- OpenRPC contract: `TaskROE` values and the task enum descriptions corrected to the
+  wire spelling
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected

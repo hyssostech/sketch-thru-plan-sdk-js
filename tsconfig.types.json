@@ -1,0 +1,11 @@
+{
+  // Declarations only, WITH their doc comments. tsconfig.json strips comments to keep the
+  // JavaScript small, and that also stripped every @deprecated from the shipped .d.ts, so
+  // consumers never saw a deprecation (STP-1024). This pass rewrites build/*.d.ts after it.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "removeComments": false,
+    "emitDeclarationOnly": true,
+    "sourceMap": false
+  }
+}

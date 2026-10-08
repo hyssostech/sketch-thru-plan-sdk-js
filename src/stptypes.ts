@@ -564,9 +564,21 @@ export class StpTask extends StpItem {
   */
   why: TaskWhy | undefined; // Special case: prolog does not appear to be able to handle the empty (UNKNOWN) case
   /**
-   * Task Rules of Engagement
+   * Task Rules of Engagement. The engine sends and reads this under the key `roe`.
    */
- rulesOfEngagement: TaskROE | undefined;
+  roe: TaskROE | undefined;
+  /**
+   * Task Rules of Engagement.
+   * @deprecated Use {@link roe}, the key the engine actually sends and reads. This name was
+   * never populated from the wire and was ignored when sent back; it is kept as an alias of
+   * `roe` so existing clients keep compiling.
+   */
+  get rulesOfEngagement(): TaskROE | undefined {
+    return this.roe;
+  };
+  set rulesOfEngagement(value: TaskROE | undefined) {
+    this.roe = value;
+  };
   /**
    * Start time slot
    */
@@ -896,162 +908,186 @@ export class MovementFeatures {
 
 /**
  * Task What
+ *
+ * Values are the engine's enum member names, exactly as the engine sends them (for
+ * example `"AMBUSH"`). Before 0.6.17 they were lower case and never matched a live task.
  */
 export enum TaskWhat {
-  NotSpecified = "not_specified",
-  AdvisePolice = "advise_police",
-  Ambush = "ambush",
-  AssignResponsibility = "assign_responsibility",
-  Block = "block",
-  BombAttack = "bomb_attack",
-  Breach = "breach",
-  Bypass = "bypass",
-  Clear = "clear",
-  CoerciveRecruiting = "coercive_recruiting",
-  CollectCasualties = "collect_casualties",
-  CollectCivilians = "collect_civilians",
-  CollectPrisoners = "collect_prisoners",
-  ConductAmbush = "conduct_ambush",
-  ConductAviatonAmbush = "conduct_aviaton_ambush",
-  ConductBilat = "conduct_bilat",
-  ConductGroupEngagement = "conduct_group_engagement",
-  ConductRaid = "conduct_raid",
-  ConductTcpOperation = "conduct_tcp_operation",
-  ConstituteReserve = "constitute_reserve",
-  Convoy = "convoy",
-  Defeat = "defeat",
-  Delay = "delay",
-  DeliverLeafletPsyop = "deliver_leaflet_psyop",
-  Demonstrate = "demonstrate",
-  Destroy = "destroy",
-  Disrupt = "disrupt",
-  DistributeFood = "distribute_food",
-  Emplace = "emplace",
-  EquipPolice = "equip_police",
-  EscortConvoy = "escort_convoy",
-  EvacuateCasualties = "evacuate_casualties",
-  EvacuateCivilians = "evacuate_civilians",
-  EvacuatePrisoners = "evacuate_prisoners",
-  Fix = "fix",
-  Follow = "follow",
-  FollowAndAssume = "follow_and_assume",
-  FollowAndSupport = "follow_and_support",
-  Halt = "halt",
-  HarassmentFires = "harassment_fires",
+  NotSpecified = "NOT_SPECIFIED",
+  AdvisePolice = "ADVISE_POLICE",
+  Ambush = "AMBUSH",
+  AssignResponsibility = "ASSIGN_RESPONSIBILITY",
+  Block = "BLOCK",
+  BombAttack = "BOMB_ATTACK",
+  Breach = "BREACH",
+  Bypass = "BYPASS",
+  Canalize = "CANALIZE",
+  Clear = "CLEAR",
+  CoerciveRecruiting = "COERCIVE_RECRUITING",
+  CollectCasualties = "COLLECT_CASUALTIES",
+  CollectCivilians = "COLLECT_CIVILIANS",
+  CollectPrisoners = "COLLECT_PRISONERS",
+  ConductAmbush = "CONDUCT_AMBUSH",
+  ConductAviatonAmbush = "CONDUCT_AVIATON_AMBUSH",
+  ConductBilat = "CONDUCT_BILAT",
+  ConductGroupEngagement = "CONDUCT_GROUP_ENGAGEMENT",
+  ConductRaid = "CONDUCT_RAID",
+  ConductTcpOperation = "CONDUCT_TCP_OPERATION",
+  ConstituteReserve = "CONSTITUTE_RESERVE",
+  Contain = "CONTAIN",
+  Control = "CONTROL",
+  Convoy = "CONVOY",
+  Counterreconnaissance = "COUNTERRECONNAISSANCE",
+  Defeat = "DEFEAT",
+  Delay = "DELAY",
+  DeliverLeafletPsyop = "DELIVER_LEAFLET_PSYOP",
+  Demonstrate = "DEMONSTRATE",
+  /** @deprecated STP-1001: civilian behaviour, not a task - no task row produces it. Kept so old values still parse; removed in the next major release. */
+  Demonstrating = "DEMONSTRATING",
+  Destroy = "DESTROY",
+  Disengage = "DISENGAGE",
+  Disrupt = "DISRUPT",
+  DistributeFood = "DISTRIBUTE_FOOD",
+  Emplace = "EMPLACE",
+  EquipPolice = "EQUIP_POLICE",
+  EscortConvoy = "ESCORT_CONVOY",
+  EvacuateCasualties = "EVACUATE_CASUALTIES",
+  EvacuateCivilians = "EVACUATE_CIVILIANS",
+  EvacuatePrisoners = "EVACUATE_PRISONERS",
+  Exfiltrate = "EXFILTRATE",
+  Fix = "FIX",
+  Follow = "FOLLOW",
+  FollowAndAssume = "FOLLOW_AND_ASSUME",
+  FollowAndSupport = "FOLLOW_AND_SUPPORT",
+  Halt = "HALT",
+  HarassmentFires = "HARASSMENT_FIRES",
   /** @deprecated STP-1019: misspelling of {@link TaskWhat.HarassmentFires}. Kept so values from older servers or saved data still parse; removed in the next major release. */
-  HarrassmentFires = "harrassment_fires",
-  HouseToHousePsyop = "house_to_house_psyop",
-  IedAttack = "ied_attack",
-  Limit = "limit",
+  HarrassmentFires = "HARRASSMENT_FIRES",
+  HouseToHousePsyop = "HOUSE_TO_HOUSE_PSYOP",
+  IedAttack = "IED_ATTACK",
+  Interdict = "INTERDICT",
+  Isolate = "ISOLATE",
+  Limit = "LIMIT",
   /** @deprecated STP-1001: civilian behaviour, not a task - no task row produces it. Kept so old values still parse; removed in the next major release. */
-  Looting = "looting",
-  MaintainHide = "maintain_hide",
-  MaintainOutpost = "maintain_outpost",
-  Move = "move",
-  Neutralize = "neutralize",
-  Observe = "observe",
-  Occupy = "occupy",
-  Patrol = "patrol",
-  Penetrate = "penetrate",
-  PositionSniper = "position_sniper",
-  PriorityOfFires = "priority_of_fires",
-  ProvideMedicalServices = "provide_medical_services",
-  ProvideService = "provide_service",
-  Receive = "receive",
-  Reconstruction = "reconstruction",
-  RecruitPolice = "recruit_police",
-  Refuel = "refuel",
-  RegulateTraffic = "regulate_traffic",
-  Reinforce = "reinforce",
-  Release = "release",
-  Resupply = "resupply",
-  Retain = "retain",
+  Looting = "LOOTING",
+  MaintainHide = "MAINTAIN_HIDE",
+  MaintainOutpost = "MAINTAIN_OUTPOST",
+  Move = "MOVE",
+  Neutralize = "NEUTRALIZE",
+  Observe = "OBSERVE",
+  Occupy = "OCCUPY",
+  Patrol = "PATROL",
+  Penetrate = "PENETRATE",
+  PositionSniper = "POSITION_SNIPER",
+  PriorityOfFires = "PRIORITY_OF_FIRES",
+  ProvideMedicalServices = "PROVIDE_MEDICAL_SERVICES",
+  ProvideService = "PROVIDE_SERVICE",
+  Receive = "RECEIVE",
+  Reconstruction = "RECONSTRUCTION",
+  RecruitPolice = "RECRUIT_POLICE",
+  Reduce = "REDUCE",
+  Refuel = "REFUEL",
+  RegulateTraffic = "REGULATE_TRAFFIC",
+  Reinforce = "REINFORCE",
+  Release = "RELEASE",
+  Resupply = "RESUPPLY",
+  Retain = "RETAIN",
   /** @deprecated STP-1001: civilian behaviour, not a task - no task row produces it. Kept so old values still parse; removed in the next major release. */
-  Rioting = "rioting",
-  Secure = "secure",
+  Rioting = "RIOTING",
+  Secure = "SECURE",
   /** @deprecated STP-1001: civilian behaviour, not a task - no task row produces it. Kept so old values still parse; removed in the next major release. */
-  SeekRefuge = "seek_refuge",
-  Seize = "seize",
-  SniperAttack = "sniper_attack",
-  Supply = "supply",
-  SupplyMunitions = "supply_munitions",
-  TrainPolice = "train_police",
-  TransferMunitions = "transfer_munitions",
-  TrashRemoval = "trash_removal",
-  Turn = "turn",
-  TvRadioPsyop = "tv_radio_psyop",
-  WaterDelivery = "water_delivery",
-  WillfulRecruiting = "willful_recruiting"
+  SeekRefuge = "SEEK_REFUGE",
+  Seize = "SEIZE",
+  SniperAttack = "SNIPER_ATTACK",
+  Supply = "SUPPLY",
+  SupplyMunitions = "SUPPLY_MUNITIONS",
+  Suppress = "SUPPRESS",
+  TrainPolice = "TRAIN_POLICE",
+  TransferMunitions = "TRANSFER_MUNITIONS",
+  TrashRemoval = "TRASH_REMOVAL",
+  Turn = "TURN",
+  TvRadioPsyop = "TV_RADIO_PSYOP",
+  WaterDelivery = "WATER_DELIVERY",
+  WillfulRecruiting = "WILLFUL_RECRUITING"
 }
 
 /**
  * Task How
+ *
+ * Values are the engine's enum member names, exactly as the engine sends them (for
+ * example `"CORDON_AND_SEARCH"`). Before 0.6.17 they were lower case and never matched a live task.
  */
 export enum TaskHow {
-  NotSpecified = "not_specified",
-  AirAssault = "air_assault",
-  AirReconnaissance = "air_reconnaissance",
-  AreaDefense = "area_defense",
-  Assault = "assault",
-  Attack = "attack",
-  AttackInZone = "attack_in_zone",
-  AttackByFire = "attack_by_fire",
-  CerpFunding = "cerp_funding",
+  NotSpecified = "NOT_SPECIFIED",
+  AirAssault = "AIR_ASSAULT",
+  AirReconnaissance = "AIR_RECONNAISSANCE",
+  AreaDefense = "AREA_DEFENSE",
+  Assault = "ASSAULT",
+  Attack = "ATTACK",
+  AttackInZone = "ATTACK_IN_ZONE",
+  AttackByFire = "ATTACK_BY_FIRE",
+  CerpFunding = "CERP_FUNDING",
   /** @deprecated STP-1001: an actor class, not a way of performing a task - no task row uses it. Kept so old values still parse; removed in the next major release. */
-  Civilian = "civilian",
-  Contracting = "contracting",
-  CordonAndSearch = "cordon_and_search",
-  Counterattack = "counterattack",
-  CounterattackByFire = "counterattack_by_fire",
-  Cover = "cover",
-  Defend = "defend",
-  DeliverServices = "deliver_services",
-  Guard = "guard",
-  InformationOperations = "information_operations",
+  Civilian = "CIVILIAN",
+  Contracting = "CONTRACTING",
+  CordonAndSearch = "CORDON_AND_SEARCH",
+  Counterattack = "COUNTERATTACK",
+  CounterattackByFire = "COUNTERATTACK_BY_FIRE",
+  Cover = "COVER",
+  Defend = "DEFEND",
+  DeliverServices = "DELIVER_SERVICES",
+  Guard = "GUARD",
+  InformationOperations = "INFORMATION_OPERATIONS",
   /** @deprecated STP-1019: an actor class, not a way of performing a task - no task row uses it. Kept so old values still parse; removed in the next major release. */
-  Insurgent = "insurgent",
-  MobileDefense = "mobile_defense",
-  MovingScreen = "moving_screen",
+  Insurgent = "INSURGENT",
+  MobileDefense = "MOBILE_DEFENSE",
+  MovingScreen = "MOVING_SCREEN",
   /** @deprecated STP-1019: an actor class, not a way of performing a task - no task row uses it. Kept so old values still parse; removed in the next major release. */
-  NgoOperation = "ngo_operation",
-  PassageOfLines = "passage_of_lines",
-  Screen = "screen",
-  SearchAndAttack = "search_and_attack",
-  Security = "security",
-  SecurityForceAssistance = "security_force_assistance",
-  SupportByFire = "support_by_fire",
-  Withdrawal = "withdrawal"
+  NgoOperation = "NGO_OPERATION",
+  PassageOfLines = "PASSAGE_OF_LINES",
+  Screen = "SCREEN",
+  SearchAndAttack = "SEARCH_AND_ATTACK",
+  Security = "SECURITY",
+  SecurityForceAssistance = "SECURITY_FORCE_ASSISTANCE",
+  SupportByFire = "SUPPORT_BY_FIRE",
+  Withdrawal = "WITHDRAWAL"
 }
 
 /**
  * Task Why
+ *
+ * Values are the engine's enum member names, exactly as the engine sends them (for
+ * example `"PROTECT"`). Before 0.6.17 they were lower case and never matched a live task.
  */
 export enum TaskWhy {
-  Unknown = "unknown",
-  Allow = "allow",
-  Cause = "cause",
-  Create = "create",
-  Deceive = "deceive",
-  Deny = "deny",
-  Divert = "divert",
-  Enable = "enable",
-  Envelop = "envelop",
-  Influence = "influence",
-  Open = "open",
-  Prevent = "prevent",
-  Protect = "protect",
-  Support = "support",
-  Surprise = "surprise"
+  Unknown = "UNKNOWN",
+  Allow = "ALLOW",
+  Cause = "CAUSE",
+  Create = "CREATE",
+  Deceive = "DECEIVE",
+  Deny = "DENY",
+  Divert = "DIVERT",
+  Enable = "ENABLE",
+  Envelop = "ENVELOP",
+  Influence = "INFLUENCE",
+  Open = "OPEN",
+  Prevent = "PREVENT",
+  Protect = "PROTECT",
+  Support = "SUPPORT",
+  Surprise = "SURPRISE"
 }
 
 /**
  * Task Rules of Engagement
+ *
+ * Values are the engine's enum member names, exactly as the engine sends them (for
+ * example `"Hold"`). Before 0.6.17 they were lower case and never matched a live task.
  */
 export enum TaskROE {
-  NotSpecified = "not_specified",
-  Hold = "hold",
-  Tight = "tight",
-  Free = "free"
+  NotSpecified = "NOT_SPECIFIED",
+  Hold = "Hold",
+  Tight = "Tight",
+  Free = "Free"
 }
 
 // /**

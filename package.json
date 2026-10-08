@@ -12,7 +12,7 @@
   "scripts": {
     "clean": "rimraf --glob dist build ./interfaces \"./*.d.ts\"",
     "clean:docs": "rimraf docs",
-    "build": "npm run clean && tsc --project tsconfig.json && npm run bundle",
+    "build": "npm run clean && tsc --project tsconfig.json && tsc --project tsconfig.types.json && npm run bundle",
     "build:plugins": "npm run build --workspaces --if-present",
     "build:all": "npm run build && npm run build:plugins",
     "build:docs": "npm run clean:docs && typedoc --tsconfig tsconfig.json",
@@ -20,7 +20,7 @@
     "bundle:umd": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle-min.js --format umd --name StpSDK --interop auto",
     "bundle:esm": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle.esm.js --format esm  --external microsoft-cognitiveservices-speech-sdk --globals microsoft-cognitiveservices-speech-sdk:SpeechSDK",
     "bundle:dts": "rollup build/index.d.ts --file dist/sketch-thru-plan-sdk-bundle.d.ts --format es --plugin rollup-plugin-dts",
-    "build:dev": "npm run fix:format && npm run clean && tsc --project tsconfig.json && npm run bundle:dev",
+    "build:dev": "npm run fix:format && npm run clean && tsc --project tsconfig.json && tsc --project tsconfig.types.json && npm run bundle:dev",
     "bundle:dev": "npm run bundle:umd:dev && npm run bundle:dts",
     "bundle:umd:dev": "rollup build/index.js --file dist/sketch-thru-plan-sdk-bundle-min.js --format umd --name StpSDK --interop auto",
     "fix:format": "prettier --config .prettierrc src --write",
