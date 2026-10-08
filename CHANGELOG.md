@@ -1,4 +1,12 @@
 # Sketch-Thru-Plan Change Log
+## Version 0.6.17
+- Added `TaskWhat.HarassmentFires` (`harassment_fires`), the corrected spelling the
+  engine uses since STP-1019; `TaskWhat.HarrassmentFires` is deprecated
+- Deprecated the task values the engine no longer produces: `TaskWhat.Looting`,
+  `Rioting`, `SeekRefuge` and `TaskHow.Civilian` (STP-1001), `TaskHow.Insurgent`
+  and `NgoOperation` (STP-1019). They stay until the next major release so older
+  servers and saved data still compare
+
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
   instance; a redundant `connect()` now updates the registration in place

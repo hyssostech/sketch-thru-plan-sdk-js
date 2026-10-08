@@ -937,10 +937,13 @@ export enum TaskWhat {
   FollowAndAssume = "follow_and_assume",
   FollowAndSupport = "follow_and_support",
   Halt = "halt",
+  HarassmentFires = "harassment_fires",
+  /** @deprecated STP-1019: misspelling of {@link TaskWhat.HarassmentFires}. Kept so values from older servers or saved data still parse; removed in the next major release. */
   HarrassmentFires = "harrassment_fires",
   HouseToHousePsyop = "house_to_house_psyop",
   IedAttack = "ied_attack",
   Limit = "limit",
+  /** @deprecated STP-1001: civilian behaviour, not a task - no task row produces it. Kept so old values still parse; removed in the next major release. */
   Looting = "looting",
   MaintainHide = "maintain_hide",
   MaintainOutpost = "maintain_outpost",
@@ -963,8 +966,10 @@ export enum TaskWhat {
   Release = "release",
   Resupply = "resupply",
   Retain = "retain",
+  /** @deprecated STP-1001: civilian behaviour, not a task - no task row produces it. Kept so old values still parse; removed in the next major release. */
   Rioting = "rioting",
   Secure = "secure",
+  /** @deprecated STP-1001: civilian behaviour, not a task - no task row produces it. Kept so old values still parse; removed in the next major release. */
   SeekRefuge = "seek_refuge",
   Seize = "seize",
   SniperAttack = "sniper_attack",
@@ -992,6 +997,7 @@ export enum TaskHow {
   AttackInZone = "attack_in_zone",
   AttackByFire = "attack_by_fire",
   CerpFunding = "cerp_funding",
+  /** @deprecated STP-1001: an actor class, not a way of performing a task - no task row uses it. Kept so old values still parse; removed in the next major release. */
   Civilian = "civilian",
   Contracting = "contracting",
   CordonAndSearch = "cordon_and_search",
@@ -1002,9 +1008,11 @@ export enum TaskHow {
   DeliverServices = "deliver_services",
   Guard = "guard",
   InformationOperations = "information_operations",
+  /** @deprecated STP-1019: an actor class, not a way of performing a task - no task row uses it. Kept so old values still parse; removed in the next major release. */
   Insurgent = "insurgent",
   MobileDefense = "mobile_defense",
   MovingScreen = "moving_screen",
+  /** @deprecated STP-1019: an actor class, not a way of performing a task - no task row uses it. Kept so old values still parse; removed in the next major release. */
   NgoOperation = "ngo_operation",
   PassageOfLines = "passage_of_lines",
   Screen = "screen",
