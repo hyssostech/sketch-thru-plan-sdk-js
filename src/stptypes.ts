@@ -1015,7 +1015,7 @@ export enum TaskWhat {
  * Task How
  *
  * Values are the engine's enum member names, exactly as the engine sends them (for
- * example `"AMBUSH"`). Before 0.6.17 they were lower case and never matched a live task.
+ * example `"CORDON_AND_SEARCH"`). Before 0.6.17 they were lower case and never matched a live task.
  */
 export enum TaskHow {
   NotSpecified = "NOT_SPECIFIED",
@@ -1057,7 +1057,7 @@ export enum TaskHow {
  * Task Why
  *
  * Values are the engine's enum member names, exactly as the engine sends them (for
- * example `"AMBUSH"`). Before 0.6.17 they were lower case and never matched a live task.
+ * example `"PROTECT"`). Before 0.6.17 they were lower case and never matched a live task.
  */
 export enum TaskWhy {
   Unknown = "UNKNOWN",
@@ -1081,7 +1081,7 @@ export enum TaskWhy {
  * Task Rules of Engagement
  *
  * Values are the engine's enum member names, exactly as the engine sends them (for
- * example `"AMBUSH"`). Before 0.6.17 they were lower case and never matched a live task.
+ * example `"Hold"`). Before 0.6.17 they were lower case and never matched a live task.
  */
 export enum TaskROE {
   NotSpecified = "NOT_SPECIFIED",
