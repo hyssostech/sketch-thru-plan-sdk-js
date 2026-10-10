@@ -43,7 +43,7 @@
   orgs (`coaPoid` on `setCoaTaskOrg` / `resetCoaTaskOrg`) are refused for now, and
   `importCoaContent`, `importTaskOrgContent` and their object-set forms keep the poids
   in the content rather than generating new ones
-- OpenRPC contract raised to 0.5.0: the eight COA methods (`AddCoa`, `UpdateCoa`,
+- OpenRPC contract raised to 0.6.0: the eight COA methods (`AddCoa`, `UpdateCoa`,
   `DeleteCoa`, `SetCurrentCoa`, `GetCoaContent`, `ImportCoaContent`, `SetCoaTaskOrg`,
   `ResetCoaTaskOrg`) lose `x-engineDispatch: none` and are described as dispatched;
   `ResetCoaTaskOrg` gains `affiliation`; `CoaAdded`, `CoaModified` and `CoaDeleted` added

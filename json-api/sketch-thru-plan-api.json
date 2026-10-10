@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.5.0"
+    "version": "0.6.0"
   },
   "methods": [
     {
