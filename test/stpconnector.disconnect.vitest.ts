@@ -23,7 +23,7 @@ function fakeSocket(readyState: number) {
 }
 
 function connectorWith(sock: any): StpWebSocketsConnector {
-  const c = new StpWebSocketsConnector('ws://unused');
+  const c = new StpWebSocketsConnector('wss://unused');
   c.socket = sock as WebSocket;
   return c;
 }
@@ -56,7 +56,7 @@ describe('StpWebSocketsConnector.disconnect (STP-1070)', () => {
   });
 
   it('resolves when there is no socket', async () => {
-    const c = new StpWebSocketsConnector('ws://unused');
+    const c = new StpWebSocketsConnector('wss://unused');
     await expect(c.disconnect(1)).resolves.toBeUndefined();
   });
 
@@ -70,7 +70,7 @@ describe('StpWebSocketsConnector.disconnect (STP-1070)', () => {
 
   it('a live connection stays closed: disconnect() does not trigger the auto-reconnect', async () => {
     (globalThis as any).WebSocket = MockWebSocket as unknown as WebSocket;
-    const url = 'ws://localhost:22370';
+    const url = 'wss://localhost:22370';
     const server = new Server(url);
     let connections = 0;
     server.on('connection', (socket) => {
