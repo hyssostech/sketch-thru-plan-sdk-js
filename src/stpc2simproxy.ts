@@ -1,7 +1,16 @@
 import { IC2SIMProxy } from "./interfaces/IC2SIMProxy";
 import StpRecognizer from "./stprecognizer";
 import * as StpType from './stptypes';
-import { StpC2SIMOptions } from "./stpc2simoptions";
+import { StpC2SIMOptions, StpC2SIMRulesOfEngagement } from "./stpc2simoptions";
+
+/**
+ * The pre-0.6.17 rules of engagement spellings, and the engine value each one meant (STP-694)
+ */
+const LEGACY_ROE: { readonly [legacy: string]: StpC2SIMRulesOfEngagement } = {
+  ROEHold: 'Hold',
+  ROEFree: 'Free',
+  ROETight: 'Tight',
+};
 
 /**
  * Implements a connector to STP's native OAA pub/sub service via WebSockets
@@ -32,6 +41,19 @@ export class StpC2SIMProxy implements IC2SIMProxy {
       };
     }
     //#endregion
+
+  /**
+   * The options as they go on the wire: a deprecated rules of engagement spelling is sent as
+   * the engine's value, which is what it always meant. The caller's object is not modified
+   */
+  private wireOptions(): StpC2SIMOptions | undefined {
+    const roe = this.options?.rulesOfEngagement;
+    if (this.options === undefined || roe === undefined
+      || !Object.prototype.hasOwnProperty.call(LEGACY_ROE, roe)) {
+      return this.options;
+    }
+    return { ...this.options, rulesOfEngagement: LEGACY_ROE[roe] };
+  }
 
   /**
    * Export current scenario initialization or orders to C2SIM 
@@ -91,7 +113,7 @@ export class StpC2SIMProxy implements IC2SIMProxy {
       dataType: arguments[1],
       affiliation: arguments[2],
       coaPoids: arguments[3],
-      options: this.options
+      options: this.wireOptions()
     }, timeout);
   }
 
@@ -107,7 +129,7 @@ export class StpC2SIMProxy implements IC2SIMProxy {
     return this.stpsdk.requestStp('PushC2SIMContent', {
       content: arguments[0],
       dataType: arguments[1],
-      options: this.options
+      options: this.wireOptions()
     }, timeout);
   }
  
@@ -121,7 +143,7 @@ export class StpC2SIMProxy implements IC2SIMProxy {
    */
   async pullC2SIMInitialization(timeout?: number): Promise<string> {
     return this.stpsdk.requestStp('PullC2SIMInitialization', {
-      options: this.options 
+      options: this.wireOptions() 
     }, timeout);
   }
 
@@ -134,7 +156,7 @@ export class StpC2SIMProxy implements IC2SIMProxy {
   async convertC2SIMContent(content: string, timeout?: number): Promise<string>  {
     return this.stpsdk.requestStp('ConvertC2SIMContent', {
       content: arguments[0],
-      options: this.options
+      options: this.wireOptions()
     }, timeout);
   }
 
