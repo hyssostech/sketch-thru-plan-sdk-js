@@ -243,3 +243,22 @@ The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
   by ticket key: today's engine may not deliver what its description or `x-stpEmits` says
   (for example an event that never arrives, or a call that times out although it worked).
   The key is dropped from the contract once the fix ships.
+* `"examples": [ ... ]` - on every method (STP-1059): one OpenRPC example pairing taken from
+  a live engine, not hand-written. `params` and `result` are what went over the wire; a
+  fire-and-forget method's example has no `result`. Long values are abbreviated and the
+  example's `description` says so. Each example can carry:
+  * `x-stpEventsObserved` - the events the call produced, as `{ event, params }`;
+  * a name ending in `(captured, not completed)` - the capture could not complete the call
+    (it needs an external server, or a known issue stops it); its `description` says what
+    came back.
+* `"x-stpEdgeCases": [ { "when", "outcome", "message", "note", "wire" } ]` - what the engine
+  did, on a live capture, with bad or unusual input (STP-1059): a missing or unknown poid,
+  no active scenario, malformed content, an inform sent through `Request`, and so on.
+  * `outcome` - `refused`: answered `success:false` with `message`; `announced`: an
+    `StpMessage` carrying `message`; `ignored`: nothing came back, so check the result
+    another way; `accepted`: the call went through, and `note` says what it returned or sent.
+  * `wire` - present when the case was sent differently from the method's usual path
+    (`request` for an inform sent through `Request`).
+
+  These record behaviour, not intent: an `ignored` or surprising `accepted` case is often a
+  filed defect, and the method then lists it in `x-stpKnownIssues`.

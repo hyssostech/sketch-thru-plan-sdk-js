@@ -16,7 +16,6 @@ const EVENTS = new Set<string>(CONTRACT['x-stpEvents'].map((e: { name: string })
 
 type Emit = { event: string; when: string; condition?: string; to: string };
 const emitsOf = (m: Record<string, any>): Emit[] => m['x-stpEmits'] ?? [];
-const byName = (a: string, b: string) => a.localeCompare(b);
 
 describe('contract emitted events (STP-1059)', () => {
   it('gives every method an x-stpEmits array', () => {
@@ -113,11 +112,11 @@ describe('contract emitted events (STP-1059)', () => {
     expect(bad).toEqual([]);
   });
 
-  it('flags the COA calls whose events the engine does not deliver yet', () => {
-    const flagged = METHODS.filter((m) => (m['x-stpKnownIssues'] ?? []).includes('STP-1078'))
-      .map((m) => m.name)
-      .filter((n) => /Coa$/.test(n))
-      .sort(byName);
-    expect(flagged).toEqual(['AddCoa', 'DeleteCoa', 'UpdateCoa']);
+  it('drops a known issue once its fix ships', () => {
+    // STP-1078 (COA events) and STP-1079 (COA and role switch waits) are fixed in the engine.
+    const stale = METHODS.filter((m) =>
+      (m['x-stpKnownIssues'] ?? []).some((k: string) => ['STP-1078', 'STP-1079'].includes(k)),
+    ).map((m) => m.name);
+    expect(stale).toEqual([]);
   });
 });
