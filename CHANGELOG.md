@@ -50,6 +50,13 @@
 - OpenRPC contract raised to 0.6.1: per-COA task orgs described. `coaPoid` on
   `SetCoaTaskOrg` ties a TO to one COA; on `ResetCoaTaskOrg` it clears that tie, for one
   affiliation or all of them. Engines before STP-1077 refuse a `coaPoid`
+- OpenRPC contract raised to 0.7.0 (STP-1059): every method carries `x-stpSafety`
+  (`read` / `write` / `destructive`); the 35 fire-and-forget methods carry
+  `x-stpInform`; the two calls that reach the C2SIM server carry `x-stpOpenWorld`.
+  Descriptions corrected from the engine source: the imports and `SyncScenarioSession`
+  REPLACE resident objects with the same poid and keep the rest (sync does not discard
+  the current scenario); `PushC2SIMContent` sends to the external C2SIM server and
+  imports nothing; `PullC2SIMInitialization` returns the content without loading it
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
