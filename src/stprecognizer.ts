@@ -1035,11 +1035,12 @@ export class StpRecognizer{
   /**
    * Set the TO used for COAs. Without `coaPoid` the TO becomes the default for its affiliation,
    * exactly as {@link setDefaultTaskOrg} does.
-   * With `coaPoid` (tie the TO to one COA) the engine currently refuses the request with
-   * "per-COA task org is not supported yet", pending an operator ruling.
+   * With `coaPoid` the TO is tied to that one COA for the TO's affiliation: while that COA is
+   * current it uses this TO instead of the affiliation default. Engines before STP-1077 refuse a
+   * `coaPoid` with "per-COA task org is not supported yet".
    * @param toPoid - Unique id of the TO to set
-   * @param coaPoid - Unique Id of the COA the TO should be associated with - currently refused;
-   *   omit it to set the default for the TO's affiliation
+   * @param coaPoid - Unique Id of the COA the TO is tied to; omit it to set the default for the
+   *   TO's affiliation
    * @param timeout - Optional timeout in seconds
    */
   async setCoaTaskOrg(toPoid: string, coaPoid?: string, timeout?: number): Promise<void> {
@@ -1054,8 +1055,9 @@ export class StpRecognizer{
    *
    * `resetCoaTaskOrg({ affiliation: 'friend' })` unsets the default TO for that affiliation,
    * exactly as {@link resetDefaultTaskOrg} does.
-   * With a `coaPoid` (clear the TO tied to one COA) the engine currently refuses the request with
-   * "per-COA task org is not supported yet", pending an operator ruling.
+   * With a `coaPoid` the TO tied to that COA is cleared - for `affiliation`, or for every
+   * affiliation when it is omitted - and the COA falls back to the affiliation default.
+   * Engines before STP-1077 refuse a `coaPoid` with "per-COA task org is not supported yet".
    * @param target - `{ affiliation, coaPoid }`. `affiliation` is required when `coaPoid` is
    *   omitted. A plain string is taken as `coaPoid`, the form this method has always declared.
    * @param timeout - Optional timeout in seconds

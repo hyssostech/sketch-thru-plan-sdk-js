@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.6.0"
+    "version": "0.6.1"
   },
   "methods": [
     {
@@ -609,7 +609,7 @@
     },
     {
       "name": "SetCoaTaskOrg",
-      "description": "Choose the Task Organization (TO) used for COAs. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid (tie the TO to one specific COA): currently REFUSED - the engine answers success=false with \"per-COA task org is not supported yet\" and changes nothing, pending an operator ruling on per-COA task orgs. Do not send coaPoid until that changes. Answers null on success.",
+      "description": "Choose the Task Organization (TO) used for COAs. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "params": [
         {
           "name": "toPoid",
@@ -620,7 +620,7 @@
         },
         {
           "name": "coaPoid",
-          "description": "Optional. Omit it to set the default TO for the TO's affiliation. Supplying it is currently refused (per-COA task org is not supported yet).",
+          "description": "Optional. The COA the TO is tied to. Omit it to set the default TO for the TO's affiliation instead.",
           "schema": {
             "type": "string"
           }
@@ -635,18 +635,18 @@
     },
     {
       "name": "ResetCoaTaskOrg",
-      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg. With coaPoid (clear the TO tied to one specific COA): currently REFUSED - the engine answers success=false with \"per-COA task org is not supported yet\" and changes nothing, pending an operator ruling on per-COA task orgs. Do not send coaPoid until that changes. Answers null on success.",
+      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg. With coaPoid: removes the TO tied to that COA for affiliation, or for every affiliation when affiliation is omitted, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. An unknown coaPoid is refused (success=false with the reason). Answers null on success. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "params": [
         {
           "name": "affiliation",
-          "description": "Affiliation whose default TO is reset. Required when coaPoid is omitted.",
+          "description": "Affiliation whose TO selection is cleared. Required when coaPoid is omitted; with coaPoid, omit it to clear the COA's TO for every affiliation.",
           "schema": {
             "$ref": "#/components/schemas/Affiliation"
           }
         },
         {
           "name": "coaPoid",
-          "description": "Optional. Omit it to reset the default TO for affiliation. Supplying it is currently refused (per-COA task org is not supported yet).",
+          "description": "Optional. The COA whose TO is cleared. Omit it to reset the default TO for affiliation instead.",
           "schema": {
             "type": "string"
           }
