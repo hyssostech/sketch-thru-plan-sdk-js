@@ -111,8 +111,8 @@ describe('StpC2SIMOptions <-> contract options keys (STP-694)', () => {
   const fields = sourceFields();
 
   it('finds what it compares - an extractor that matches nothing proves nothing', () => {
-    expect([...schemas.keys()].sort()).toEqual(
-      ['GetC2SIMContent', 'PullC2SIMInitialization', 'PushC2SIMContent']);
+    expect(new Set(schemas.keys())).toEqual(
+      new Set(['GetC2SIMContent', 'PullC2SIMInitialization', 'PushC2SIMContent']));
     expect(fields.size).toBeGreaterThanOrEqual(30);
   });
 
@@ -136,8 +136,8 @@ describe('StpC2SIMOptions <-> contract options keys (STP-694)', () => {
       const contractEnum: string[] = schema.properties.rulesOfEngagement.enum;
       const literals = stringLiterals(fields.get('rulesOfEngagement'));
       const legacy = literals.filter((v) => v.startsWith('ROE'));
-      expect(literals.filter((v) => !v.startsWith('ROE')).sort()).toEqual([...contractEnum].sort());
-      expect(legacy.map((v) => v.slice(3)).sort()).toEqual([...contractEnum].sort());
+      expect(new Set(literals.filter((v) => !v.startsWith('ROE')))).toEqual(new Set(contractEnum));
+      expect(new Set(legacy.map((v) => v.slice(3)))).toEqual(new Set(contractEnum));
     });
   }
 });
