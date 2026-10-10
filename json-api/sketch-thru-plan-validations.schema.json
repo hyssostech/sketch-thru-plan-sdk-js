@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/hyssostech/sketch-thru-plan-sdk-js/main/json-api/sketch-thru-plan-validations.schema.json",
+  "title": "Sketch-thru-Plan call validation rules",
+  "description": "Schema of sketch-thru-plan-validations.json: per contract method, the checks a client runs before a state-changing call and the events that prove the call did what it asked. See README.md, 'Call validations'.",
+  "type": "object",
+  "required": ["version", "contractVersion", "refusalMessage", "methods"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "version": {
+      "description": "Version of the rule file; a change an evaluator must know about raises the major version.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "contractVersion": {
+      "description": "The contract version (info.version of sketch-thru-plan-api.json) the rules were checked against.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "refusalMessage": {
+      "description": "How the engine announces that it refused a fire-and-forget call: an event whose message contains this text, with {method} replaced by the method name.",
+      "type": "object",
+      "required": ["event", "contains"],
+      "additionalProperties": false,
+      "properties": {
+        "event": { "type": "string" },
+        "contains": { "type": "string" }
+      }
+    },
+    "methods": {
+      "description": "One entry per write or destructive contract method the engine dispatches, keyed by method name.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/method" }
+    }
+  },
+  "definitions": {
+    "method": {
+      "type": "object",
+      "required": ["preconditions", "intent"],
+      "additionalProperties": false,
+      "properties": {
+        "preconditions": {
+          "description": "Session state that must hold before the call. activeScenario: the session has an active scenario (HasActiveScenario is true).",
+          "type": "array",
+          "items": { "enum": ["activeScenario"] },
+          "uniqueItems": true
+        },
+        "required": {
+          "description": "Params that must be present: without them the engine ignores the call and says nothing.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/paramPath" },
+          "uniqueItems": true
+        },
+        "references": {
+          "description": "Params whose value is a poid that must name an existing object of the given kind.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/reference" }
+        },
+        "intent": { "$ref": "#/definitions/intent" },
+        "confirm": {
+          "description": "Destructive methods only: what the call destroys, for the confirmation asked of the user. {path} is replaced by that param's value; {path.length} by an array's length.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "paramPath": {
+      "description": "A dotted path into the call's params, e.g. task.who. A * segment stands for every item of an array, e.g. task.tgs.*.",
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.([A-Za-z_][A-Za-z0-9_]*|\\*|\\d+))*$"
+    },
+    "eventPath": {
+      "description": "A dotted path into an event's params; a numeric segment indexes an array, e.g. alternates.0.who.",
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.([A-Za-z_][A-Za-z0-9_]*|\\d+))*$"
+    },
+    "kind": {
+      "description": "symbol: any symbol (unit, tactical graphic, equipment...); unit: a symbol whose fsTYPE is unit; any: an object of any kind.",
+      "enum": ["symbol", "unit", "task", "coa", "taskOrg", "taskOrgUnit", "taskOrgRelationship", "any"]
+    },
+    "reference": {
+      "type": "object",
+      "required": ["param", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "param": { "$ref": "#/definitions/paramPath" },
+        "kind": {
+          "description": "The kind of object the poid must name, or a list of acceptable kinds.",
+          "oneOf": [
+            { "$ref": "#/definitions/kind" },
+            { "type": "array", "items": { "$ref": "#/definitions/kind" }, "minItems": 1, "uniqueItems": true }
+          ]
+        },
+        "required": {
+          "description": "true when the call is meaningless without this poid (it names the call's target).",
+          "type": "boolean"
+        }
+      }
+    },
+    "intent": {
+      "description": "How to tell from the event stream that the call did what it asked (V10).",
+      "type": "object",
+      "required": ["expect"],
+      "additionalProperties": false,
+      "properties": {
+        "expect": {
+          "description": "The events that prove the call was done; empty when the contract promises no event for it.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/expectation" }
+        },
+        "other": {
+          "description": "Events that show the engine did something else than asked, e.g. TaskModified instead of TaskAdded. An event on an object an expected event already matched is a follow-on, not something else.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/eventMatch" }
+        },
+        "acks": {
+          "description": "Events that show the engine handled the call without proving it was done, e.g. InkProcessed before SymbolAdded.",
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "unverifiable": {
+          "description": "The expected events are not sent today because of a filed engine issue, which the method lists in x-stpKnownIssues: their absence is reported as unverifiable, never as not done.",
+          "type": "object",
+          "required": ["issue", "reason"],
+          "additionalProperties": false,
+          "properties": {
+            "issue": { "type": "string", "pattern": "^STP-\\d+$" },
+            "reason": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "expectation": {
+      "description": "One expected event (event + match), or one of several (anyOf). With forEach, one is expected per item of that param array (filtered by where).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event": { "type": "string" },
+        "match": { "$ref": "#/definitions/match" },
+        "anyOf": { "type": "array", "items": { "$ref": "#/definitions/eventMatch" }, "minItems": 2 },
+        "forEach": { "$ref": "#/definitions/paramPath" },
+        "where": {
+          "description": "Item filter for forEach: the item's value at a path must be in, or not in, a list.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "in": { "type": "array", "minItems": 1 },
+              "notIn": { "type": "array", "minItems": 1 }
+            }
+          }
+        }
+      },
+      "oneOf": [{ "required": ["event"] }, { "required": ["anyOf"] }],
+      "dependencies": { "where": ["forEach"] }
+    },
+    "eventMatch": {
+      "type": "object",
+      "required": ["event"],
+      "additionalProperties": false,
+      "properties": {
+        "event": { "type": "string" },
+        "match": { "$ref": "#/definitions/match" }
+      }
+    },
+    "match": {
+      "description": "Equality on dotted paths of the event: each key is an event path, each value says what it must equal. Strings compare without regard to case (the engine changes the case of enum values); a value that resolves to nothing (an absent param) does not constrain the match.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/eventPath" },
+      "additionalProperties": { "$ref": "#/definitions/valueRef" }
+    },
+    "valueRef": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "param": { "$ref": "#/definitions/paramPath" },
+        "item": { "description": "A path into the current forEach item.", "$ref": "#/definitions/eventPath" },
+        "value": { "description": "A literal." }
+      }
+    }
+  }
+}

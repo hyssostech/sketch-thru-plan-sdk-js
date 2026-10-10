@@ -262,3 +262,72 @@ The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
 
   These record behaviour, not intent: an `ignored` or surprising `accepted` case is often a
   filed defect, and the method then lists it in `x-stpKnownIssues`.
+
+## Call validations
+
+[sketch-thru-plan-validations.json](sketch-thru-plan-validations.json) is a data-driven rule set
+that a client evaluates around every state-changing call (STP-1064), so a call is either refused
+before it goes out, with the reason, or its result is explained after it comes back - never a
+silent failure. It sits next to the contract, names the contract version it was checked against
+(`contractVersion`), and has a schema of its own:
+[sketch-thru-plan-validations.schema.json](sketch-thru-plan-validations.schema.json). One rule
+file drives every runtime's evaluator (the stp-mcp live server's first; the SDKs' later).
+`test/contract.validations.vitest.ts` checks that every method, param path, event and event path
+it names exists in the contract.
+
+`methods` has one entry per write or destructive method the engine dispatches:
+
+* `preconditions` - session state that must hold before the call. `activeScenario`: the session
+  has an active scenario. Without one the engine accepts writes, creates the objects, and
+  `HasActiveScenario` stays false. Every method requires it except `CreateNewScenario`,
+  `LoadNewScenario` and `LoadNewScenarioFromObjectSet`, which create one.
+* `required` - params without which the engine ignores the call and says nothing (for example
+  `UpdateSymbol` without `symbol`). The contract marks no param as required, so these are listed
+  here, each backed by an `ignored` case in the method's `x-stpEdgeCases`.
+* `references` - params whose value is a poid that must name an existing object: `{ param, kind,
+  required }`. `kind` is `symbol`, `unit` (a symbol whose `fsTYPE` is `unit`), `task`, `coa`,
+  `taskOrg`, `taskOrgUnit`, `taskOrgRelationship` or `any`, or a list of them. `required: true`
+  marks the poid that names the call's target. The engine does not check most of these: a
+  delete or update of an unknown poid is ignored, `UpdateTask` on an unknown poid creates a task
+  (STP-1091), and `AddTask` with an unknown `who` creates an orphan task.
+* `intent` - the events that prove the call did what it asked (V10, "diff intended vs actual"):
+  * `expect` - the proof events. The default is the method's `x-stpEmits` entries with
+    `when: always` (to the caller or the session), each given a matcher. Empty when the
+    contract promises no event (then a request is confirmed by its answer alone, and a
+    fire-and-forget call cannot be confirmed by events at all);
+  * `other` - events that show the engine did something else than asked (for example
+    `TaskModified` instead of `TaskAdded`). An event on an object an expected event already
+    matched is a follow-on, not something else (`AddTask` sends `TaskAdded`, then `TaskModified`);
+  * `acks` - events that show the engine handled the call without proving it was done
+    (`InkProcessed` before `SymbolAdded`);
+  * `unverifiable` - `{ issue, reason }`: a filed engine issue, still listed in the method's
+    `x-stpKnownIssues`, holds the expected events back (STP-1089: task org relationship events).
+    Their absence is then reported as unverifiable with the ticket, never as "not done".
+* `confirm` - destructive methods only: what the call destroys, for the confirmation a client
+  asks the user for. `{path}` is replaced by that param's value, `{path.length}` by an array's
+  length.
+
+The matcher vocabulary is deliberately small:
+
+* **Equality on dotted paths.** `match` maps an event path to a value:
+  `{ "param": "<params path>" }`, `{ "item": "<item path>" }` (inside `forEach`) or
+  `{ "value": <literal> }`. Numeric path segments index arrays (`alternates.0.who`). Strings
+  compare without regard to case, because the engine changes the case of enum values (`S3` comes
+  back as `s3`). A value that resolves to nothing - an absent param - does not constrain the match.
+  Examples: `AddCoa` expects `CoaAdded` with `coa.name` equal to the param `coa.name`;
+  `DeleteSymbol` expects `SymbolDeleted` with `poid` equal to the param `poid`; `AddTask` expects
+  `TaskAdded` with `alternates.0.who` equal to `task.who`.
+* **Count per item of a param array.** `forEach: "objects"` expects one event per item of that
+  array, optionally filtered by `where` (`{ "fsTYPE": { "in": ["coa"] } }` or `notIn`). The
+  object-set imports use it, so an import that applies 2 of 3 objects is reported as partly done,
+  with the missing one named.
+* **Any of.** `anyOf: [ {event, match}, ... ]` is satisfied by any one of them (an imported object
+  arrives as `*Added`, or as `*Deleted` when it carries the deletion version).
+
+`refusalMessage` says how the engine announces that it refused a fire-and-forget call: an
+`StpMessage` whose message contains the method name in quotes (`'AddCoa' refused: ...`,
+`Could not read 'AddTask': ...`).
+
+An evaluator reports one outcome per call: `done`, `partial` (what was done and what is missing),
+`not_done` (refused, or handled without the expected events), `other` (the engine did something
+else), `unknown` (no answer and no event within the wait) or `unverifiable` (see above).

@@ -1,0 +1,1812 @@
+{
+  "$schema": "./sketch-thru-plan-validations.schema.json",
+  "title": "Sketch-thru-Plan call validations",
+  "description": "Data-driven checks a client runs around a state-changing STP call (STP-1064): before the call, the preconditions, the params the engine silently ignores a call without, and the poids that must name existing objects; after the call, the events that prove it did what it asked (intent). Every write and destructive method of the contract has an entry. See README.md, 'Call validations'.",
+  "version": "1.0.0",
+  "contractVersion": "0.9.1",
+  "refusalMessage": {
+    "event": "StpMessage",
+    "contains": "'{method}'"
+  },
+  "methods": {
+    "SendPenDown": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "location"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "SendInk": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "strokePoints"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "SendSpeechRecognition": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "recoList"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "SpeechParsed"
+          }
+        ]
+      }
+    },
+    "SendSimulatedSpeechRecognition": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "text"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "SpeechParsed"
+          }
+        ]
+      }
+    },
+    "CreateNewScenario": {
+      "preconditions": [],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Replaces the session's current scenario, and every object in it, with a new empty scenario named {name}."
+    },
+    "LoadNewScenario": {
+      "preconditions": [],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Replaces the session's current scenario, and every object in it, with the scenario in the content."
+    },
+    "ImportPlanData": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Imports the content into the current scenario; an imported object REPLACES a resident one with the same poid."
+    },
+    "SyncScenarioSession": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Merges the content into the current scenario; an object in the content REPLACES a resident one with the same poid."
+    },
+    "AddSymbol": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "symbol"
+      ],
+      "references": [
+        {
+          "param": "symbol.parentCoa",
+          "kind": "coa"
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "SymbolAdded",
+            "match": {
+              "alternates.0.fsTYPE": {
+                "param": "symbol.fsTYPE"
+              },
+              "alternates.0.designator1": {
+                "param": "symbol.designator1"
+              }
+            }
+          }
+        ],
+        "acks": [
+          "InkProcessed"
+        ]
+      }
+    },
+    "UpdateSymbol": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "symbol"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "symbol",
+          "required": true
+        },
+        {
+          "param": "symbol.parentCoa",
+          "kind": "coa"
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "SymbolModified",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "SymbolDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "acks": [
+          "InkProcessed"
+        ]
+      }
+    },
+    "DeleteSymbol": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "symbol",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "SymbolDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "SymbolModified",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      },
+      "confirm": "Deletes the symbol {poid} from the scenario."
+    },
+    "ChooseAlternate": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": [
+            "symbol",
+            "task"
+          ],
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ImportTaskOrgContent": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Imports task org content; an imported object REPLACES a resident one with the same poid."
+    },
+    "SetDefaultTaskOrg": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "taskOrg",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ResetDefaultTaskOrg": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "AddTaskOrg": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "taskOrg"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgAdded",
+            "match": {
+              "taskOrg.name": {
+                "param": "taskOrg.name"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "TaskOrgModified",
+            "match": {
+              "taskOrg.name": {
+                "param": "taskOrg.name"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "UpdateTaskOrg": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "taskOrg"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "taskOrg",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgModified",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "TaskOrgDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "DeleteTaskOrg": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "taskOrg",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      },
+      "confirm": "Deletes the task org {poid}."
+    },
+    "AddTaskOrgUnit": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "toUnit"
+      ],
+      "references": [
+        {
+          "param": "toUnit.parentTO",
+          "kind": "taskOrg"
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgUnitAdded",
+            "match": {
+              "toUnit.name": {
+                "param": "toUnit.name"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "TaskOrgUnitModified",
+            "match": {
+              "toUnit.name": {
+                "param": "toUnit.name"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "UpdateTaskOrgUnit": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "toUnit"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "taskOrgUnit",
+          "required": true
+        },
+        {
+          "param": "toUnit.parentTO",
+          "kind": "taskOrg"
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgUnitModified",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "TaskOrgUnitDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "DeleteTaskOrgUnit": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "taskOrgUnit",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgUnitDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      },
+      "confirm": "Deletes the task org unit {poid}."
+    },
+    "AddTaskOrgRelationship": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "toRelationship"
+      ],
+      "references": [
+        {
+          "param": "toRelationship.parent",
+          "kind": "taskOrgUnit"
+        },
+        {
+          "param": "toRelationship.child",
+          "kind": "taskOrgUnit"
+        },
+        {
+          "param": "toRelationship.parentTO",
+          "kind": "taskOrg"
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgRelationshipAdded",
+            "match": {
+              "toRelationship.parent": {
+                "param": "toRelationship.parent"
+              },
+              "toRelationship.child": {
+                "param": "toRelationship.child"
+              }
+            }
+          }
+        ],
+        "unverifiable": {
+          "issue": "STP-1089",
+          "reason": "the engine applies a task org relationship add, update or delete but sends no event for it"
+        }
+      }
+    },
+    "UpdateTaskOrgRelationship": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "toRelationship"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "taskOrgRelationship",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgRelationshipModified",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "unverifiable": {
+          "issue": "STP-1089",
+          "reason": "the engine applies a task org relationship add, update or delete but sends no event for it"
+        }
+      }
+    },
+    "DeleteTaskOrgRelationship": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "taskOrgRelationship",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskOrgRelationshipDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "unverifiable": {
+          "issue": "STP-1089",
+          "reason": "the engine applies a task org relationship add, update or delete but sends no event for it"
+        }
+      },
+      "confirm": "Deletes the task org relationship {poid}."
+    },
+    "AddTask": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "task"
+      ],
+      "references": [
+        {
+          "param": "task.who",
+          "kind": [
+            "unit",
+            "taskOrgUnit"
+          ]
+        },
+        {
+          "param": "task.supported",
+          "kind": "symbol"
+        },
+        {
+          "param": "task.tgs.*",
+          "kind": "symbol"
+        },
+        {
+          "param": "task.parentCoa",
+          "kind": "coa"
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskAdded",
+            "match": {
+              "alternates.0.who": {
+                "param": "task.who"
+              },
+              "alternates.0.name": {
+                "param": "task.name"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "TaskModified",
+            "match": {
+              "alternates.0.who": {
+                "param": "task.who"
+              },
+              "alternates.0.name": {
+                "param": "task.name"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "UpdateTask": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "alternates"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "task",
+          "required": true
+        },
+        {
+          "param": "alternates.*.who",
+          "kind": [
+            "unit",
+            "taskOrgUnit"
+          ]
+        },
+        {
+          "param": "alternates.*.parentCoa",
+          "kind": "coa"
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskModified",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "TaskAdded",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "unverifiable": {
+          "issue": "STP-1080",
+          "reason": "the engine applies a task update but does not yet send TaskModified for it"
+        }
+      }
+    },
+    "DeleteTask": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "task",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      },
+      "confirm": "Deletes the task {poid}."
+    },
+    "ConfirmTask": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "task",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "SetCoaTaskOrg": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "toPoid",
+          "kind": "taskOrg",
+          "required": true
+        },
+        {
+          "param": "coaPoid",
+          "kind": "coa"
+        }
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ResetCoaTaskOrg": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "coaPoid",
+          "kind": "coa"
+        }
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ImportCoaContent": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Imports COA content; an imported object REPLACES a resident one with the same poid."
+    },
+    "SetCurrentCoa": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "coa",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "AddCoa": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "coa"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "CoaAdded",
+            "match": {
+              "coa.name": {
+                "param": "coa.name"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "CoaModified",
+            "match": {
+              "coa.name": {
+                "param": "coa.name"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "UpdateCoa": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "coa"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "coa",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "CoaModified",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ],
+        "other": [
+          {
+            "event": "CoaDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "DeleteCoa": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "coa",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "CoaDeleted",
+            "match": {
+              "poid": {
+                "param": "poid"
+              }
+            }
+          }
+        ]
+      },
+      "confirm": "Deletes the COA {poid}."
+    },
+    "SetRole": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ImportCoaFromObjectSet": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "objects"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "coa"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "CoaAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "CoaDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "notIn": [
+                  "coa",
+                  "task",
+                  "task_org",
+                  "task_org_unit",
+                  "task_org_relationship",
+                  "planning_scenario",
+                  "system_state"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "SymbolAdded",
+                "match": {
+                  "alternates.0.poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "SymbolDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "confirm": "Imports the {objects.length} objects given; an imported object REPLACES a resident one with the same poid."
+    },
+    "ImportPlanDataFromObjectSet": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "objects"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "coa"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "CoaAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "CoaDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_unit"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgUnitAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgUnitDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_relationship"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgRelationshipAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgRelationshipDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "notIn": [
+                  "coa",
+                  "task",
+                  "task_org",
+                  "task_org_unit",
+                  "task_org_relationship",
+                  "planning_scenario",
+                  "system_state"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "SymbolAdded",
+                "match": {
+                  "alternates.0.poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "SymbolDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "confirm": "Imports the {objects.length} objects given into the current scenario; an imported object REPLACES a resident one with the same poid."
+    },
+    "ImportTaskOrgFromObjectSet": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "objects"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_unit"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgUnitAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgUnitDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_relationship"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgRelationshipAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgRelationshipDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "notIn": [
+                  "coa",
+                  "task",
+                  "task_org",
+                  "task_org_unit",
+                  "task_org_relationship",
+                  "planning_scenario",
+                  "system_state"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "SymbolAdded",
+                "match": {
+                  "alternates.0.poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "SymbolDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "confirm": "Imports the {objects.length} task org objects given; an imported object REPLACES a resident one with the same poid."
+    },
+    "LoadNewScenarioFromObjectSet": {
+      "preconditions": [],
+      "required": [
+        "objects"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "coa"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "CoaAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "CoaDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_unit"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgUnitAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgUnitDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_relationship"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgRelationshipAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgRelationshipDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "notIn": [
+                  "coa",
+                  "task",
+                  "task_org",
+                  "task_org_unit",
+                  "task_org_relationship",
+                  "planning_scenario",
+                  "system_state"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "SymbolAdded",
+                "match": {
+                  "alternates.0.poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "SymbolDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "confirm": "Replaces the session's current scenario, and every object in it, with the {objects.length} objects given."
+    },
+    "PullC2SIMInitialization": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "PushC2SIMContent": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Sends C2SIM content of type {dataType} to the external C2SIM server, which can reset that server's state."
+    },
+    "SyncScenarioSessionFromObjectSet": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "objects"
+      ],
+      "intent": {
+        "expect": [
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "coa"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "CoaAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "CoaDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_unit"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgUnitAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgUnitDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task_org_relationship"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskOrgRelationshipAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskOrgRelationshipDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "notIn": [
+                  "coa",
+                  "task",
+                  "task_org",
+                  "task_org_unit",
+                  "task_org_relationship",
+                  "planning_scenario",
+                  "system_state"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "SymbolAdded",
+                "match": {
+                  "alternates.0.poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "SymbolDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "forEach": "objects",
+            "where": {
+              "fsTYPE": {
+                "in": [
+                  "task"
+                ]
+              }
+            },
+            "anyOf": [
+              {
+                "event": "TaskAdded",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              },
+              {
+                "event": "TaskDeleted",
+                "match": {
+                  "poid": {
+                    "item": "poid"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "confirm": "Merges the {objects.length} objects given into the current scenario; an object given REPLACES a resident one with the same poid."
+    },
+    "ChangeTimeOut": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "timeout"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ResetSegmentationTimeout": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "SetSpeechListening": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "listen"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "RecognizeNow": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "SendListen": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "mode"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "SendAudioCaptureState": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "isListening"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "AdvertiseViewport": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "topLeft",
+        "botRight"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "SetAutoTasking": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "required": [
+        "isEnabled"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ResetRole": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "UndoLastOp": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "poid",
+          "kind": "any",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": []
+      }
+    },
+    "ResetStpScenario": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "intent": {
+        "expect": []
+      },
+      "confirm": "Discards the session's current scenario and every object in it."
+    }
+  }
+}
