@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.8.0"
+    "version": "0.9.0"
   },
   "methods": [
     {
@@ -26,6 +26,41 @@
             "type": "string",
             "format": "date-time"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing location",
+          "outcome": "ignored"
+        },
+        {
+          "when": "malformed timestamp",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SendPenDown (captured)",
+          "params": [
+            {
+              "name": "location",
+              "value": {
+                "lat": 36.3,
+                "lon": -115.79
+              }
+            },
+            {
+              "name": "timestamp",
+              "value": "2026-10-10T21:53:56.130Z"
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -157,6 +192,251 @@
             }
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing strokePoints",
+          "outcome": "ignored"
+        },
+        {
+          "when": "malformed timeStrokeStart",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (missing strokePoints)",
+          "outcome": "refused",
+          "message": "Error creating ink term - invalid parameters?",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SendInk (captured)",
+          "params": [
+            {
+              "name": "pixelBoundsWindow",
+              "value": {
+                "width": 1920,
+                "height": 1080
+              }
+            },
+            {
+              "name": "topLeftGeoMap",
+              "value": {
+                "lat": 36.5,
+                "lon": -116
+              }
+            },
+            {
+              "name": "bottomRightGeoMap",
+              "value": {
+                "lat": 36,
+                "lon": -115.5
+              }
+            },
+            {
+              "name": "strokePoints",
+              "value": [
+                {
+                  "lat": 36.3,
+                  "lon": -115.79
+                },
+                {
+                  "lat": 36.30588,
+                  "lon": -115.79191
+                },
+                {
+                  "lat": 36.30951,
+                  "lon": -115.79691
+                },
+                {
+                  "lat": 36.30951,
+                  "lon": -115.80309
+                },
+                {
+                  "lat": 36.30588,
+                  "lon": -115.80809
+                },
+                {
+                  "lat": 36.3,
+                  "lon": -115.81
+                }
+              ]
+            },
+            {
+              "name": "timeStrokeStart",
+              "value": "2026-10-10T21:53:56.130Z"
+            },
+            {
+              "name": "timeStrokeEnd",
+              "value": "2026-10-10T21:53:56.730Z"
+            },
+            {
+              "name": "intersectedPoids",
+              "value": []
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "SpeechParsed",
+              "params": {
+                "alternates": [
+                  {
+                    "text": "infantry platoon",
+                    "confidence": 0.9375,
+                    "StartSec": null,
+                    "EndSec": null,
+                    "ExtraRecoInfo": null,
+                    "WordConfidences": null
+                  }
+                ]
+              }
+            },
+            {
+              "event": "InkProcessed",
+              "params": null
+            },
+            {
+              "event": "SpeechRecognized",
+              "params": {
+                "phrases": [
+                  "INFANTRY PLATOON"
+                ]
+              }
+            },
+            {
+              "event": "SymbolAdded",
+              "params": {
+                "alternates": [
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id1BYUUXD9MYQHN7SE2B8RQMH884",
+                    "creatorRole": null,
+                    "confidence": 0.4333504980616703,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCI----D---",
+                      "delta": "10031000141211000000",
+                      "partA": "1003100014",
+                      "partB": "1211000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCI----D---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.3,
+                          "lon": -115.80000000000001
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.3,
+                        "lon": -115.80000000000001
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "INFANTRY PLATOON",
+                    "description": "INFANTRY PLATOON",
+                    "fullDescription": "FRIENDLY INFANTRY PLATOON",
+                    "affiliation": "friend",
+                    "echelon": "platoon",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660367463007",
+                    "dbVersion": "vTG0DU5RTV16JPEVZUCW3M7CC0",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id1BYUUXD9MYQHN7SE2B8RQMH884",
+                    "creatorRole": null,
+                    "confidence": 0.4333504980616703,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCI----D---",
+                      "delta": "10031000141211000000",
+                      "partA": "1003100014",
+                      "partB": "1211000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCI----D---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.3,
+                          "lon": -115.80000000000001
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.3,
+                        "lon": -115.80000000000001
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "INFANTRY PLATOON",
+                    "description": "INFANTRY PLATOON",
+                    "fullDescription": "FRIENDLY INFANTRY PLATOON",
+                    "affiliation": "friend",
+                    "echelon": "platoon",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660367463007",
+                    "dbVersion": "vTG0DU5RTV16JPEVZUCW3M7CC0",
+                    "extensions": null
+                  }
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire; params abbreviated from the capture."
+        }
       ]
     },
     {
@@ -264,6 +544,222 @@
             "format": "date-time"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "empty recoList, no ink",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing recoList",
+          "outcome": "ignored"
+        },
+        {
+          "when": "malformed startTime",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (empty recoList)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SendSpeechRecognition (captured)",
+          "params": [
+            {
+              "name": "recoList",
+              "value": [
+                {
+                  "text": "mechanized infantry company",
+                  "confidence": 0.92
+                },
+                {
+                  "text": "mechanized infantry companies",
+                  "confidence": 0.4
+                }
+              ]
+            },
+            {
+              "name": "startTime",
+              "value": "2026-10-10T21:54:09.009Z"
+            },
+            {
+              "name": "endTime",
+              "value": "2026-10-10T21:54:10.509Z"
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "SpeechParsed",
+              "params": {
+                "alternates": [
+                  {
+                    "text": "mechanized infantry company",
+                    "confidence": 0.962962962962963,
+                    "StartSec": null,
+                    "EndSec": null,
+                    "ExtraRecoInfo": null,
+                    "WordConfidences": null
+                  },
+                  {
+                    "text": "mechanized infantry company",
+                    "confidence": 0.962962962962963,
+                    "StartSec": null,
+                    "EndSec": null,
+                    "ExtraRecoInfo": null,
+                    "WordConfidences": null
+                  }
+                ]
+              }
+            },
+            {
+              "event": "InkProcessed",
+              "params": null
+            },
+            {
+              "event": "SpeechRecognized",
+              "params": {
+                "phrases": [
+                  "MECHANIZED INFANTRY COMPANY"
+                ]
+              }
+            },
+            {
+              "event": "SymbolAdded",
+              "params": {
+                "alternates": [
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id6VP0ZBXT01XLLA7PDUYT2QJ8J",
+                    "creatorRole": null,
+                    "confidence": 0.9090950189049101,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCIZ---E---",
+                      "delta": "10031000151211020000",
+                      "partA": "1003100015",
+                      "partB": "1211020000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCIZ---E---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.33,
+                          "lon": -115.71973958333334
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.33,
+                        "lon": -115.71973958333334
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "MECHANIZED INFANTRY COMPANY",
+                    "description": "MECHANIZED INFANTRY COMPANY",
+                    "fullDescription": "FRIENDLY MECHANIZED INFANTRY COMPANY",
+                    "affiliation": "friend",
+                    "echelon": "company",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660492188393",
+                    "dbVersion": "v1DQ83FXPEJGTCZ7RZ420U892NB",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id6VP0ZBXT01XLLA7PDUYT2QJ8J",
+                    "creatorRole": null,
+                    "confidence": 0.9090950189049101,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCIZ---E---",
+                      "delta": "10031000151211020000",
+                      "partA": "1003100015",
+                      "partB": "1211020000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCIZ---E---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.33,
+                          "lon": -115.71973958333334
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.33,
+                        "lon": -115.71973958333334
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "MECHANIZED INFANTRY COMPANY",
+                    "description": "MECHANIZED INFANTRY COMPANY",
+                    "fullDescription": "FRIENDLY MECHANIZED INFANTRY COMPANY",
+                    "affiliation": "friend",
+                    "echelon": "company",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660492188393",
+                    "dbVersion": "v1DQ83FXPEJGTCZ7RZ420U892NB",
+                    "extensions": null
+                  }
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire; event payloads abbreviated."
+        }
       ]
     },
     {
@@ -360,6 +856,203 @@
             "format": "date-time"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "events: SpeechParsed"
+        },
+        {
+          "when": "gibberish text, no ink",
+          "outcome": "accepted",
+          "note": "events: SpeechParsed"
+        },
+        {
+          "when": "missing text",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (gibberish)",
+          "outcome": "accepted",
+          "note": "success; events: SpeechParsed",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SendSimulatedSpeechRecognition (captured)",
+          "params": [
+            {
+              "name": "text",
+              "value": "infantry platoon"
+            },
+            {
+              "name": "startTime",
+              "value": "2026-10-10T21:53:56.330Z"
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "SpeechParsed",
+              "params": {
+                "alternates": [
+                  {
+                    "text": "infantry platoon",
+                    "confidence": 0.9375,
+                    "StartSec": null,
+                    "EndSec": null,
+                    "ExtraRecoInfo": null,
+                    "WordConfidences": null
+                  }
+                ]
+              }
+            },
+            {
+              "event": "InkProcessed",
+              "params": null
+            },
+            {
+              "event": "SpeechRecognized",
+              "params": {
+                "phrases": [
+                  "INFANTRY PLATOON"
+                ]
+              }
+            },
+            {
+              "event": "SymbolAdded",
+              "params": {
+                "alternates": [
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id1BYUUXD9MYQHN7SE2B8RQMH884",
+                    "creatorRole": null,
+                    "confidence": 0.4333504980616703,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCI----D---",
+                      "delta": "10031000141211000000",
+                      "partA": "1003100014",
+                      "partB": "1211000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCI----D---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.3,
+                          "lon": -115.80000000000001
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.3,
+                        "lon": -115.80000000000001
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "INFANTRY PLATOON",
+                    "description": "INFANTRY PLATOON",
+                    "fullDescription": "FRIENDLY INFANTRY PLATOON",
+                    "affiliation": "friend",
+                    "echelon": "platoon",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660367463007",
+                    "dbVersion": "vTG0DU5RTV16JPEVZUCW3M7CC0",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id1BYUUXD9MYQHN7SE2B8RQMH884",
+                    "creatorRole": null,
+                    "confidence": 0.4333504980616703,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCI----D---",
+                      "delta": "10031000141211000000",
+                      "partA": "1003100014",
+                      "partB": "1211000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCI----D---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.3,
+                          "lon": -115.80000000000001
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.3,
+                        "lon": -115.80000000000001
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "INFANTRY PLATOON",
+                    "description": "INFANTRY PLATOON",
+                    "fullDescription": "FRIENDLY INFANTRY PLATOON",
+                    "affiliation": "friend",
+                    "echelon": "platoon",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660367463007",
+                    "dbVersion": "vTG0DU5RTV16JPEVZUCW3M7CC0",
+                    "extensions": null
+                  }
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -402,11 +1095,35 @@
         }
       ],
       "result": {
-        "name": "ok",
+        "name": "poid",
         "schema": {
-          "type": "null"
+          "type": "string"
+        },
+        "description": "Unique id of the new scenario."
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "missing name",
+          "outcome": "accepted",
+          "note": "success, result idZECB5UMUCUQ2AVQ4K320WDXKH; events: TaskOrgSwitched"
         }
-      }
+      ],
+      "examples": [
+        {
+          "name": "CreateNewScenario (captured)",
+          "params": [
+            {
+              "name": "name",
+              "value": "stp1059-capture-1010215043"
+            }
+          ],
+          "result": {
+            "name": "poid",
+            "value": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH"
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 13 ms."
+        }
+      ]
     },
     {
       "name": "LoadNewScenario",
@@ -522,9 +1239,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1078"
-      ],
       "params": [
         {
           "name": "content",
@@ -539,7 +1253,132 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "malformed content",
+          "outcome": "refused",
+          "message": "Parse failed: Terms not properly separated - missing comma? [not prolog]"
+        },
+        {
+          "when": "missing content",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "LoadNewScenario (captured)",
+          "params": [
+            {
+              "name": "content",
+              "value": "object_set([\n[fsTYPE: planning_scenario,poid: id1DJX2C3WQ2PTHQEJ88UKPL3QXH,fsdb_timestamp: '639272659133487486',fsdb_creation_timestamp: '639272659133487486',fsdb_version: v4GFF6R6UGTA1PKNZU0MQX6M19,name: 'stp1059-capture-1010215043',is_valid: true,is_loaded: true,auth: [fsTYPE: auth,source: 'Stp1059Capture-A_91bfc7b8-2b45-4447-8005-b3f00bddf025',identity: '0ABFFF46F951',session: 'CAP1010215043',u])\n"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Capture COA 2",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                  "dbTimestamp": "639272666422950506",
+                  "dbCreationTimestamp": "639272666422950506",
+                  "dbVersion": "v1HG2JZC0JYUDU1VM7A5RTANALJ",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "id10UJ220QCW4CMM3JBLSL8XRM2Q",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "id10UJ220QCW4CMM3JBLSL8XRM2Q",
+                  "name": "Capture TO 2",
+                  "affiliation": "hostile",
+                  "timestamp": "2026-10-10T21:56:12.154Z",
+                  "dbTimestamp": "639272666422966234",
+                  "dbVersion": "v1887MQYH3CCCN485ECLKJMGTFU",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "shortDescription": "B",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY B",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "B",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "BRAVO COMPANY",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639272666423240165",
+                  "dbVersion": "vQRYZ9N3D2TEE1JNPHQXX0UTRQ",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
+                  "parent": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                  "child": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                  "relationship": "organic",
+                  "isMTOE": false,
+                  "dbTimestamp": "639272666423900658",
+                  "dbVersion": "vCW9YKV001XZX4Q4BARSWNA101",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 1171 ms; params abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "ImportPlanData",
@@ -637,9 +1476,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1078"
-      ],
       "params": [
         {
           "name": "content",
@@ -654,7 +1490,137 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "malformed content",
+          "outcome": "refused",
+          "message": "Parse failed: Terms not properly separated - missing comma? [not prolog]"
+        },
+        {
+          "when": "missing content",
+          "outcome": "refused",
+          "message": "Parse failed: Object reference not set to an instance of an object. []"
+        },
+        {
+          "when": "no active scenario, real content",
+          "outcome": "accepted",
+          "note": "success; events: CoaAdded, CoaAdded, CoaAdded, TaskOrgAdded, TaskOrgAdded, TaskOrgAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, TaskAdded, TaskAdded, TaskAdded, TaskOrgSwitched"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ImportPlanData (captured)",
+          "params": [
+            {
+              "name": "content",
+              "value": "object_set([\n[fsTYPE: planning_scenario,poid: id1DJX2C3WQ2PTHQEJ88UKPL3QXH,fsdb_timestamp: '639272659133487486',fsdb_creation_timestamp: '639272659133487486',fsdb_version: v4GFF6R6UGTA1PKNZU0MQX6M19,name: 'stp1059-capture-1010215043',is_valid: true,is_loaded: true,auth: [fsTYPE: auth,source: 'Stp1059Capture-A_91bfc7b8-2b45-4447-8005-b3f00bddf025',identity: '0ABFFF46F951',session: 'CAP1010215043',u])\n"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Capture COA 2",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                  "dbTimestamp": "639272665432733312",
+                  "dbCreationTimestamp": "639272665432733312",
+                  "dbVersion": "v1EB2002DG4RJQN6LG3WN2MG19W",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "id10UJ220QCW4CMM3JBLSL8XRM2Q",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "id10UJ220QCW4CMM3JBLSL8XRM2Q",
+                  "name": "Capture TO 2",
+                  "affiliation": "hostile",
+                  "timestamp": "2026-10-10T21:56:12.154Z",
+                  "dbTimestamp": "639272665432758441",
+                  "dbVersion": "vJLCCUR9GAG6YXWP92L8CYJEAA",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "shortDescription": "B",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY B",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "B",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "BRAVO COMPANY",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639272665433037611",
+                  "dbVersion": "vVE8A8V575N7PSWUTLTJEQG5PZ",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
+                  "parent": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                  "child": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                  "relationship": "organic",
+                  "isMTOE": false,
+                  "dbTimestamp": "639272665433683343",
+                  "dbVersion": "v1PZV4LBEL0FH7UL52J54QCYQ42",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 962 ms; params abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "GetScenarioContent",
@@ -667,7 +1633,25 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n])\n"
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetScenarioContent (captured)",
+          "params": [],
+          "result": {
+            "name": "content",
+            "value": "object_set([\n[fsTYPE: planning_scenario,poid: id1DJX2C3WQ2PTHQEJ88UKPL3QXH,fsdb_timestamp: '639272659133487486',fsdb_creation_timestamp: '639272659133487486',fsdb_version: v4GFF6R6UGTA1PKNZU0MQX6M19,name: 'stp1059-capture-1010215043',is_valid: true,is_loaded: true,auth: [fsTYPE: auth,source: 'Stp1059Capture-A_91bfc7b8-2b45-4447-8005-b3f00bddf025',identity: '0ABFFF46F951',session: 'CAP1010215043',uuid: '91bfc7b8-2b45-4447-8005-b3f00bddf025']]\n[fsTYPE: coa,poid: idESHXV6HURZW2TMP775XHC5QKC,fsdb_timestamp: '639272659267220061',fsdb_creation_timestamp: '639272659267220061',fsdb_version: vB00EXPYALTBM55ARHVD4XGHKV,name: 'Capture COA 2',type: friend,creator_role: 'S3']\n[fsTYPE: coa,poid: id1K9JYL93M7QJ4GMUWJ11MZNWV1,fsdb_timestamp: '639272659314776471',fsdb_creation_timestamp: '639272659314776471',fsdb_version: v1GBTKSCU3QJ62C4UKSXMC8Z344,name: 'Capture COA via Request',type: friend,creator_role: 'S3']\n[fsTYPE: coa,poid: idN1Y9DR3HV80RFR2P5959C2695,fsdb_timestamp: '639272659345014258',fsdb_creation_timestamp: '639272659345014258',fsdb_version: v5AF41L2FLSF5DVD0PQSWN3YUE,name: 'Capture COA 1 (renamed)',type: friend,creator_role: 'S3']\n])\n"
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 21 ms; result abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "JoinScenarioSession",
@@ -723,7 +1707,30 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "after ResetStpScenario",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "JoinScenarioSession (captured)",
+          "params": [],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 4 ms."
+        }
+      ]
     },
     {
       "name": "SyncScenarioSession",
@@ -851,9 +1858,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1078"
-      ],
       "params": [
         {
           "name": "content",
@@ -868,7 +1872,124 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "malformed content",
+          "outcome": "refused",
+          "message": "Parse failed: Terms not properly separated - missing comma? [not prolog]"
+        },
+        {
+          "when": "missing content",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "no active scenario, real content",
+          "outcome": "accepted",
+          "note": "success; events: CoaAdded, CoaAdded, CoaAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, TaskAdded, TaskAdded, TaskAdded, CoaAdded, CoaAdded, CoaAdded, TaskOrgAdded, TaskOrgAdded, TaskOrgAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, InkProcessed, SpeechRecognized, SymbolAdded, TaskAdded, TaskAdded, TaskAdded"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SyncScenarioSession (captured)",
+          "params": [
+            {
+              "name": "content",
+              "value": "object_set([\n[fsTYPE: planning_scenario,poid: id1DJX2C3WQ2PTHQEJ88UKPL3QXH,fsdb_timestamp: '639272659133487486',fsdb_creation_timestamp: '639272659133487486',fsdb_version: v4GFF6R6UGTA1PKNZU0MQX6M19,name: 'stp1059-capture-1010215043',is_valid: true,is_loaded: true,auth: [fsTYPE: auth,source: 'Stp1059Capture-A_91bfc7b8-2b45-4447-8005-b3f00bddf025',identity: '0ABFFF46F951',session: 'CAP1010215043',u])\n"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": null,
+                  "affiliation": null,
+                  "creatorRole": null,
+                  "taskOrg": null,
+                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                  "dbTimestamp": "639272665801352671",
+                  "dbCreationTimestamp": "639272665801352671",
+                  "dbVersion": "v1EPL1HTJP5XV3SNXQU1WV2K99V",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "shortDescription": "B",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY B",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "B",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "BRAVO COMPANY",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639272665433037611",
+                  "dbVersion": "vVE8A8V575N7PSWUTLTJEQG5PZ",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
+                  "parent": null,
+                  "child": null,
+                  "relationship": "none",
+                  "isMTOE": false,
+                  "dbTimestamp": "639272665801407274",
+                  "dbVersion": "v18BYL8QJHU988HP4DESE3W70EM",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "InkProcessed",
+              "params": null
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 1417 ms; params abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "HasActiveScenario",
@@ -881,7 +2002,25 @@
         "schema": {
           "type": "boolean"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success, result false"
+        }
+      ],
+      "examples": [
+        {
+          "name": "HasActiveScenario (captured)",
+          "params": [],
+          "result": {
+            "name": "active",
+            "value": true
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 5 ms."
+        }
+      ]
     },
     {
       "name": "AddSymbol",
@@ -919,6 +2058,205 @@
           "schema": {
             "$ref": "#/components/schemas/StpSymbol"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "events: InkProcessed, SymbolAdded"
+        },
+        {
+          "when": "missing symbol",
+          "outcome": "ignored"
+        },
+        {
+          "when": "symbol without sidc/location",
+          "outcome": "accepted",
+          "note": "events: InkProcessed"
+        },
+        {
+          "when": "malformed sidc string",
+          "outcome": "accepted",
+          "note": "events: InkProcessed"
+        },
+        {
+          "when": "sent through Request (missing symbol)",
+          "outcome": "refused",
+          "message": "Error modifying symbol - invalid parameters?",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "AddSymbol (captured)",
+          "params": [
+            {
+              "name": "symbol",
+              "value": {
+                "fsTYPE": "unit",
+                "sidc": {
+                  "charlie": "SFGPUCI----E---",
+                  "legacy": "SFGPUCI----E---"
+                },
+                "affiliation": "friend",
+                "echelon": "company",
+                "designator1": "A",
+                "parent": "1-5",
+                "location": {
+                  "fsTYPE": "point",
+                  "shape": "point",
+                  "coords": [
+                    {
+                      "lat": 36.35,
+                      "lon": -115.8
+                    }
+                  ],
+                  "centroid": {
+                    "lat": 36.35,
+                    "lon": -115.8
+                  }
+                }
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "InkProcessed",
+              "params": null
+            },
+            {
+              "event": "SymbolAdded",
+              "params": {
+                "alternates": [
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "creatorRole": null,
+                    "confidence": 0.9,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCI----E---",
+                      "delta": "10031000151211000000",
+                      "partA": "1003100015",
+                      "partB": "1211000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCI----E---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.35,
+                          "lon": -115.8
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.35,
+                        "lon": -115.8
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": null
+                    },
+                    "shortDescription": "A",
+                    "description": "INFANTRY COMPANY",
+                    "fullDescription": "FRIENDLY INFANTRY COMPANY A",
+                    "affiliation": "friend",
+                    "echelon": "company",
+                    "parent": null,
+                    "designator1": "A",
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272659595529945",
+                    "dbVersion": "vWNAAH2MU9TXD54PZT0E085E9L",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "creatorRole": null,
+                    "confidence": 0.9,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCI----E---",
+                      "delta": "10031000151211000000",
+                      "partA": "1003100015",
+                      "partB": "1211000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCI----E---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.35,
+                          "lon": -115.8
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.35,
+                        "lon": -115.8
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": null
+                    },
+                    "shortDescription": "A",
+                    "description": "INFANTRY COMPANY",
+                    "fullDescription": "FRIENDLY INFANTRY COMPANY A",
+                    "affiliation": "friend",
+                    "echelon": "company",
+                    "parent": null,
+                    "designator1": "A",
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272659595529945",
+                    "dbVersion": "vWNAAH2MU9TXD54PZT0E085E9L",
+                    "extensions": null
+                  }
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -967,6 +2305,137 @@
             "$ref": "#/components/schemas/StpSymbol"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing symbol",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (unknown poid, no symbol)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "UpdateSymbol (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idWDSAZG5MZ3Y6UURF2N0N6W146"
+            },
+            {
+              "name": "symbol",
+              "value": {
+                "fsTYPE": "unit",
+                "sidc": {
+                  "charlie": "SFGPUCI----E---",
+                  "legacy": "SFGPUCI----E---"
+                },
+                "affiliation": "friend",
+                "echelon": "company",
+                "designator1": "C",
+                "parent": "1-5",
+                "location": {
+                  "fsTYPE": "point",
+                  "shape": "point",
+                  "coords": [
+                    {
+                      "lat": 36.351,
+                      "lon": -115.801
+                    }
+                  ],
+                  "centroid": {
+                    "lat": 36.351,
+                    "lon": -115.801
+                  }
+                },
+                "poid": "idWDSAZG5MZ3Y6UURF2N0N6W146"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "InkProcessed",
+              "params": null
+            },
+            {
+              "event": "SymbolModified",
+              "params": {
+                "poid": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                "symbol": {
+                  "fsTYPE": "unit",
+                  "poid": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "placementConfidence": null,
+                  "alt": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "location": {
+                    "fsTYPE": "point",
+                    "shape": "point",
+                    "coords": [
+                      {
+                        "lat": 36.351,
+                        "lon": -115.801
+                      }
+                    ],
+                    "centroid": {
+                      "lat": 36.351,
+                      "lon": -115.801
+                    },
+                    "width": 0,
+                    "altitude": 0,
+                    "radius": 0,
+                    "candidatePoids": null
+                  },
+                  "shortDescription": "C",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY C",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "C",
+                  "designator2": null,
+                  "commonIdentifier": null,
+                  "specialC2Hq": null,
+                  "additionalInformation": null,
+                  "status": "present",
+                  "modifier": "none",
+                  "strength": "",
+                  "branch": "ground_unit",
+                  "timeFrom": null,
+                  "timeTo": null,
+                  "altitude": null,
+                  "minAltitude": null,
+                  "maxAltitude": null,
+                  "toUnitPoid": null,
+                  "federate": null,
+                  "disCode": null,
+                  "resources": [],
+                  "dbTimestamp": "639272659721713711",
+                  "dbVersion": "vXB5XUQSPF2GH9UKQ2NNK7J2L3",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -988,6 +2457,53 @@
           "schema": {
             "type": "string"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "already deleted poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "DeleteSymbol (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id125KU4EXHMDKKA6MZURYMP51VT"
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "SymbolDeleted",
+              "params": {
+                "poid": "id125KU4EXHMDKKA6MZURYMP51VT",
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1024,6 +2540,38 @@
           "schema": {
             "type": "integer"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "nBestIndex out of range",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ChooseAlternate (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id1BYUUXD9MYQHN7SE2B8RQMH884"
+            },
+            {
+              "name": "nBestIndex",
+              "value": 1
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1119,7 +2667,118 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "malformed content",
+          "outcome": "refused",
+          "message": "Parse failed: Reached end of string without terminal (failed to close paren or bracket?) [garbage(]"
+        },
+        {
+          "when": "missing content",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "no active scenario, real content",
+          "outcome": "accepted",
+          "note": "success, result id15QMPSD13M7VGFUG8KBJ3Q2156; events: TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ImportTaskOrgContent (captured)",
+          "params": [
+            {
+              "name": "content",
+              "value": "object_set([\n[fsTYPE: task_org,poid: id15QMPSD13M7VGFUG8KBJ3Q2156,fsdb_timestamp: '639272661799152434',fsdb_creation_timestamp: '639272661799152434',fsdb_version: v64V4UZ58UWCP8D85YYEV5M1PL,name: 'Capture TO (renamed)',affiliation: friend,date: timeval(1791669379,914),approved: false,auth: [fsTYPE: auth,source: 'Stp1059Capture-A_8a1c4187-772a-46fe-8b09-55db86521bb4',identity: '0ABFFF46F951',sessio])\n"
+            }
+          ],
+          "result": {
+            "name": "toPoid",
+            "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                  "name": "Capture TO (renamed)",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-10T21:56:19.914Z",
+                  "dbTimestamp": "639272665012306931",
+                  "dbVersion": "v1RDSPDM5F6JKKS8E2CLTAP617J",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "shortDescription": "B",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY B",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "B",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "BRAVO COMPANY",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639272665012552848",
+                  "dbVersion": "v1M9NK1TGH70BKUGQW4ZVGJSDT1",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
+                  "parent": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                  "child": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                  "relationship": "organic",
+                  "isMTOE": false,
+                  "dbTimestamp": "639272665013059951",
+                  "dbVersion": "vBSP11UZK6Y0WQJF7VRNS2TCRQ",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 85 ms; params abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "GetTaskOrgContent",
@@ -1140,7 +2799,40 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n])\n"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n])\n"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n[fsTYPE: planning_scenario,poid: id1DJX2C3WQ2PT..."
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetTaskOrgContent (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+            }
+          ],
+          "result": {
+            "name": "content",
+            "value": "object_set([\n[fsTYPE: task_org,poid: id15QMPSD13M7VGFUG8KBJ3Q2156,fsdb_timestamp: '639272661799152434',fsdb_creation_timestamp: '639272661799152434',fsdb_version: v64V4UZ58UWCP8D85YYEV5M1PL,name: 'Capture TO (renamed)',affiliation: friend,date: timeval(1791669379,914),approved: false,auth: [fsTYPE: auth,source: 'Stp1059Capture-A_8a1c4187-772a-46fe-8b09-55db86521bb4',identity: '0ABFFF46F951',session: 'CAP1010215043',uuid: '8a1c4187-772a-46fe-8b09-55db86521bb4']]\n[fsTYPE: task_org_unit,poid: id1P9RAY9PEQG8DF06UPEYZ1B6MT,fsdb_timestamp: '639272661935296924',fsdb_creation_timestamp: '639272661935296924',fsdb_version: v14TP3BMG51ME1C2D195N8VYMRC,name: 'BRAVO COMPANY',unitType: 'INFANTRY',is_default_echelon: false,parent_poid: poid(id15QMPSD13M7VGFUG8KBJ3Q2156),symbol_id: '10031000151211000000',sidc: '10031000151211000000',coding_scheme: warfighting,affiliation: friend,battle_dimension: ground,symbol_set: ground,status: present,echelon: company,designator1: 'B',placed: false,parent_relationship: none,confidence: 0,alt: 0,interval: interval(timeval(1791669393,502),timeval(1791669394,2)),auth: [fsTYPE: auth,source: 'Stp1059Capture-A_8a1c4187-772a-46fe-8b09-55db86521bb4',identity: '0ABFFF46])\n"
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 5 ms; result abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "SetDefaultTaskOrg",
@@ -1153,6 +2845,9 @@
           "condition": "the caller's current task org changes as a result",
           "to": "caller"
         }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1091"
       ],
       "params": [
         {
@@ -1168,7 +2863,57 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SetDefaultTaskOrg (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgSwitched",
+              "params": {
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "name": "Capture TO (renamed)",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-10T21:56:19.914Z",
+                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                  "dbTimestamp": "639272661799152434",
+                  "dbCreationTimestamp": "639272661799152434",
+                  "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL"
+                }
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 73 ms."
+        }
+      ]
     },
     {
       "name": "ResetDefaultTaskOrg",
@@ -1181,6 +2926,9 @@
           "condition": "the caller's current task org changes as a result",
           "to": "caller"
         }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1091"
       ],
       "params": [
         {
@@ -1196,7 +2944,48 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "refused",
+          "message": "The operation was canceled."
+        },
+        {
+          "when": "missing affiliation",
+          "outcome": "accepted",
+          "note": "success; events: TaskOrgSwitched"
+        },
+        {
+          "when": "unknown affiliation value",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ResetDefaultTaskOrg (captured)",
+          "params": [
+            {
+              "name": "affiliation",
+              "value": "friend"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgSwitched",
+              "params": {
+                "taskOrg": null
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 4 ms."
+        }
+      ]
     },
     {
       "name": "AddTaskOrg",
@@ -1218,6 +3007,63 @@
             "$ref": "#/components/schemas/StpTaskOrg"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "events: TaskOrgAdded"
+        },
+        {
+          "when": "missing taskOrg",
+          "outcome": "ignored"
+        },
+        {
+          "when": "unknown affiliation value",
+          "outcome": "accepted",
+          "note": "events: TaskOrgAdded"
+        },
+        {
+          "when": "sent through Request (missing taskOrg)",
+          "outcome": "refused",
+          "message": "Error adding Task Org - invalid parameters?",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "AddTaskOrg (captured)",
+          "params": [
+            {
+              "name": "taskOrg",
+              "value": {
+                "fsTYPE": "task_org",
+                "name": "Capture TO",
+                "affiliation": "friend"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                  "name": "Capture TO",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-10T21:56:11.427Z",
+                  "dbTimestamp": "639272661714303295",
+                  "dbVersion": "v1GFG8NFL79Q13UPXZS29GZEPF3",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -1238,6 +3084,9 @@
           "to": "session"
         }
       ],
+      "x-stpKnownIssues": [
+        "STP-1091"
+      ],
       "params": [
         {
           "name": "poid",
@@ -1252,6 +3101,67 @@
           "schema": {
             "$ref": "#/components/schemas/StpTaskOrg"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing taskOrg",
+          "outcome": "ignored"
+        },
+        {
+          "when": "poid of an existing UNIT symbol (cross-type update)",
+          "outcome": "accepted",
+          "note": "events: TaskOrgModified"
+        },
+        {
+          "when": "sent through Request (unknown poid, no taskOrg)",
+          "outcome": "refused",
+          "message": "Error modifying Task Org - invalid parameters?",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "UpdateTaskOrg (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+            },
+            {
+              "name": "taskOrg",
+              "value": {
+                "fsTYPE": "task_org",
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "name": "Capture TO (renamed)",
+                "affiliation": "friend"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgModified",
+              "params": {
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                  "name": "Capture TO (renamed)",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-10T21:56:19.914Z",
+                  "dbTimestamp": "639272661799152434",
+                  "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1281,6 +3191,39 @@
             "type": "string"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        }
+      ],
+      "examples": [
+        {
+          "name": "DeleteTaskOrg (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id10UJ220QCW4CMM3JBLSL8XRM2Q"
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgDeleted",
+              "params": {
+                "poid": "id10UJ220QCW4CMM3JBLSL8XRM2Q",
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -1295,6 +3238,10 @@
           "to": "session"
         }
       ],
+      "x-stpKnownIssues": [
+        "STP-1088",
+        "STP-1091"
+      ],
       "params": [
         {
           "name": "toUnit",
@@ -1302,6 +3249,87 @@
           "schema": {
             "$ref": "#/components/schemas/StpTaskOrgUnit"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown parentTO poid",
+          "outcome": "accepted",
+          "note": "events: TaskOrgUnitAdded"
+        },
+        {
+          "when": "sent through Request (missing unit)",
+          "outcome": "refused",
+          "message": "Error adding Task Org unit - invalid parameters?",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "AddTaskOrgUnit (captured)",
+          "params": [
+            {
+              "name": "toUnit",
+              "value": {
+                "fsTYPE": "task_org_unit",
+                "name": "ALPHA COMPANY",
+                "sidc": {
+                  "charlie": "SFGPUCI----E---",
+                  "legacy": "SFGPUCI----E---"
+                },
+                "affiliation": "friend",
+                "echelon": "company",
+                "designator1": "A",
+                "parent": "1-5",
+                "unitType": "INFANTRY",
+                "parentTO": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "shortDescription": "A",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY A",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "A",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "ALPHA COMPANY",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639272661927682828",
+                  "dbVersion": "v1FSATAF25KFH9ZA1JJ0TSGE4X3",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire; captured under the pre-STP-1088 parameter name; engines with STP-1088 read the contract name shown."
         }
       ]
     },
@@ -1323,6 +3351,9 @@
           "to": "session"
         }
       ],
+      "x-stpKnownIssues": [
+        "STP-1088"
+      ],
       "params": [
         {
           "name": "poid",
@@ -1337,6 +3368,91 @@
           "schema": {
             "$ref": "#/components/schemas/StpTaskOrgUnit"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (unknown poid, no unit)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "UpdateTaskOrgUnit (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id3DH60XF1HWE4ZUPKX049S7Q2A"
+            },
+            {
+              "name": "toUnit",
+              "value": {
+                "fsTYPE": "task_org_unit",
+                "name": "ALPHA COMPANY (renamed)",
+                "sidc": {
+                  "charlie": "SFGPUCI----E---",
+                  "legacy": "SFGPUCI----E---"
+                },
+                "affiliation": "friend",
+                "echelon": "company",
+                "designator1": "A",
+                "parent": "1-5",
+                "unitType": "INFANTRY",
+                "parentTO": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "poid": "id3DH60XF1HWE4ZUPKX049S7Q2A"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgUnitModified",
+              "params": {
+                "poid": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "shortDescription": "A",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY A",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "A",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "ALPHA COMPANY (renamed)",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639272662070574455",
+                  "dbVersion": "v15B7G2XG4YN1E5KRWS7JSBP0X5",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire; captured under the pre-STP-1088 parameter name; engines with STP-1088 read the contract name shown."
         }
       ]
     },
@@ -1360,6 +3476,39 @@
             "type": "string"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        }
+      ],
+      "examples": [
+        {
+          "name": "DeleteTaskOrgUnit (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id1P9RAY9PEQG8DF06UPEYZ1B6MT"
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgUnitDeleted",
+              "params": {
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -1375,7 +3524,9 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1080"
+        "STP-1080",
+        "STP-1088",
+        "STP-1089"
       ],
       "params": [
         {
@@ -1384,6 +3535,41 @@
           "schema": {
             "$ref": "#/components/schemas/StpTaskOrgRelationship"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown parent/child poids",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing toRelationship",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (missing relationship)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "AddTaskOrgRelationship (captured, not completed)",
+          "params": [
+            {
+              "name": "toRelationship",
+              "value": {
+                "fsTYPE": "task_org_relationship",
+                "parent": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                "child": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                "relationship": "organic",
+                "isMTOE": false,
+                "parentTO": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059); the call could not be completed there (the call as shown): nothing came back."
         }
       ]
     },
@@ -1400,7 +3586,9 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1080"
+        "STP-1080",
+        "STP-1088",
+        "STP-1089"
       ],
       "params": [
         {
@@ -1417,6 +3605,43 @@
             "$ref": "#/components/schemas/StpTaskOrgRelationship"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (unknown poid, no relationship)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "UpdateTaskOrgRelationship (captured, not completed)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id4U3UKR8R9FRUF6VQX8QR3TUC"
+            },
+            {
+              "name": "toRelationship",
+              "value": {
+                "fsTYPE": "task_org_relationship",
+                "parent": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                "child": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                "relationship": "attached",
+                "isMTOE": false,
+                "parentTO": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
+                "parentPoid": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059); the call could not be completed there (the call as shown): nothing came back."
+        }
       ]
     },
     {
@@ -1432,7 +3657,8 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1080"
+        "STP-1080",
+        "STP-1089"
       ],
       "params": [
         {
@@ -1441,6 +3667,30 @@
           "schema": {
             "type": "string"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        }
+      ],
+      "examples": [
+        {
+          "name": "DeleteTaskOrgRelationship (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id5H40GDVAGYULW3YBLF2FAB4WD"
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1456,6 +3706,9 @@
           "to": "session"
         }
       ],
+      "x-stpKnownIssues": [
+        "STP-1091"
+      ],
       "params": [
         {
           "name": "task",
@@ -1463,6 +3716,180 @@
           "schema": {
             "$ref": "#/components/schemas/StpTask"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing task",
+          "outcome": "ignored"
+        },
+        {
+          "when": "what/how values that are not engine enum members (ATTACK_BY_FIRE / offense)",
+          "outcome": "ignored"
+        },
+        {
+          "when": "unknown who poid",
+          "outcome": "accepted",
+          "note": "events: TaskAdded, TaskModified"
+        },
+        {
+          "when": "sent through Request (missing task)",
+          "outcome": "refused",
+          "message": "Error modifying symbol - invalid parameters?",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "AddTask (captured)",
+          "params": [
+            {
+              "name": "task",
+              "value": {
+                "fsTYPE": "task",
+                "name": "BlockEnemy",
+                "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                "creatorRole": "S3",
+                "what": "BLOCK",
+                "how": "area_defense"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskAdded",
+              "params": {
+                "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                "alternates": [
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "",
+                    "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": null,
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639272661203830823",
+                    "dbVersion": "vD223DSW5GCF1UVH82005UP1YX",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "",
+                    "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": null,
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639272661203830823",
+                    "dbVersion": "vD223DSW5GCF1UVH82005UP1YX",
+                    "extensions": null
+                  }
+                ],
+                "taskPoids": [
+                  "idWDSAZG5MZ3Y6UURF2N0N6W146"
+                ],
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskModified",
+              "params": {
+                "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                "alternates": [
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "Area defense to block ",
+                    "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": null,
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639272661203862097",
+                    "dbVersion": "v14N05HHFD9KJDM9666Y1QFTY6F",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "Area defense to block ",
+                    "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": null,
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639272661203862097",
+                    "dbVersion": "v14N05HHFD9KJDM9666Y1QFTY6F",
+                    "extensions": null
+                  }
+                ],
+                "taskPoids": [
+                  "idWDSAZG5MZ3Y6UURF2N0N6W146"
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1486,7 +3913,8 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1080"
+        "STP-1080",
+        "STP-1091"
       ],
       "params": [
         {
@@ -1505,6 +3933,66 @@
               "$ref": "#/components/schemas/StpTask"
             }
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing alternates",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (unknown poid, no alternates)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "UpdateTask (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idD9VBP3XV8UZVX3VZTL5R7UE8U"
+            },
+            {
+              "name": "alternates",
+              "value": [
+                {
+                  "fsTYPE": "task",
+                  "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                  "creatorRole": "S3",
+                  "confidence": 0,
+                  "alt": 0,
+                  "description": "Area defense to block  (edited)",
+                  "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                  "supported": null,
+                  "tgs": [],
+                  "name": "BlockEnemy",
+                  "how": "AREA_DEFENSE",
+                  "what": "BLOCK",
+                  "why": "UNKNOWN",
+                  "roe": "NOT_SPECIFIED",
+                  "startTime": 0,
+                  "endTime": 0,
+                  "speech": null,
+                  "language": null,
+                  "taskStatus": null,
+                  "uiStatus": null,
+                  "prob": 0,
+                  "movementFeatures": null,
+                  "dbTimestamp": "639272661203862097",
+                  "dbVersion": "v14N05HHFD9KJDM9666Y1QFTY6F",
+                  "extensions": null
+                }
+              ]
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1527,6 +4015,39 @@
           "schema": {
             "type": "string"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        }
+      ],
+      "examples": [
+        {
+          "name": "DeleteTask (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idGDDPN4PYC1AWXAVLV0AA6D4M9"
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskDeleted",
+              "params": {
+                "poid": "idGDDPN4PYC1AWXAVLV0AA6D4M9",
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1574,6 +4095,119 @@
             "type": "boolean"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "nBestIndex 1 (second alternate)",
+          "outcome": "ignored"
+        },
+        {
+          "when": "isConfirmed:false on the confirmed alternate",
+          "outcome": "accepted",
+          "note": "events: TaskModified"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "nBestIndex out of range",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ConfirmTask (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idD9VBP3XV8UZVX3VZTL5R7UE8U"
+            },
+            {
+              "name": "nBestIndex",
+              "value": 0
+            },
+            {
+              "name": "isConfirmed",
+              "value": true
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskModified",
+              "params": {
+                "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                "alternates": [
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "Area defense to block ",
+                    "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": "confirmed",
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639272661291482179",
+                    "dbVersion": "v8ES7HWKMKGB4VFRB5EAVTADXC",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "Area defense to block ",
+                    "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": "confirmed",
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639272661291482179",
+                    "dbVersion": "v8ES7HWKMKGB4VFRB5EAVTADXC",
+                    "extensions": null
+                  }
+                ],
+                "taskPoids": [
+                  "idWDSAZG5MZ3Y6UURF2N0N6W146"
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -1595,7 +4229,8 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1077"
+        "STP-1077",
+        "STP-1091"
       ],
       "params": [
         {
@@ -1618,7 +4253,57 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "with coaPoid (per-COA TO)",
+          "outcome": "refused",
+          "message": "per-COA task org is not supported yet (STP-1058: needs an operator ruling)"
+        },
+        {
+          "when": "missing toPoid",
+          "outcome": "refused",
+          "message": "SetCoaTaskOrg: missing 'toPoid' - name the task org to make the default"
+        },
+        {
+          "when": "unknown toPoid",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SetCoaTaskOrg (captured)",
+          "params": [
+            {
+              "name": "toPoid",
+              "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgSwitched",
+              "params": {
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "name": "Capture TO (renamed)",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-10T21:56:19.914Z",
+                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                  "dbTimestamp": "639272661799152434",
+                  "dbCreationTimestamp": "639272661799152434",
+                  "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL"
+                }
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 47 ms."
+        }
+      ]
     },
     {
       "name": "ResetCoaTaskOrg",
@@ -1662,7 +4347,43 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "with coaPoid (per-COA TO)",
+          "outcome": "refused",
+          "message": "per-COA task org is not supported yet (STP-1058: needs an operator ruling)"
+        },
+        {
+          "when": "missing affiliation",
+          "outcome": "refused",
+          "message": "ResetCoaTaskOrg: missing 'affiliation' - name the affiliation whose default task org to reset"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ResetCoaTaskOrg (captured)",
+          "params": [
+            {
+              "name": "affiliation",
+              "value": "friend"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgSwitched",
+              "params": {
+                "taskOrg": null
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 7 ms."
+        }
+      ]
     },
     {
       "name": "ImportCoaContent",
@@ -1718,9 +4439,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1078"
-      ],
       "params": [
         {
           "name": "content",
@@ -1736,7 +4454,66 @@
           "type": "string"
         },
         "description": "Poid of the imported COA."
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "malformed content",
+          "outcome": "refused",
+          "message": "Parse failed: Terms not properly separated - missing comma? [this is not an object set]"
+        },
+        {
+          "when": "empty object set",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing content",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "no active scenario, real content",
+          "outcome": "accepted",
+          "note": "success, result idN1Y9DR3HV80RFR2P5959C2695; events: CoaAdded"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ImportCoaContent (captured)",
+          "params": [
+            {
+              "name": "content",
+              "value": "object_set([\n[fsTYPE: coa,poid: idN1Y9DR3HV80RFR2P5959C2695,fsdb_timestamp: '639272659345014258',fsdb_creation_timestamp: '639272659345014258',fsdb_version: v5AF41L2FLSF5DVD0PQSWN3YUE,name: 'Capture COA 1 (renamed)',type: friend,creator_role: 'S3']\n])\n"
+            }
+          ],
+          "result": {
+            "name": "coaPoid",
+            "value": "idN1Y9DR3HV80RFR2P5959C2695"
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Capture COA 1 (renamed)",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272664407594732",
+                  "dbCreationTimestamp": "639272664407594732",
+                  "dbVersion": "v1J9XBS48QCG8M1YBDDFZUEBBVF",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 14 ms."
+        }
+      ]
     },
     {
       "name": "GetCoaContent",
@@ -1758,7 +4535,40 @@
           "type": "string"
         },
         "description": "The COA with its units, graphics and tasks as STP object-set text."
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n])\n"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n])\n"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n[fsTYPE: planning_scenario,poid: id1DJX2C3WQ2PT..."
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetCoaContent (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idN1Y9DR3HV80RFR2P5959C2695"
+            }
+          ],
+          "result": {
+            "name": "content",
+            "value": "object_set([\n[fsTYPE: coa,poid: idN1Y9DR3HV80RFR2P5959C2695,fsdb_timestamp: '639272659345014258',fsdb_creation_timestamp: '639272659345014258',fsdb_version: v5AF41L2FLSF5DVD0PQSWN3YUE,name: 'Capture COA 1 (renamed)',type: friend,creator_role: 'S3']\n])\n"
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 3 ms."
+        }
+      ]
     },
     {
       "name": "SetCurrentCoa",
@@ -1784,9 +4594,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1079"
-      ],
       "params": [
         {
           "name": "poid",
@@ -1801,7 +4608,69 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "refused",
+          "message": "SetCurrentCoa: the engine did not confirm within 10 s"
+        },
+        {
+          "when": "already current (same poid again)",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "refused",
+          "message": "SetCurrentCoa: missing 'poid' - name the COA to make current"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "refused",
+          "message": "SetCurrentCoa: the engine did not confirm within 10 s"
+        },
+        {
+          "when": "poid and coaPoid disagree",
+          "outcome": "refused",
+          "message": "SetCurrentCoa: 'poid' (idN1Y9DR3HV80RFR2P5959C2695) and 'coaPoid' (idESHXV6HURZW2TMP775XHC5QKC) name different COAs - send one of them"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SetCurrentCoa (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idN1Y9DR3HV80RFR2P5959C2695"
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaSwitched",
+              "params": {
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Capture COA 1 (renamed)",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272659345014258",
+                  "dbCreationTimestamp": "639272659345014258",
+                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "Description": ""
+                }
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 10 ms."
+        }
+      ]
     },
     {
       "name": "AddCoa",
@@ -1821,9 +4690,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1078"
-      ],
       "params": [
         {
           "name": "coa",
@@ -1831,6 +4697,66 @@
           "schema": {
             "$ref": "#/components/schemas/StpCoa"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "events: CoaAdded"
+        },
+        {
+          "when": "missing coa",
+          "outcome": "announced",
+          "message": "'AddCoa' refused: AddCoa: missing 'coa' - send the COA definition to add"
+        },
+        {
+          "when": "malformed coa (not an object)",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success; events: CoaAdded",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "AddCoa (captured)",
+          "params": [
+            {
+              "name": "coa",
+              "value": {
+                "fsTYPE": "coa",
+                "name": "Capture COA 1",
+                "affiliation": "friend",
+                "creatorRole": "S3"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Capture COA 1",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272659259949817",
+                  "dbCreationTimestamp": "639272659259949817",
+                  "dbVersion": "v15X2LT5U3AKZ58NXNYCPC16SBH",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1852,9 +4778,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1078"
-      ],
       "params": [
         {
           "name": "poid",
@@ -1869,6 +4792,71 @@
           "schema": {
             "$ref": "#/components/schemas/StpCoa"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing poid",
+          "outcome": "announced",
+          "message": "'UpdateCoa' refused: UpdateCoa: missing 'poid' - name the COA to update"
+        },
+        {
+          "when": "missing coa",
+          "outcome": "announced",
+          "message": "'UpdateCoa' refused: UpdateCoa: missing 'coa' - send the new COA definition"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (missing coa)",
+          "outcome": "refused",
+          "message": "UpdateCoa: missing 'coa' - send the new COA definition",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "UpdateCoa (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idN1Y9DR3HV80RFR2P5959C2695"
+            },
+            {
+              "name": "coa",
+              "value": {
+                "fsTYPE": "coa",
+                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                "name": "Capture COA 1 (renamed)",
+                "affiliation": "friend",
+                "creatorRole": "S3"
+              }
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaModified",
+              "params": {
+                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Capture COA 1 (renamed)",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272659345014258",
+                  "dbCreationTimestamp": "639272659345014258",
+                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1890,10 +4878,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1078",
-        "STP-1079"
-      ],
       "params": [
         {
           "name": "poid",
@@ -1901,6 +4885,45 @@
           "schema": {
             "type": "string"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing poid",
+          "outcome": "announced",
+          "message": "'DeleteCoa' refused: DeleteCoa: missing 'poid' - name the COA to delete"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "announced",
+          "message": "'DeleteCoa' refused: DeleteCoa: the engine did not confirm within 10 s"
+        },
+        {
+          "when": "sent through Request (unknown poid)",
+          "outcome": "refused",
+          "message": "DeleteCoa: the engine did not confirm within 10 s",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "DeleteCoa (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idESHXV6HURZW2TMP775XHC5QKC"
+            }
+          ],
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaDeleted",
+              "params": {
+                "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -1929,7 +4952,7 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1079"
+        "STP-1091"
       ],
       "params": [
         {
@@ -1952,7 +4975,52 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success; events: RoleSwitched, TaskOrgSwitched"
+        },
+        {
+          "when": "missing role",
+          "outcome": "refused",
+          "message": "SetRole: missing 'role' - name the role to switch to (s2, s3, s4, fso, eng, or none)"
+        },
+        {
+          "when": "unknown role value",
+          "outcome": "accepted",
+          "note": "success; events: RoleSwitched"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SetRole (captured)",
+          "params": [
+            {
+              "name": "role",
+              "value": "S3"
+            },
+            {
+              "name": "createIfNone",
+              "value": true
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "RoleSwitched",
+              "params": {
+                "role": "s3"
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 4 ms."
+        }
+      ]
     },
     {
       "name": "ConvertC2SIMContent",
@@ -1982,7 +5050,44 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "malformed content (not XML)",
+          "outcome": "refused",
+          "message": "Data at the root level is invalid. Line 1, position 1."
+        },
+        {
+          "when": "missing content",
+          "outcome": "refused",
+          "message": "Value cannot be null. (Parameter 's')"
+        },
+        {
+          "when": "well-formed XML that is not C2SIM",
+          "outcome": "accepted",
+          "note": "success, result object_set([\n])\n"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ConvertC2SIMContent (captured)",
+          "params": [
+            {
+              "name": "content",
+              "value": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<MessageBody xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://www.sisostds.org/schemas/C2SIM/1.1\">\n  <C2SIMInitializationBody>\n    <ObjectDefinitions>\n      <AbstractObject>\n        <ForceSide>\n          <Name>NATO Coalition</Name>\n          <UUID>00000000-0000-0001-0000-000000000000</UUID>\n     ..."
+            },
+            {
+              "name": "options",
+              "value": {}
+            }
+          ],
+          "result": {
+            "name": "content",
+            "value": "object_set([\n[fsTYPE: task_org,name: 'Friendly TO',affiliation: friend,date: timeval(1791669521,149),approved: false,poid: idXGUCDANS04W4DKRZPQS4WBF1J]\n[name: 'B',speech_phrases: ['B'],is_default_echelon: false,parent_poid: poid(idXGUCDANS04W4DKRZPQS4WBF1J),fsTYPE: unit,symbol_id: 'SFGPUCI----E---',sidc: 'SFGPUCI----E---',coding_scheme: warfighting,affiliation: friend,battle_dimension: ground,symbol_set: ground,status: present,echelon: company,designator1: 'B',location: [width: 0,altitude: 0,shape: point,radius: 0,coords: [latlon(36.36,-115.82)],centroid: latlon(36.36,-115.82)],complete_language: '',placed: false,uuid: 'fe42e8b1-0071-4317-92d4-6702de8cf19a',parent_relationship: none,dis_code: dis(0,0,'0',0,0,0,0),federate: 'Not Set',resources: [],creator_role: s3,confidence: 0,alt: 0,poid: id125KU4EXHMDKKA6MZURYMP51VT]\n])\n"
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 31 ms; result abbreviated from the capture; params abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "GetC2SIMContent",
@@ -2164,13 +5269,82 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: No units, tactical graphics, or Task Org items available to export. Please verify that the import component is running. See logs for details"
+        },
+        {
+          "when": "dataType All",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: Get requires type to be 'initialization' or 'order'. Got All. Please verify that the import component is running. See logs for details"
+        },
+        {
+          "when": "dataType Order",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: No tasks available to export. Verify that tasks are confirmed/selected.. Please verify that the import component is running. See logs for details"
+        },
+        {
+          "when": "unknown coaPoid",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: Get requires type to be 'initialization' or 'order'. Got All. Please verify that the import component is running. See logs for details"
+        },
+        {
+          "when": "unknown dataType",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: Get requires type to be 'initialization' or 'order'. Got All. Please verify that the import component is running. See logs for details"
+        },
+        {
+          "when": "empty params",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: Get requires type to be 'initialization' or 'order'. Got All. Please verify that the import component is running. See logs for details"
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetC2SIMContent (captured)",
+          "params": [
+            {
+              "name": "name",
+              "value": "capture"
+            },
+            {
+              "name": "dataType",
+              "value": "Initialization"
+            },
+            {
+              "name": "affiliation",
+              "value": "friend"
+            },
+            {
+              "name": "coaPoids",
+              "value": [
+                "idN1Y9DR3HV80RFR2P5959C2695"
+              ]
+            },
+            {
+              "name": "options",
+              "value": {}
+            }
+          ],
+          "result": {
+            "name": "content",
+            "value": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<MessageBody xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://www.sisostds.org/schemas/C2SIM/1.1\">\n  <C2SIMInitializationBody>\n    <ObjectDefinitions>\n      <AbstractObject>\n        <ForceSide>\n          <Name>NATO Coalition</Name>\n          <UUID>00000000-0000-0001-0000-000000000000</UUID>\n          <ForceSideRelation>\n            <HostilityStatusCode>HO</HostilityStatusCode>\n            <OtherSide>00000000-0000-0002-0000-000000000000</OtherSide>\n          </ForceSideRelation>\n          <ForceSideRelation>\n            <HostilityStatusCode>NEUTRL</HostilityStatusCode>\n            <OtherSide>00000000-0000-0003-0000-000000000000</OtherSide>\n          </ForceSideRelation>\n        </ForceSide>\n      </AbstractObject>\n      <AbstractObject>\n        <ForceSide>\n          <Name>WASA</Name>\n          <UUID>00000000-0000-0002-0000-000000000000</UUID>\n          <ForceSideRelation>\n            <HostilityStatusCode>HO</HostilityStatusCode>\n            <OtherSide>00000000-0000-0001-0000-000000000000</OtherSide>\n          </ForceSideRelation>\n          <ForceSideRelation>\n"
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 212 ms; result abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "GetCoaObjectSet",
       "description": "Return the objects making up a COA as an in-memory object set. Object-set equivalent of GetCoaContent.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
+      "x-stpKnownIssues": [
+        "STP-1090"
+      ],
       "params": [
         {
           "name": "poid",
@@ -2190,13 +5364,53 @@
             "additionalProperties": true
           }
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "accepted",
+          "note": "success, result [{\"fsTYPE\": \"system_state\", \"poid\": \"uuidc103963b-2c4b-449d-..."
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetCoaObjectSet (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idN1Y9DR3HV80RFR2P5959C2695"
+            }
+          ],
+          "result": {
+            "name": "objects",
+            "value": [
+              {
+                "fsTYPE": "coa",
+                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                "dbTimestamp": "639272659345014258",
+                "dbCreationTimestamp": "639272659345014258",
+                "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                "Description": ""
+              }
+            ]
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 5 ms."
+        }
+      ]
     },
     {
       "name": "GetScenarioObjectSet",
       "description": "Return the current scenario as an in-memory object set (array of STP objects). Object-set equivalent of GetScenarioContent. Takes no parameters.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
+      "x-stpKnownIssues": [
+        "STP-1090"
+      ],
       "params": [],
       "x-descriptionStatus": "draft",
       "result": {
@@ -2208,13 +5422,59 @@
             "additionalProperties": true
           }
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetScenarioObjectSet (captured)",
+          "params": [],
+          "result": {
+            "name": "objects",
+            "value": [
+              {
+                "fsTYPE": "planning_scenario",
+                "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
+                "dbTimestamp": "639272659133487486",
+                "dbCreationTimestamp": "639272659133487486",
+                "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "coa",
+                "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                "dbTimestamp": "639272659267220061",
+                "dbCreationTimestamp": "639272659267220061",
+                "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "coa",
+                "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
+                "dbTimestamp": "639272659314776471",
+                "dbCreationTimestamp": "639272659314776471",
+                "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                "Description": ""
+              }
+            ]
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 27 ms; result abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "GetTaskOrgObjectSet",
       "description": "Return the objects making up a Task Organization as an in-memory object set. Object-set equivalent of GetTaskOrgContent.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
+      "x-stpKnownIssues": [
+        "STP-1090"
+      ],
       "params": [
         {
           "name": "poid",
@@ -2234,7 +5494,60 @@
             "additionalProperties": true
           }
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "accepted",
+          "note": "success, result [{\"fsTYPE\": \"system_state\", \"poid\": \"uuidc103963b-2c4b-449d-..."
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetTaskOrgObjectSet (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+            }
+          ],
+          "result": {
+            "name": "objects",
+            "value": [
+              {
+                "fsTYPE": "task_org",
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "dbTimestamp": "639272661799152434",
+                "dbCreationTimestamp": "639272661799152434",
+                "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "task_org_unit",
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "dbTimestamp": "639272661935296924",
+                "dbCreationTimestamp": "639272661935296924",
+                "dbVersion": "v14TP3BMG51ME1C2D195N8VYMRC",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "task_org_unit",
+                "poid": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                "dbTimestamp": "639272661942758403",
+                "dbCreationTimestamp": "639272661942758403",
+                "dbVersion": "v15HPP7WE8TAR13SX302WPLCZPS",
+                "Description": ""
+              }
+            ]
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 7 ms; result abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "ImportCoaFromObjectSet",
@@ -2291,7 +5604,7 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1078"
+        "STP-1090"
       ],
       "params": [
         {
@@ -2312,7 +5625,77 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "round trip: objects = GetCoaObjectSet(coa1) output verbatim (PrologTerm included)",
+          "outcome": "refused",
+          "message": "Could not read 'ImportCoaFromObjectSet': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        },
+        {
+          "when": "empty objects",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "malformed objects (strings)",
+          "outcome": "refused",
+          "message": "Could not read 'ImportCoaFromObjectSet': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        },
+        {
+          "when": "no active scenario, real content (PrologTerm removed)",
+          "outcome": "accepted",
+          "note": "success, result idN1Y9DR3HV80RFR2P5959C2695; events: CoaAdded"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ImportCoaFromObjectSet (captured)",
+          "params": [
+            {
+              "name": "objects",
+              "value": [
+                {
+                  "fsTYPE": "coa",
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272659345014258",
+                  "dbCreationTimestamp": "639272659345014258",
+                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "Description": ""
+                }
+              ]
+            }
+          ],
+          "result": {
+            "name": "coaPoid",
+            "value": "idN1Y9DR3HV80RFR2P5959C2695"
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": null,
+                  "affiliation": null,
+                  "creatorRole": null,
+                  "taskOrg": null,
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272664741082293",
+                  "dbCreationTimestamp": "639272664741082293",
+                  "dbVersion": "vZ769SDUZERR7Q4HUE68QF6A5E",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 5 ms."
+        }
+      ]
     },
     {
       "name": "ImportPlanDataFromObjectSet",
@@ -2411,7 +5794,7 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1078"
+        "STP-1090"
       ],
       "params": [
         {
@@ -2432,7 +5815,75 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "round trip: objects = GetScenarioObjectSet output verbatim (PrologTerm included)",
+          "outcome": "refused",
+          "message": "Could not read 'ImportPlanDataFromObjectSet': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        },
+        {
+          "when": "round trip: objects = GetScenarioObjectSet output with PrologTerm removed",
+          "outcome": "refused",
+          "message": "STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply"
+        },
+        {
+          "when": "empty objects",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing objects",
+          "outcome": "refused",
+          "message": "Object reference not set to an instance of an object."
+        }
+      ],
+      "examples": [
+        {
+          "name": "ImportPlanDataFromObjectSet (captured, not completed)",
+          "params": [
+            {
+              "name": "objects",
+              "value": [
+                {
+                  "fsTYPE": "planning_scenario",
+                  "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
+                  "dbTimestamp": "639272659133487486",
+                  "dbCreationTimestamp": "639272659133487486",
+                  "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                  "dbTimestamp": "639272659267220061",
+                  "dbCreationTimestamp": "639272659267220061",
+                  "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
+                  "dbTimestamp": "639272659314776471",
+                  "dbCreationTimestamp": "639272659314776471",
+                  "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272659345014258",
+                  "dbCreationTimestamp": "639272659345014258",
+                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "Description": ""
+                }
+              ]
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059); the call could not be completed there (round trip: objects = GetScenarioObjectSet output with PrologTerm removed): STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply."
+        }
+      ]
     },
     {
       "name": "ImportTaskOrgFromObjectSet",
@@ -2512,6 +5963,9 @@
           "to": "caller"
         }
       ],
+      "x-stpKnownIssues": [
+        "STP-1090"
+      ],
       "params": [
         {
           "name": "objects",
@@ -2531,7 +5985,122 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "round trip: objects = GetTaskOrgObjectSet(to1) output verbatim (PrologTerm included)",
+          "outcome": "refused",
+          "message": "Could not read 'ImportTaskOrgFromObjectSet': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        },
+        {
+          "when": "empty objects",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ImportTaskOrgFromObjectSet (captured)",
+          "params": [
+            {
+              "name": "objects",
+              "value": [
+                {
+                  "fsTYPE": "task_org",
+                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                  "dbTimestamp": "639272661799152434",
+                  "dbCreationTimestamp": "639272661799152434",
+                  "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                  "dbTimestamp": "639272661935296924",
+                  "dbCreationTimestamp": "639272661935296924",
+                  "dbVersion": "v14TP3BMG51ME1C2D195N8VYMRC",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                  "dbTimestamp": "639272661942758403",
+                  "dbCreationTimestamp": "639272661942758403",
+                  "dbVersion": "v15HPP7WE8TAR13SX302WPLCZPS",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                  "dbTimestamp": "639272662070574455",
+                  "dbCreationTimestamp": "639272662070574455",
+                  "dbVersion": "v15B7G2XG4YN1E5KRWS7JSBP0X5",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
+                  "dbTimestamp": "639272662168067024",
+                  "dbCreationTimestamp": "639272662168067024",
+                  "dbVersion": "vLCW3Q34NNKQPPP4BEKRTHG826",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
+                  "dbTimestamp": "639272662218240114",
+                  "dbCreationTimestamp": "639272662218240114",
+                  "dbVersion": "vAXYT0HTY0RG2PX8Z565511RVP",
+                  "Description": ""
+                }
+              ]
+            }
+          ],
+          "result": {
+            "name": "toPoid",
+            "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                  "name": null,
+                  "affiliation": null,
+                  "timestamp": "0001-01-01T00:00:00",
+                  "dbTimestamp": "639272665374681937",
+                  "dbVersion": "v1KH0Z6ZR3XQCC5E5T62DVHNH0L",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
+                  "parent": null,
+                  "child": null,
+                  "relationship": "none",
+                  "isMTOE": false,
+                  "dbTimestamp": "639272665374712143",
+                  "dbVersion": "vYU21NC36LPX33THEL9XZ8RABG",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 47 ms; params abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "LoadNewScenarioFromObjectSet",
@@ -2648,7 +6217,7 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1078"
+        "STP-1090"
       ],
       "params": [
         {
@@ -2669,7 +6238,76 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "round trip: objects = GetScenarioObjectSet output verbatim (PrologTerm included)",
+          "outcome": "refused",
+          "message": "Could not read 'LoadNewScenarioFromObjectSet': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        },
+        {
+          "when": "round trip: objects = GetScenarioObjectSet output with PrologTerm removed",
+          "outcome": "refused",
+          "message": "STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply"
+        },
+        {
+          "when": "empty objects",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "malformed objects (strings)",
+          "outcome": "refused",
+          "message": "Could not read 'LoadNewScenarioFromObjectSet': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        }
+      ],
+      "examples": [
+        {
+          "name": "LoadNewScenarioFromObjectSet (captured, not completed)",
+          "params": [
+            {
+              "name": "objects",
+              "value": [
+                {
+                  "fsTYPE": "planning_scenario",
+                  "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
+                  "dbTimestamp": "639272659133487486",
+                  "dbCreationTimestamp": "639272659133487486",
+                  "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                  "dbTimestamp": "639272659267220061",
+                  "dbCreationTimestamp": "639272659267220061",
+                  "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
+                  "dbTimestamp": "639272659314776471",
+                  "dbCreationTimestamp": "639272659314776471",
+                  "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272659345014258",
+                  "dbCreationTimestamp": "639272659345014258",
+                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "Description": ""
+                }
+              ]
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059); the call could not be completed there (round trip: objects = GetScenarioObjectSet output with PrologTerm removed): STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply."
+        }
+      ]
     },
     {
       "name": "PullC2SIMInitialization",
@@ -2821,7 +6459,33 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no options (engine default server)",
+          "outcome": "refused",
+          "message": "Error importing plan data: Connection error: Connection refused (127.0.0.1:8080). Please verify that the import component is running. See logs for details"
+        },
+        {
+          "when": "unreachable restUrl",
+          "outcome": "refused",
+          "message": "Error importing plan data: Connection error: Connection refused (127.0.0.1:9). Please verify that the import component is running. See logs for details"
+        }
+      ],
+      "examples": [
+        {
+          "name": "PullC2SIMInitialization (captured, not completed)",
+          "params": [
+            {
+              "name": "options",
+              "value": {
+                "restUrl": "http://127.0.0.1:9/C2SIMServer"
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059); the call could not be completed there (unreachable restUrl): Error importing plan data: Connection error: Connection refused (127.0.0.1:9). Please verify that the import component is running. See logs for details."
+        }
+      ]
     },
     {
       "name": "PushC2SIMContent",
@@ -2994,7 +6658,40 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no options (engine default server)",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: Connection error: Connection refused (127.0.0.1:8080). Please verify that the C2SIM connector is running. See logs for details"
+        },
+        {
+          "when": "unreachable restUrl",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: Connection error: Connection refused (127.0.0.1:9). Please verify that the C2SIM connector is running. See logs for details"
+        },
+        {
+          "when": "missing content",
+          "outcome": "refused",
+          "message": "Error getting C2SIM data: Connection error: Connection refused (127.0.0.1:9). Please verify that the C2SIM connector is running. See logs for details"
+        }
+      ],
+      "examples": [
+        {
+          "name": "PushC2SIMContent (captured, not completed)",
+          "params": [
+            {
+              "name": "content",
+              "value": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<MessageBody xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://www.sisostds.org/schemas/C2SIM/1.1\">\n  <C2SIMInitializationBody>\n    <ObjectDefinitions>\n      <AbstractObject>\n        <ForceSide>\n          <Name>NATO Coalition</Name>\n          <UUID>00000000-0000-0001-0000-000000000000</UUID>\n     ..."
+            },
+            {
+              "name": "dataType",
+              "value": "Initialization"
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059); the call could not be completed there (no options (engine default server)): Error getting C2SIM data: Connection error: Connection refused (127.0.0.1:8080). Please verify that the C2SIM connector is running. See logs for details."
+        }
+      ]
     },
     {
       "name": "Register",
@@ -3067,7 +6764,53 @@
           "type": "string"
         }
       },
-      "x-layer": "transport"
+      "x-layer": "transport",
+      "x-stpEdgeCases": [
+        {
+          "when": "no sessionId, empty solvables (not a refusal: shows the default)",
+          "outcome": "accepted",
+          "note": "success, result 0ABFFF46F951"
+        }
+      ],
+      "examples": [
+        {
+          "name": "Register (captured)",
+          "params": [
+            {
+              "name": "serviceName",
+              "value": "Stp1059Capture-R"
+            },
+            {
+              "name": "language",
+              "value": "javascript"
+            },
+            {
+              "name": "solvables",
+              "value": [
+                "InkProcessed",
+                "SpeechRecognized",
+                "SpeechDiscarded",
+                "SpeechParsed",
+                "NewScenario",
+                "SymbolAdded"
+              ]
+            },
+            {
+              "name": "machineId",
+              "value": null
+            },
+            {
+              "name": "sessionId",
+              "value": "CAP1010215043"
+            }
+          ],
+          "result": {
+            "name": "sessionId",
+            "value": "CAP1010215043"
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 46 ms; params abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "Request",
@@ -3104,7 +6847,57 @@
           "type": "null"
         }
       },
-      "x-layer": "transport"
+      "x-layer": "transport",
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown method name inside Request",
+          "outcome": "refused",
+          "message": "No handler for method 'NoSuchMethod' - the WebSocketsBridge does not dispatch it"
+        },
+        {
+          "when": "unknown method name as an inform",
+          "outcome": "announced",
+          "message": "No handler for method 'NoSuchMethod' - the WebSocketsBridge does not dispatch it"
+        },
+        {
+          "when": "jsonRequest is not JSON",
+          "outcome": "ignored"
+        }
+      ],
+      "examples": [
+        {
+          "name": "Request (captured)",
+          "params": [
+            {
+              "name": "jsonRequest",
+              "value": "{\"method\":\"HasActiveScenario\",\"params\":{}}"
+            },
+            {
+              "name": "cookie",
+              "value": 2
+            },
+            {
+              "name": "timeout",
+              "value": 15
+            }
+          ],
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "RequestResponse",
+              "params": {
+                "cookie": 2,
+                "success": true,
+                "result": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059): HasActiveScenario sent through Request; the answer arrives as the RequestResponse event carrying the same cookie."
+        }
+      ]
     },
     {
       "name": "SyncScenarioSessionFromObjectSet",
@@ -3233,7 +7026,7 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1078"
+        "STP-1090"
       ],
       "params": [
         {
@@ -3254,7 +7047,70 @@
         "schema": {
           "type": "null"
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "round trip: objects = GetScenarioObjectSet output verbatim (PrologTerm included)",
+          "outcome": "refused",
+          "message": "Could not read 'SyncScenarioSessionFromObjectSet': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        },
+        {
+          "when": "round trip: objects = GetScenarioObjectSet output with PrologTerm removed",
+          "outcome": "refused",
+          "message": "STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply"
+        },
+        {
+          "when": "empty objects",
+          "outcome": "accepted",
+          "note": "success; events: CoaAdded, CoaAdded, CoaAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, TaskAdded, TaskAdded, TaskAdded, TaskAdded"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SyncScenarioSessionFromObjectSet (captured, not completed)",
+          "params": [
+            {
+              "name": "objects",
+              "value": [
+                {
+                  "fsTYPE": "planning_scenario",
+                  "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
+                  "dbTimestamp": "639272659133487486",
+                  "dbCreationTimestamp": "639272659133487486",
+                  "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
+                  "dbTimestamp": "639272659267220061",
+                  "dbCreationTimestamp": "639272659267220061",
+                  "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
+                  "dbTimestamp": "639272659314776471",
+                  "dbCreationTimestamp": "639272659314776471",
+                  "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "coa",
+                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                  "dbTimestamp": "639272659345014258",
+                  "dbCreationTimestamp": "639272659345014258",
+                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "Description": ""
+                }
+              ]
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059); the call could not be completed there (round trip: objects = GetScenarioObjectSet output with PrologTerm removed): STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply."
+        }
+      ]
     },
     {
       "name": "ChangeTimeOut",
@@ -3270,6 +7126,34 @@
             "type": "number"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing timeout",
+          "outcome": "ignored"
+        },
+        {
+          "when": "malformed timeout (string)",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ChangeTimeOut (captured)",
+          "params": [
+            {
+              "name": "timeout",
+              "value": 0
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -3278,7 +7162,22 @@
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
-      "params": []
+      "params": [],
+      "x-stpEdgeCases": [
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ResetSegmentationTimeout (captured)",
+          "params": [],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
+      ]
     },
     {
       "name": "SetSpeechListening",
@@ -3293,6 +7192,30 @@
           "schema": {
             "type": "boolean"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "malformed listen (string)",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SetSpeechListening (captured)",
+          "params": [
+            {
+              "name": "listen",
+              "value": true
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -3366,7 +7289,170 @@
       "x-stpKnownIssues": [
         "STP-1080"
       ],
-      "params": []
+      "params": [],
+      "x-stpEdgeCases": [
+        {
+          "when": "nothing pending (inform)",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request (nothing pending)",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "RecognizeNow (captured)",
+          "params": [],
+          "x-stpEventsObserved": [
+            {
+              "event": "InkProcessed",
+              "params": null
+            },
+            {
+              "event": "SpeechRecognized",
+              "params": {
+                "phrases": [
+                  "ARMOR COMPANY"
+                ]
+              }
+            },
+            {
+              "event": "SymbolAdded",
+              "params": {
+                "alternates": [
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id6B2REW71WZ5SLTDQJUJ3AWJAM",
+                    "creatorRole": null,
+                    "confidence": 0.8815625343838556,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCA----E---",
+                      "delta": "10031000151205000000",
+                      "partA": "1003100015",
+                      "partB": "1205000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCA----E---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.25,
+                          "lon": -115.74986979166667
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.25,
+                        "lon": -115.74986979166667
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "ARMORED COMPANY",
+                    "description": "ARMORED COMPANY",
+                    "fullDescription": "FRIENDLY ARMORED COMPANY",
+                    "affiliation": "friend",
+                    "echelon": "company",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660443468460",
+                    "dbVersion": "vNYHFES5L4G0GHMWE02YJASRAY",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "unit",
+                    "poid": "id6B2REW71WZ5SLTDQJUJ3AWJAM",
+                    "creatorRole": null,
+                    "confidence": 0.8815625343838556,
+                    "placementConfidence": null,
+                    "alt": 0,
+                    "sidc": {
+                      "charlie": "SFGPUCA----E---",
+                      "delta": "10031000151205000000",
+                      "partA": "1003100015",
+                      "partB": "1205000000",
+                      "symbolSet": "10",
+                      "legacy": "SFGPUCA----E---"
+                    },
+                    "location": {
+                      "fsTYPE": "point",
+                      "shape": "point",
+                      "coords": [
+                        {
+                          "lat": 36.25,
+                          "lon": -115.74986979166667
+                        }
+                      ],
+                      "centroid": {
+                        "lat": 36.25,
+                        "lon": -115.74986979166667
+                      },
+                      "width": 0,
+                      "altitude": 0,
+                      "radius": 0,
+                      "candidatePoids": []
+                    },
+                    "shortDescription": "ARMORED COMPANY",
+                    "description": "ARMORED COMPANY",
+                    "fullDescription": "FRIENDLY ARMORED COMPANY",
+                    "affiliation": "friend",
+                    "echelon": "company",
+                    "parent": null,
+                    "designator1": null,
+                    "designator2": null,
+                    "commonIdentifier": null,
+                    "specialC2Hq": null,
+                    "additionalInformation": null,
+                    "status": "present",
+                    "modifier": "none",
+                    "strength": "",
+                    "branch": "ground_unit",
+                    "timeFrom": null,
+                    "timeTo": null,
+                    "altitude": null,
+                    "minAltitude": null,
+                    "maxAltitude": null,
+                    "toUnitPoid": null,
+                    "federate": null,
+                    "disCode": null,
+                    "resources": [],
+                    "dbTimestamp": "639272660443468460",
+                    "dbVersion": "vNYHFES5L4G0GHMWE02YJASRAY",
+                    "extensions": null
+                  }
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
+      ]
     },
     {
       "name": "SendListen",
@@ -3407,6 +7493,38 @@
             "format": "date-time"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown mode value",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing mode",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SendListen (captured)",
+          "params": [
+            {
+              "name": "mode",
+              "value": "once"
+            },
+            {
+              "name": "time",
+              "value": "2026-10-10T21:53:49.065Z"
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -3422,6 +7540,30 @@
           "schema": {
             "type": "boolean"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing isListening",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SendAudioCaptureState (captured)",
+          "params": [
+            {
+              "name": "isListening",
+              "value": true
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -3446,6 +7588,40 @@
             "$ref": "#/components/schemas/LatLon"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing botRight",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "AdvertiseViewport (captured)",
+          "params": [
+            {
+              "name": "topLeft",
+              "value": {
+                "lat": 36.8,
+                "lon": -116.4
+              }
+            },
+            {
+              "name": "botRight",
+              "value": {
+                "lat": 36.1,
+                "lon": -115.4
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -3461,6 +7637,30 @@
           "schema": {
             "type": "boolean"
           }
+        }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "missing isEnabled",
+          "outcome": "ignored"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SetAutoTasking (captured)",
+          "params": [
+            {
+              "name": "isEnabled",
+              "value": true
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
         }
       ]
     },
@@ -3489,7 +7689,27 @@
           "to": "caller"
         }
       ],
-      "params": []
+      "params": [],
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "events: RoleSwitched"
+        },
+        {
+          "when": "sent through Request",
+          "outcome": "accepted",
+          "note": "success",
+          "wire": "request"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ResetRole (captured)",
+          "params": [],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
+      ]
     },
     {
       "name": "UndoLastOp",
@@ -3581,6 +7801,28 @@
             "type": "string"
           }
         }
+      ],
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "ignored"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "ignored"
+        }
+      ],
+      "examples": [
+        {
+          "name": "UndoLastOp (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id14WQ2BKB63R8DS8Z0VM1DNGB6B"
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
       ]
     },
     {
@@ -3614,7 +7856,34 @@
           "to": "caller"
         }
       ],
-      "params": []
+      "params": [],
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success; events: CoaSwitched",
+          "wire": "request"
+        },
+        {
+          "when": "again, with no scenario left",
+          "outcome": "ignored"
+        }
+      ],
+      "examples": [
+        {
+          "name": "ResetStpScenario (captured)",
+          "params": [],
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgSwitched",
+              "params": {
+                "taskOrg": null
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059), inform wire."
+        }
+      ]
     },
     {
       "name": "GetActiveScenarioDescription",
@@ -3628,7 +7897,39 @@
           "type": "object",
           "additionalProperties": true
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetActiveScenarioDescription (captured)",
+          "params": [],
+          "result": {
+            "name": "scenario",
+            "value": {
+              "Name": "stp1059-capture-1010215043",
+              "IsValid": true,
+              "IsLoaded": true,
+              "CreatorRole": null,
+              "TaskOrgState": null,
+              "savePath": null,
+              "NetworkPath": null,
+              "fsTYPE": "planning_scenario",
+              "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
+              "dbTimestamp": "639272659133487486",
+              "dbCreationTimestamp": "639272659133487486",
+              "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+              "Description": ""
+            }
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 13 ms."
+        }
+      ]
     },
     {
       "name": "GetAllObjects",
@@ -3645,7 +7946,50 @@
             "additionalProperties": true
           }
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success, result [{\"fsTYPE\": \"system_state\", \"poid\": \"uuid7dcd6343-a043-402e-..."
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetAllObjects (captured)",
+          "params": [],
+          "result": {
+            "name": "objects",
+            "value": [
+              {
+                "fsTYPE": "system_state",
+                "poid": "uuidc103963b-2c4b-449d-82a3-a6596c4a09d1",
+                "dbTimestamp": "639272659133443148",
+                "dbCreationTimestamp": "639272659133443148",
+                "dbVersion": "v48CEG742QK49H43RE7VHF170X",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "system_state",
+                "poid": "uuid7e862071-86de-4fbb-9055-506bec090658",
+                "dbTimestamp": "639272659133448621",
+                "dbCreationTimestamp": "639272659133448621",
+                "dbVersion": "v1ATFU2AVX0BZ16ZDH40YD950U",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "planning_scenario",
+                "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
+                "dbTimestamp": "639272659133487486",
+                "dbCreationTimestamp": "639272659133487486",
+                "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                "Description": ""
+              }
+            ]
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 48 ms; result abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "GetDeletedObjects",
@@ -3662,7 +8006,50 @@
             "additionalProperties": true
           }
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetDeletedObjects (captured)",
+          "params": [],
+          "result": {
+            "name": "objects",
+            "value": [
+              {
+                "fsTYPE": "unit",
+                "poid": "id125KU4EXHMDKKA6MZURYMP51VT",
+                "dbTimestamp": "639272663734260000",
+                "dbCreationTimestamp": "639272659603216362",
+                "dbVersion": "v0",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "task",
+                "poid": "idGDDPN4PYC1AWXAVLV0AA6D4M9",
+                "dbTimestamp": "639272663872220000",
+                "dbCreationTimestamp": "639272661386160541",
+                "dbVersion": "v0",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "task_org_unit",
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "dbTimestamp": "639272664009660000",
+                "dbCreationTimestamp": "639272661935296924",
+                "dbVersion": "v0",
+                "Description": ""
+              }
+            ]
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 7 ms; result abbreviated from the capture."
+        }
+      ]
     },
     {
       "name": "GetPoidObject",
@@ -3684,7 +8071,59 @@
           "type": "object",
           "additionalProperties": true
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "unknown poid",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing poid ({} params)",
+          "outcome": "accepted",
+          "note": "success, result {\"fsTYPE\": \"system_state\", \"poid\": \"uuidc103963b-2c4b-449d-8..."
+        },
+        {
+          "when": "params key omitted entirely",
+          "outcome": "refused",
+          "message": "Could not read 'GetPoidObject': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        },
+        {
+          "when": "wrong param type (poid is an object)",
+          "outcome": "refused",
+          "message": "Could not read 'GetPoidObject': ...",
+          "note": "Engines before STP-1088 never answer this call."
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetPoidObject (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "idWDSAZG5MZ3Y6UURF2N0N6W146"
+            }
+          ],
+          "result": {
+            "name": "object",
+            "value": {
+              "fsTYPE": "unit",
+              "poid": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+              "dbTimestamp": "639272659721713711",
+              "dbCreationTimestamp": "639272659721713711",
+              "dbVersion": "vXB5XUQSPF2GH9UKQ2NNK7J2L3",
+              "Description": ""
+            }
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 7 ms."
+        }
+      ]
     },
     {
       "name": "GetScenarioTaskOrgList",
@@ -3700,7 +8139,56 @@
             "$ref": "#/components/schemas/StpTaskOrg"
           }
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success"
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetScenarioTaskOrgList (captured)",
+          "params": [],
+          "result": {
+            "name": "taskOrgs",
+            "value": [
+              {
+                "fsTYPE": "task_org",
+                "name": "Capture TO (renamed)",
+                "affiliation": "friend",
+                "timestamp": "2026-10-10T21:56:19.914Z",
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "dbTimestamp": "639272661799152434",
+                "dbCreationTimestamp": "639272661799152434",
+                "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL"
+              },
+              {
+                "fsTYPE": "task_org",
+                "name": "Bad aff",
+                "affiliation": "martian",
+                "timestamp": "2026-10-10T21:56:15.892Z",
+                "poid": "idZ5WMPJZ7ZSZ9W32JESEBSEQ4Z",
+                "dbTimestamp": "639272661758937378",
+                "dbCreationTimestamp": "639272661758937378",
+                "dbVersion": "v8A2M7YCA08GGHK51V3X9Y9QVP"
+              },
+              {
+                "fsTYPE": "task_org",
+                "name": "Capture TO 2",
+                "affiliation": "hostile",
+                "timestamp": "2026-10-10T21:56:12.154Z",
+                "poid": "id10UJ220QCW4CMM3JBLSL8XRM2Q",
+                "dbTimestamp": "639272661721546925",
+                "dbCreationTimestamp": "639272661721546925",
+                "dbVersion": "vDM2JACW6HJ46MRZ7Z9H5RWDKD"
+              }
+            ]
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 6 ms."
+        }
+      ]
     },
     {
       "name": "GetTaskOrgObjects",
@@ -3725,7 +8213,60 @@
             "additionalProperties": true
           }
         }
-      }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "unknown poid",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "accepted",
+          "note": "success, result [{\"fsTYPE\": \"system_state\", \"poid\": \"uuidc103963b-2c4b-449d-..."
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetTaskOrgObjects (captured)",
+          "params": [
+            {
+              "name": "poid",
+              "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+            }
+          ],
+          "result": {
+            "name": "objects",
+            "value": [
+              {
+                "fsTYPE": "task_org",
+                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "dbTimestamp": "639272661799152434",
+                "dbCreationTimestamp": "639272661799152434",
+                "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "task_org_unit",
+                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
+                "dbTimestamp": "639272661935296924",
+                "dbCreationTimestamp": "639272661935296924",
+                "dbVersion": "v14TP3BMG51ME1C2D195N8VYMRC",
+                "Description": ""
+              },
+              {
+                "fsTYPE": "task_org_unit",
+                "poid": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
+                "dbTimestamp": "639272661942758403",
+                "dbCreationTimestamp": "639272661942758403",
+                "dbVersion": "v15HPP7WE8TAR13SX302WPLCZPS",
+                "Description": ""
+              }
+            ]
+          },
+          "description": "Captured from a live engine (STP-1059), request wire, answered in 49 ms; result abbreviated from the capture."
+        }
+      ]
     }
   ],
   "components": {

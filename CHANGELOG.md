@@ -67,6 +67,17 @@
   the caller; `JoinScenarioSession` replays no `TaskOrgAdded`; `SetSpeechListening`
   reports no event; `SpeechRecognized` carries the single phrase that integrated; imports
   report a replaced object as `*Added`, not `*Modified`
+- OpenRPC contract raised to 0.9.0 (STP-1059). Every method now carries an `examples`
+  pairing captured from a live engine, with the events it produced (`x-stpEventsObserved`),
+  and `x-stpEdgeCases`: what the engine did with bad or unusual input (`refused`,
+  `announced`, `ignored` or `accepted`), 197 cases across the methods.
+  - `CreateNewScenario` returns the new scenario's poid, not null (STP-1087).
+  - `x-stpKnownIssues` changes:
+    - STP-1078 and STP-1079 are fixed, so they are no longer listed;
+    - added STP-1088 (task-org unit and relationship parameter names);
+    - added STP-1089 (relationship events);
+    - added STP-1090 (the object-set round trip);
+    - added STP-1091 (writes that do not validate their target).
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
