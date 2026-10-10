@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+const byName = (a: string, b: string) => a.localeCompare(b);
+
 /**
  * STP-1064. json-api/sketch-thru-plan-validations.json is the shared, data-driven rule set a
  * client evaluates around a state-changing call: preconditions, required params and poid
@@ -117,7 +119,7 @@ describe('validation rules file (STP-1064)', () => {
 
   it('covers exactly the write and destructive methods the engine dispatches', () => {
     expect(STATE_CHANGING.length).toBeGreaterThanOrEqual(50);
-    expect(Object.keys(RULES.methods).sort()).toEqual([...STATE_CHANGING].sort());
+    expect(Object.keys(RULES.methods).sort(byName)).toEqual([...STATE_CHANGING].sort(byName));
   });
 
   it('requires an active scenario for every call except the ones that create one', () => {
@@ -189,8 +191,8 @@ describe('validation rules file (STP-1064)', () => {
 
   it('marks as unverifiable only events held back by an issue the method still lists', () => {
     const marked = ruleEntries().filter(([, r]) => r.intent.unverifiable);
-    expect(marked.map(([n]) => n).sort()).toEqual(
-      ['AddTaskOrgRelationship', 'DeleteTaskOrgRelationship', 'UpdateTask', 'UpdateTaskOrgRelationship'].sort(),
+    expect(marked.map(([n]) => n).sort(byName)).toEqual(
+      ['AddTaskOrgRelationship', 'DeleteTaskOrgRelationship', 'UpdateTask', 'UpdateTaskOrgRelationship'].sort(byName),
     );
     for (const [name, rule] of marked) {
       expect(methodOf(name)['x-stpKnownIssues'] ?? [], name).toContain(rule.intent.unverifiable.issue);
@@ -212,14 +214,14 @@ describe('validation rules file (STP-1064)', () => {
     const perItem = ruleEntries()
       .filter(([, r]) => r.intent.expect.some((e: Json) => e.forEach))
       .map(([n]) => n);
-    expect(perItem.sort()).toEqual(
+    expect(perItem.sort(byName)).toEqual(
       [
         'ImportCoaFromObjectSet',
         'ImportPlanDataFromObjectSet',
         'ImportTaskOrgFromObjectSet',
         'LoadNewScenarioFromObjectSet',
         'SyncScenarioSessionFromObjectSet',
-      ].sort(),
+      ].sort(byName),
     );
   });
 });
