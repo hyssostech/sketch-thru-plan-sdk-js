@@ -302,13 +302,26 @@ export class StpWebSocketsConnector implements IStpConnector {
     return sessionId;
   }
 
+  /**
+   * Close the connection to STP. A no-op when there is no socket or it is already
+   * closing / closed.
+   *
+   * STP-1070: this used to close only when the socket was NOT open (`!this.isConnected`),
+   * so a live connection was left open. The socket's `onclose` handler is detached before
+   * closing: it reconnects on any close, and a deliberate disconnect must stay disconnected.
+   * A later `connect()` installs a fresh handler, so automatic reconnection resumes then.
+   */
   disconnect(timeout: number = this.DEFAULT_TIMEOUT): Promise<void> {
     return this.promiseWithTimeout<void>(
       timeout,
-      new Promise<void>(async (resolve, reject) => {
-        if (!this.isConnected && this.socket) {
-          // Attempt to close
-          this.socket.close();
+      new Promise<void>((resolve) => {
+        const socket = this.socket;
+        if (
+          socket &&
+          (socket.readyState === socket.OPEN || socket.readyState === socket.CONNECTING)
+        ) {
+          socket.onclose = null;
+          socket.close();
         }
         resolve();
       })

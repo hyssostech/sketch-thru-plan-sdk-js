@@ -9,6 +9,9 @@
   and `StpTask` declared `rulesOfEngagement`. `StpTask.roe` added;
   `rulesOfEngagement` is a deprecated alias of it, and a task sent with `addTask` or
   `updateTask` now carries `roe` where the engine reads it
+- Fixed `disconnect()` leaving a live connection open: it closed the socket only when
+  the socket was not open (STP-1070). It now closes an open or connecting socket, does
+  not reconnect afterwards, and does nothing when the socket is already closing or closed
 - `@deprecated` tags now reach the published type definitions; the build had been
   stripping every doc comment from them
 - Added `TaskWhat.HarassmentFires` (`HARASSMENT_FIRES`), the corrected spelling the
