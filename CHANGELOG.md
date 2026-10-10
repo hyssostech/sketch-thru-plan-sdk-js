@@ -78,6 +78,18 @@
     - added STP-1089 (relationship events);
     - added STP-1090 (the object-set round trip);
     - added STP-1091 (writes that do not validate their target).
+- OpenRPC contract raised to 0.9.1 (STP-1059): every method description is rewritten for a
+  model reader. Each says when to use the method rather than its neighbours, what must exist
+  first, what the call changes and what comes back. Fire-and-forget methods say that only
+  events answer. Corrected from the engine source and the live capture:
+  - `ResetStpScenario` discards the scenario too;
+  - `PullC2SIMInitialization` returns only the XML;
+  - `SetRole` ignores `createIfNone` and sets the client's own role;
+  - `ConfirmTask` always confirms;
+  - `ResetSegmentationTimeout` leaves the wait timeout;
+  - `ResetRole` leaves no role;
+  - `ResetDefaultTaskOrg` resets the friend default for any value but `hostile`;
+  - the object-set and `GetAllObjects` JSON carries content only in the engine term.
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
