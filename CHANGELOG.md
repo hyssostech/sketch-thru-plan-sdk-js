@@ -57,6 +57,16 @@
   REPLACE resident objects with the same poid and keep the rest (sync does not discard
   the current scenario); `PushC2SIMContent` sends to the external C2SIM server and
   imports nothing; `PullC2SIMInitialization` returns the content without loading it
+- OpenRPC contract raised to 0.8.0 (STP-1059): every method carries `x-stpEmits`, the
+  events that follow a call - each with `when` (`always` / `if` / `may`), a `condition`
+  and `to` (`caller` / `session`); reads emit nothing except the `JoinScenarioSession`
+  replay. Methods the engine does not yet serve as described carry `x-stpKnownIssues`
+  (STP-1077 per-COA task orgs, STP-1078 COA events, STP-1079 COA and role switch waits,
+  STP-1080 undo, discarded ink, task confirm/update and TO relationship events).
+  Descriptions corrected: `NewScenario` goes to the other clients of the session, never
+  the caller; `JoinScenarioSession` replays no `TaskOrgAdded`; `SetSpeechListening`
+  reports no event; `SpeechRecognized` carries the single phrase that integrated; imports
+  report a replaced object as `*Added`, not `*Modified`
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
