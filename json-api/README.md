@@ -175,7 +175,7 @@ An [OpenRPC](https://github.com/open-rpc) definition of the api can be found in 
 
 ### Extensions to the OpenRPC spec
 
-The contract uses four `x-`prefixed extensions beyond the base OpenRPC spec:
+The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
 
 * `x-stpEvents` - the engine also sends unsolicited, asynchronous events to the
   client (`SymbolAdded`, `TaskModified`, etc.). OpenRPC has no native concept of a
@@ -204,3 +204,20 @@ The contract uses four `x-`prefixed extensions beyond the base OpenRPC spec:
   three, which is why they stay documented here. **Generators, reference pages and
   tool listings that present a public API should skip this layer**; anything
   describing the wire itself must keep it.
+* `"x-stpSafety": "read" | "write" | "destructive"` - on every method (STP-1059). What a
+  call can do to state, so a client knows which calls are safe to make without asking:
+  * `read` changes nothing on the server (queries, conversions, replaying the scenario to
+    the caller);
+  * `write` changes the scenario or session in the way the call names (add, update,
+    select, recognize, session settings, undo);
+  * `destructive` can remove or overwrite data the call does not name one by one:
+    deletes, loading or creating a scenario (replaces it), resetting it, every import and
+    sync (an imported object REPLACES a resident one with the same poid), and pushing to
+    an external C2SIM server (which can reset that server).
+  MCP tool annotations map from it: `read` is `readOnlyHint`, `destructive` is
+  `destructiveHint`.
+* `"x-stpInform": true` - the method is fire and forget: the engine sends no result, and
+  the outcome arrives as events (for example `AddSymbol` -> `SymbolAdded`). Every method
+  has either a `result` or this marker.
+* `"x-stpOpenWorld": true` - the call reaches a system outside STP (the C2SIM server):
+  `PullC2SIMInitialization`, `PushC2SIMContent`.
