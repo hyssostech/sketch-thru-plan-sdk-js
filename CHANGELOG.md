@@ -9,6 +9,19 @@
   and `StpTask` declared `rulesOfEngagement`. `StpTask.roe` added;
   `rulesOfEngagement` is a deprecated alias of it, and a task sent with `addTask` or
   `updateTask` now carries `roe` where the engine reads it
+- Fixed C2SIM rules of engagement never applying: `StpC2SIMOptions.rulesOfEngagement`
+  took `'ROEHold'`, `'ROEFree'` and `'ROETight'`, which the engine ignored, keeping its
+  configured default. It now takes the engine's `'Hold'`, `'Free'` and `'Tight'`; the old
+  spellings are deprecated and sent as the engine value (STP-694)
+- Added `StpC2SIMOptions.validationSchema` and `includeDescriptionInName`, two keys the
+  engine accepted that the SDK could not set
+- OpenRPC contract raised to 0.5.0: the C2SIM `options` keys of `GetC2SIMContent`,
+  `PullC2SIMInitialization` and `PushC2SIMContent` are spelled as `StpC2SIMOptions` sends
+  them (`resturl` -> `restUrl`, `fullto` -> `fullTO`, ...), so a strict schema validator
+  accepts what the SDK sends; the engine accepts any casing (STP-694)
+- Fixed `disconnect()` leaving a live connection open: it closed the socket only when
+  the socket was not open (STP-1070). It now closes an open or connecting socket, does
+  not reconnect afterwards, and does nothing when the socket is already closing or closed
 - `@deprecated` tags now reach the published type definitions; the build had been
   stripping every doc comment from them
 - Added `TaskWhat.HarassmentFires` (`HARASSMENT_FIRES`), the corrected spelling the

@@ -1,5 +1,16 @@
+/**
+ * Rules of engagement values the engine accepts for {@link StpC2SIMOptions.rulesOfEngagement}:
+ * the members of its ROE enum, matched case-sensitively (STP-694)
+ */
+export type StpC2SIMRulesOfEngagement = 'Hold' | 'Free' | 'Tight';
+
 /** 
  * C2SIM generation options
+ *
+ * The field names are the option keys sent on the wire, and are the property names the
+ * OpenRPC contract (json-api/sketch-thru-plan-api.json) enumerates for the C2SIM methods'
+ * `options`. The engine matches keys case-insensitively, but a strict JSON Schema validator
+ * does not, so the two must stay spelled alike (STP-694)
 */
 export class StpC2SIMOptions {
     /**
@@ -62,7 +73,7 @@ export class StpC2SIMOptions {
     placeAllTgInInitialization: boolean | undefined;
 
     /**
-     * Place Task TGs  MapGraphicID elements in the Initialization documents, rather than the Orders
+     * Include MapGraphicID references to tactical graphics in tasks, rather than relying on Location
      */
     includeMapGraphicId: boolean | undefined;
 
@@ -72,12 +83,22 @@ export class StpC2SIMOptions {
     entityNameCharLimit: number | undefined;
 
     /**
-     * Rules of Engagement 
+     * Append the description to generated entity names - required to round-trip an ORBAT
+     * imported from C2SIM documents
      */
-    rulesOfEngagement: 'ROEHold' | 'ROEFree' | 'ROETight' | undefined;
+    includeDescriptionInName: boolean | undefined;
+
+    /**
+     * Default rules of engagement: `'Hold'`, `'Free'` or `'Tight'`, the engine's values
+     *
+     * `'ROEHold'`, `'ROEFree'` and `'ROETight'` are deprecated: they were this SDK's spelling
+     * before 0.6.17, which the engine never accepted (it ignored them and kept its configured
+     * default). The SDK now sends them as `'Hold'`, `'Free'` and `'Tight'`; use those instead
+     */
+    rulesOfEngagement: StpC2SIMRulesOfEngagement | 'ROEHold' | 'ROEFree' | 'ROETight' | undefined;
     
     /**
-     * Amount of minutes each STP phase takes
+     * Use Position Report information to update units
      */
     updateUnitPositions: boolean | undefined;
 
@@ -87,8 +108,13 @@ export class StpC2SIMOptions {
     exportFileDir: string | undefined;
 
     /**
-     *Amount of minutes each STP phase takes
-        */
+     * Path to a schema file to validate generated XML against; empty for no validation
+     */
+    validationSchema: string | undefined;
+
+    /**
+     * Mission start date
+     */
     startDate: Date | undefined;
 
     /**
