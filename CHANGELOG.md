@@ -90,6 +90,8 @@
   - `ResetRole` leaves no role;
   - `ResetDefaultTaskOrg` resets the friend default for any value but `hostile`;
   - the object-set and `GetAllObjects` JSON carries content only in the engine term.
+  - STP-1088 is fixed in the engine (STP#348), so it is no longer listed. Engines before it drop
+    `toUnit` / `toRelationship`, and the descriptions say so.
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected

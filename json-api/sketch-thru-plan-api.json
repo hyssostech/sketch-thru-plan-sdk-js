@@ -3228,7 +3228,7 @@
     },
     {
       "name": "AddTaskOrgUnit",
-      "description": "Add a unit to a Task Organization (ORBAT): send it as toUnit with parentTO set to the TO's poid (from TaskOrgAdded or GetScenarioTaskOrgList) and its definition (for example sidc, name, echelon and affiliation). A TO unit is an ORBAT entry, not a symbol on the map. Fire and forget: the engine sends no reply; the new poid arrives in TaskOrgUnitAdded (to every client) - use it as parent or child in AddTaskOrgRelationship. Known issue STP-1088: engines without that fix read the unit only under the name taskOrgUnit and silently drop toUnit. Known issue STP-1091: an unknown parentTO is accepted, leaving an orphan unit.",
+      "description": "Add a unit to a Task Organization (ORBAT): send it as toUnit with parentTO set to the TO's poid (from TaskOrgAdded or GetScenarioTaskOrgList) and its definition (for example sidc, name, echelon and affiliation). A TO unit is an ORBAT entry, not a symbol on the map. Fire and forget: the engine sends no reply; the new poid arrives in TaskOrgUnitAdded (to every client) - use it as parent or child in AddTaskOrgRelationship. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit. Known issue STP-1091: an unknown parentTO is accepted, leaving an orphan unit.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3239,7 +3239,6 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1088",
         "STP-1091"
       ],
       "params": [
@@ -3335,7 +3334,7 @@
     },
     {
       "name": "UpdateTaskOrgUnit",
-      "description": "Change a Task Organization unit, identified by poid (from TaskOrgUnitAdded or GetTaskOrgContent), sending the new definition as toUnit. Fire and forget: the engine sends no reply; TaskOrgUnitModified goes to every client (TaskOrgUnitDeleted instead if the poid names a deleted unit). An unknown poid is silently ignored. Known issue STP-1088: engines without that fix read the unit only under the name taskOrgUnit and silently drop toUnit.",
+      "description": "Change a Task Organization unit, identified by poid (from TaskOrgUnitAdded or GetTaskOrgContent), sending the new definition as toUnit. Fire and forget: the engine sends no reply; TaskOrgUnitModified goes to every client (TaskOrgUnitDeleted instead if the poid names a deleted unit). An unknown poid is silently ignored. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3350,9 +3349,6 @@
           "condition": "the poid names a deleted task org unit: TaskOrgUnitDeleted instead of TaskOrgUnitModified",
           "to": "session"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1088"
       ],
       "params": [
         {
@@ -3513,7 +3509,7 @@
     },
     {
       "name": "AddTaskOrgRelationship",
-      "description": "Link two units of a Task Organization (for example organic, attached or opcon): send toRelationship with parent and child set to TO unit poids (from TaskOrgUnitAdded), the relationship kind, and parentTO set to the TO's poid. Fire and forget: the engine sends no reply. Known issue STP-1088: engines without that fix read the object only as taskOrgRelationship, and its TO as parentPoid, and silently drop toRelationship. Known issue STP-1080/STP-1089: even when the relationship is stored, no TaskOrgRelationshipAdded is sent - verify with GetTaskOrgContent for the TO.",
+      "description": "Link two units of a Task Organization (for example organic, attached or opcon): send toRelationship with parent and child set to TO unit poids (from TaskOrgUnitAdded), the relationship kind, and parentTO set to the TO's poid. Fire and forget: the engine sends no reply. Engines before STP-1088 read the object only as taskOrgRelationship, and its TO as parentPoid, and silently drop toRelationship. Known issue STP-1080/STP-1089: even when the relationship is stored, no TaskOrgRelationshipAdded is sent - verify with GetTaskOrgContent for the TO.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3525,7 +3521,6 @@
       ],
       "x-stpKnownIssues": [
         "STP-1080",
-        "STP-1088",
         "STP-1089"
       ],
       "params": [
@@ -3575,7 +3570,7 @@
     },
     {
       "name": "UpdateTaskOrgRelationship",
-      "description": "Change a relationship between two Task Organization units (for example from organic to attached), identified by poid (from GetTaskOrgContent), sending the new definition as toRelationship. Fire and forget: the engine sends no reply. An unknown poid is silently ignored. Known issue STP-1088: engines without that fix read the object only as taskOrgRelationship and silently drop toRelationship. Known issue STP-1080/STP-1089: no TaskOrgRelationshipModified is sent - verify with GetTaskOrgContent.",
+      "description": "Change a relationship between two Task Organization units (for example from organic to attached), identified by poid (from GetTaskOrgContent), sending the new definition as toRelationship. Fire and forget: the engine sends no reply. An unknown poid is silently ignored. Engines before STP-1088 read the object only as taskOrgRelationship and silently drop toRelationship. Known issue STP-1080/STP-1089: no TaskOrgRelationshipModified is sent - verify with GetTaskOrgContent.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3587,7 +3582,6 @@
       ],
       "x-stpKnownIssues": [
         "STP-1080",
-        "STP-1088",
         "STP-1089"
       ],
       "params": [
