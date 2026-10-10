@@ -46,7 +46,7 @@ describe('contract safety classification (STP-1059)', () => {
   });
 
   it('lists exactly the calls that reach outside STP', () => {
-    const open = METHODS.filter((m) => m['x-stpOpenWorld'] === true).map((m) => m.name).sort();
+    const open = METHODS.filter((m) => m['x-stpOpenWorld'] === true).map((m) => m.name).sort((a, b) => a.localeCompare(b));
     expect(open).toEqual(['PullC2SIMInitialization', 'PushC2SIMContent']);
   });
 });
