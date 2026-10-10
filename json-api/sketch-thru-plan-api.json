@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.5.0"
+    "version": "0.6.0"
   },
   "methods": [
     {
@@ -319,7 +319,7 @@
     },
     {
       "name": "ImportTaskOrgContent",
-      "description": "Import a Task Organization (TO) from serialized content, using fresh unique IDs.",
+      "description": "Import a Task Organization (TO) from serialized content. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the poid of the task_org object in the content.",
       "params": [
         {
           "name": "content",
@@ -609,18 +609,18 @@
     },
     {
       "name": "SetCoaTaskOrg",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Associate a TO with a specific COA or set as global default (if COA unspecified).",
+      "description": "Choose the Task Organization (TO) used for COAs. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid (tie the TO to one specific COA): currently REFUSED - the engine answers success=false with \"per-COA task org is not supported yet\" and changes nothing, pending an operator ruling on per-COA task orgs. Do not send coaPoid until that changes. Answers null on success.",
       "params": [
         {
           "name": "toPoid",
-          "description": "TO unique id to associate.",
+          "description": "Unique id of the TO to use.",
           "schema": {
             "type": "string"
           }
         },
         {
           "name": "coaPoid",
-          "description": "COA unique id (optional). If omitted, sets the global default for the TO's affiliation.",
+          "description": "Optional. Omit it to set the default TO for the TO's affiliation. Supplying it is currently refused (per-COA task org is not supported yet).",
           "schema": {
             "type": "string"
           }
@@ -631,16 +631,22 @@
         "schema": {
           "type": "null"
         }
-      },
-      "x-engineDispatch": "none"
+      }
     },
     {
       "name": "ResetCoaTaskOrg",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Remove TO association from a COA (or global default if COA unspecified).",
+      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg. With coaPoid (clear the TO tied to one specific COA): currently REFUSED - the engine answers success=false with \"per-COA task org is not supported yet\" and changes nothing, pending an operator ruling on per-COA task orgs. Do not send coaPoid until that changes. Answers null on success.",
       "params": [
         {
+          "name": "affiliation",
+          "description": "Affiliation whose default TO is reset. Required when coaPoid is omitted.",
+          "schema": {
+            "$ref": "#/components/schemas/Affiliation"
+          }
+        },
+        {
           "name": "coaPoid",
-          "description": "COA unique id (optional) to reset.",
+          "description": "Optional. Omit it to reset the default TO for affiliation. Supplying it is currently refused (per-COA task org is not supported yet).",
           "schema": {
             "type": "string"
           }
@@ -651,16 +657,15 @@
         "schema": {
           "type": "null"
         }
-      },
-      "x-engineDispatch": "none"
+      }
     },
     {
       "name": "ImportCoaContent",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Import a new COA from serialized content, using fresh unique IDs.",
+      "description": "Load a COA and its units, graphics and tasks from STP object-set text, typically produced by GetCoaContent, into the active scenario. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the imported COA's poid (the poid of the coa object in the content); use it with SetCurrentCoa to work on the COA. Task-organization data is not part of COA content; load it with ImportTaskOrgContent.",
       "params": [
         {
           "name": "content",
-          "description": "COA content string (object_set([...])).",
+          "description": "COA content as STP object-set text (object_set([...])), as returned by GetCoaContent.",
           "schema": {
             "type": "string"
           }
@@ -670,17 +675,17 @@
         "name": "coaPoid",
         "schema": {
           "type": "string"
-        }
-      },
-      "x-engineDispatch": "none"
+        },
+        "description": "Poid of the imported COA."
+      }
     },
     {
       "name": "GetCoaContent",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Return the serialized content of a COA.",
+      "description": "Return a COA and its units, graphics and tasks as STP object-set text (object_set([...])), ready to be saved and later loaded back with ImportCoaContent. The text does NOT include task-organization units or relationships; save those separately with GetTaskOrgContent. Read-only: nothing changes and no event follows.",
       "params": [
         {
           "name": "poid",
-          "description": "COA unique id.",
+          "description": "Unique id of the COA to export.",
           "schema": {
             "type": "string"
           }
@@ -690,17 +695,17 @@
         "name": "content",
         "schema": {
           "type": "string"
-        }
-      },
-      "x-engineDispatch": "none"
+        },
+        "description": "The COA with its units, graphics and tasks as STP object-set text."
+      }
     },
     {
       "name": "SetCurrentCoa",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Select the current COA; subsequent edits and imports apply to this COA.",
+      "description": "Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false).",
       "params": [
         {
           "name": "poid",
-          "description": "COA unique id.",
+          "description": "Unique id of the COA to make current. Required; blank is refused.",
           "schema": {
             "type": "string"
           }
@@ -711,57 +716,53 @@
         "schema": {
           "type": "null"
         }
-      },
-      "x-engineDispatch": "none"
+      }
     },
     {
       "name": "AddCoa",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Add a COA to the scenario.",
+      "description": "Add a Course of Action (COA) - an alternative plan for one affiliation - to the active scenario. Use it to create a new, empty COA; its units, graphics and tasks are then drawn or spoken while it is current (see SetCurrentCoa), or come in with ImportCoaContent instead of this call. Fire and forget: there is no result. On success the engine emits CoaAdded with the COA's poid and definition; treat that event, not this call, as the confirmation.",
       "params": [
         {
           "name": "coa",
-          "description": "COA to add.",
+          "description": "COA definition to add (name, affiliation, creatorRole).",
           "schema": {
             "$ref": "#/components/schemas/StpCoa"
           }
         }
-      ],
-      "x-engineDispatch": "none"
+      ]
     },
     {
       "name": "UpdateCoa",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Update an existing COA.",
+      "description": "Change the definition of an existing COA (for example its name), identified by poid. Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state.",
       "params": [
         {
           "name": "poid",
-          "description": "COA unique id.",
+          "description": "Unique id of the COA to update.",
           "schema": {
             "type": "string"
           }
         },
         {
           "name": "coa",
-          "description": "Updated COA.",
+          "description": "New COA definition.",
           "schema": {
             "$ref": "#/components/schemas/StpCoa"
           }
         }
-      ],
-      "x-engineDispatch": "none"
+      ]
     },
     {
       "name": "DeleteCoa",
-      "description": "NOT DISPATCHED by the engine's WebSocketsBridge (verified 2026-09-05 on main, release/5.10 and release/5.11): the message deserialises with null params and is answered by a RequestResponse with success=false ('No handler'). Retained because the JS SDK still exposes it; pending an engine ruling. Delete a COA from the scenario.",
+      "description": "Delete a COA, identified by poid, from the active scenario. Fire and forget: there is no result. On success the engine emits CoaDeleted.",
       "params": [
         {
           "name": "poid",
-          "description": "COA unique id.",
+          "description": "Unique id of the COA to delete.",
           "schema": {
             "type": "string"
           }
         }
-      ],
-      "x-engineDispatch": "none"
+      ]
     },
     {
       "name": "SetRole",
@@ -1063,7 +1064,7 @@
     },
     {
       "name": "ImportCoaFromObjectSet",
-      "description": "Import a new COA from an in-memory object set (array of STP objects), using fresh unique IDs. Object-set equivalent of ImportCoaContent.",
+      "description": "Import a COA from an in-memory object set (array of STP objects). Poids are kept exactly as they are in the objects; no new ids are generated. Object-set equivalent of ImportCoaContent.",
       "params": [
         {
           "name": "objects",
@@ -1111,7 +1112,7 @@
     },
     {
       "name": "ImportTaskOrgFromObjectSet",
-      "description": "Import a Task Organization from an in-memory object set (array of STP objects), using fresh unique IDs. Object-set equivalent of ImportTaskOrgContent.",
+      "description": "Import a Task Organization from an in-memory object set (array of STP objects). Poids are kept exactly as they are in the objects; no new ids are generated. Object-set equivalent of ImportTaskOrgContent.",
       "params": [
         {
           "name": "objects",
@@ -3316,6 +3317,80 @@
           "description": "Location/geometry associated with the command.",
           "schema": {
             "$ref": "#/components/schemas/Location"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CoaAdded",
+      "description": "Emitted after a COA has been added (AddCoa).",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique identifier of the added COA.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "coa",
+          "description": "Added COA.",
+          "schema": {
+            "$ref": "#/components/schemas/StpCoa"
+          }
+        },
+        {
+          "name": "isUndo",
+          "description": "True if this event is the result of an undo operation.",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CoaModified",
+      "description": "Emitted after a COA's definition has been updated (UpdateCoa).",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique identifier of the modified COA.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "coa",
+          "description": "New COA state.",
+          "schema": {
+            "$ref": "#/components/schemas/StpCoa"
+          }
+        },
+        {
+          "name": "isUndo",
+          "description": "True if this event is the result of an undo operation.",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CoaDeleted",
+      "description": "Emitted after a COA has been deleted (DeleteCoa).",
+      "params": [
+        {
+          "name": "poid",
+          "description": "Unique identifier of the deleted COA.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "isUndo",
+          "description": "True if this event is the result of an undo operation.",
+          "schema": {
+            "type": "boolean"
           }
         }
       ]

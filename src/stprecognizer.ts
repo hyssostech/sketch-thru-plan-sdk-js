@@ -681,9 +681,10 @@ export class StpRecognizer{
 
   /**
    * Import a COA from typed objects
+   * Unique ids (poids) are kept exactly as they are in the objects
    * @param objects - Array of COA objects (StpCoa + symbols)
    * @param timeout - Optional timeout in seconds
-   * @returns New COA's unique id
+   * @returns Imported COA's unique id
    */
   async importCoaFromObjectSet(objects: StpType.StpItem[], timeout?: number): Promise<string> {
     return this.requestStp('ImportCoaFromObjectSet', {
@@ -813,8 +814,8 @@ export class StpRecognizer{
   //#region TO commands
   /**
    * Import TO into the scenario
-   * The TO is imported with a new unique Ids, i.e., the content is used as a template
-   * The individual task org units retain their original unique Ids
+   * Unique ids (poids) are kept exactly as they are in the content - the TO definition's as well as
+   * the individual task org units' - so the content is not used as a template
    * @param content - Content to load, formatted as object_set([[element1], [element2], ...]) 
    * @param timeout - Optional timeout in seconds
    * @returns TO's unique id
@@ -1032,10 +1033,13 @@ export class StpRecognizer{
 
   //#region COA commands
   /**
-   * Set TO to use when a particular COA is selected, or globally, when any COA (of the corresponding affiliation)
-   * is selected
+   * Set the TO used for COAs. Without `coaPoid` the TO becomes the default for its affiliation,
+   * exactly as {@link setDefaultTaskOrg} does.
+   * With `coaPoid` (tie the TO to one COA) the engine currently refuses the request with
+   * "per-COA task org is not supported yet", pending an operator ruling.
    * @param toPoid - Unique id of the TO to set
-   * @param coaPoid - Unique Id of the COA the TO should be associated with - global default if undefined
+   * @param coaPoid - Unique Id of the COA the TO should be associated with - currently refused;
+   *   omit it to set the default for the TO's affiliation
    * @param timeout - Optional timeout in seconds
    */
   async setCoaTaskOrg(toPoid: string, coaPoid?: string, timeout?: number): Promise<void> {
@@ -1046,24 +1050,35 @@ export class StpRecognizer{
   }
 
   /**
-   * Remove TO association from a particular COA
-   * @param affiliation - affiliation of the TO to reset as the default
-   * @param coaPoid - Unique Id of the COA in which the TO should be reset - global default if undefined
+   * Clear a TO selection - the TO itself is not deleted. Sends `ResetCoaTaskOrg`.
+   *
+   * `resetCoaTaskOrg({ affiliation: 'friend' })` unsets the default TO for that affiliation,
+   * exactly as {@link resetDefaultTaskOrg} does.
+   * With a `coaPoid` (clear the TO tied to one COA) the engine currently refuses the request with
+   * "per-COA task org is not supported yet", pending an operator ruling.
+   * @param target - `{ affiliation, coaPoid }`. `affiliation` is required when `coaPoid` is
+   *   omitted. A plain string is taken as `coaPoid`, the form this method has always declared.
    * @param timeout - Optional timeout in seconds
    */
-  async resetCoaTaskOrg(coaPoid?: string, timeout?: number): Promise<void> {
-    return this.requestStp('SetCoaTaskOrg', {
-      affiliation: arguments[0],
-      coaPoid: arguments[1],
-    }, timeout);
+  async resetCoaTaskOrg(
+    target?: string | { affiliation?: 'friend' | 'hostile'; coaPoid?: string },
+    timeout?: number
+  ): Promise<void> {
+    const params =
+      typeof target === 'object' && target !== null
+        ? { affiliation: target.affiliation, coaPoid: target.coaPoid }
+        : { coaPoid: target };
+    return this.requestStp('ResetCoaTaskOrg', params, timeout);
   }
+
   /**
-   * Import a new COA into the scenario
-   * The COA is imported with a new unique Ids, i.e., the content is used as a template
-   * That includes the Id of the COA definition as well as the individual symbols's
+   * Import a COA into the scenario, with its units, graphics and tasks.
+   * Unique ids (poids) are kept exactly as they are in the content - the COA definition's as well
+   * as the individual symbols' - so the content is not used as a template.
+   * Task org units and relationships are not part of COA content; see {@link importTaskOrgContent}.
    * @param content - Content to load, formatted as object_set([[element1], [element2], ...]) 
    * @param timeout - Optional timeout in seconds
-   * @returns New COA's unique id
+   * @returns Imported COA's unique id
    */
   async importCoaContent(toContent: string, timeout?: number): Promise<string> {
     return this.requestStp('ImportCoaContent', {
@@ -1072,7 +1087,8 @@ export class StpRecognizer{
   }
 
   /**
-   *Get a COA content as a multiline string ready to be persisted
+   * Get a COA, with its units, graphics and tasks, as a multiline string ready to be persisted.
+   * Task org units and relationships are not included; see {@link getTaskOrgContent}.
    * @param poid -COA's unique id
    * @param timeout - Optional timeout in seconds
    */
@@ -1083,7 +1099,9 @@ export class StpRecognizer{
   }
 
   /**
-   * Select the current COA - edits and data imports are made into this COA henceforth
+   * Select the current COA - edits and data imports are made into this COA henceforth.
+   * Resolves at once if the COA is already current; otherwise `onCoaSwitched` follows.
+   * A missing or blank poid is refused
    * @param poid - COA's unique id
    * @param timeout - Optional timeout in seconds
    */
@@ -1094,7 +1112,7 @@ export class StpRecognizer{
   }
 
   /**
-   * Add a new COA to the scenario
+   * Add a new COA to the scenario. The engine confirms with `onCoaAdded`
    * @param coa - COA to add 
    */
   addCoa(coa: StpType.StpCoa) {
@@ -1104,7 +1122,7 @@ export class StpRecognizer{
   }
 
   /**
-   * Update COA definition
+   * Update COA definition. The engine confirms with `onCoaModified`
    * @param poid 
    * @param coa - updated COA
    */
@@ -1116,7 +1134,7 @@ export class StpRecognizer{
   }
 
   /**
-   * Delete COA from scenario
+   * Delete COA from scenario. The engine confirms with `onCoaDeleted`
    * @param poid 
    */
   deleteCoa(poid: string) {

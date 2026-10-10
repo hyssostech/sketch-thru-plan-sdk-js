@@ -318,11 +318,11 @@ describe('StpRecognizer command wrappers', () => {
     expect(msg.method).toBe('SetCoaTaskOrg');
     expect(msg.params).toEqual({ toPoid: 'TO1', coaPoid: 'C1' });
 
-    // resetCoaTaskOrg (current implementation sends affiliation=coaPoid and omits undefined coaPoid)
-    await recognizer.resetCoaTaskOrg('C1');
+    // resetCoaTaskOrg - its own method, not SetCoaTaskOrg (STP-1058)
+    await recognizer.resetCoaTaskOrg({ affiliation: 'friend' });
     msg = JSON.parse(connector.lastRequestMessage!);
-    expect(msg.method).toBe('SetCoaTaskOrg');
-    expect(msg.params).toEqual({ affiliation: 'C1' });
+    expect(msg.method).toBe('ResetCoaTaskOrg');
+    expect(msg.params).toEqual({ affiliation: 'friend' });
 
     // importCoaContent
     connector.response = 'COA-NEW';
@@ -351,6 +351,56 @@ describe('StpRecognizer command wrappers', () => {
     const imsg = JSON.parse(connector.lastInformMessage!);
     expect(imsg.method).toBe('DeleteCoa');
     expect(imsg.params).toEqual({ poid: 'C1' });
+  });
+
+  // STP-1058. resetCoaTaskOrg used to send SetCoaTaskOrg, with the COA poid as
+  // `affiliation` and the timeout as `coaPoid`. The contract's ResetCoaTaskOrg
+  // takes { affiliation?, coaPoid? }; pin the method name and the exact wire params
+  // of every accepted form.
+  it('resetCoaTaskOrg sends ResetCoaTaskOrg with { affiliation, coaPoid }', async () => {
+    const connector = new SpyConnector();
+    const recognizer = new StpRecognizer(connector);
+    await recognizer.connect('Svc', 1);
+    const sent = () => JSON.parse(connector.lastRequestMessage!);
+
+    // Default TO for an affiliation - the only form the engine accepts today
+    await recognizer.resetCoaTaskOrg({ affiliation: 'hostile' });
+    expect(sent()).toMatchObject({ method: 'ResetCoaTaskOrg', params: { affiliation: 'hostile' } });
+    expect(Object.keys(sent().params)).toEqual(['affiliation']);
+
+    // Per-COA reset, object form (the engine refuses it for now, but the wire is right)
+    await recognizer.resetCoaTaskOrg({ affiliation: 'friend', coaPoid: 'C1' });
+    expect(sent()).toMatchObject({
+      method: 'ResetCoaTaskOrg',
+      params: { affiliation: 'friend', coaPoid: 'C1' },
+    });
+
+    // The declared legacy form: a string is the COA poid, never the affiliation,
+    // and the timeout stays a timeout instead of travelling as coaPoid
+    await recognizer.resetCoaTaskOrg('C1', 5);
+    expect(sent().method).toBe('ResetCoaTaskOrg');
+    expect(sent().params).toEqual({ coaPoid: 'C1' });
+
+    // No argument: nothing invented - the engine answers with the reason
+    await recognizer.resetCoaTaskOrg();
+    expect(sent().method).toBe('ResetCoaTaskOrg');
+    expect(sent().params).toEqual({});
+  });
+
+  it('resetCoaTaskOrg passes the timeout to the connector', async () => {
+    const connector = new SpyConnector();
+    let seenTimeout: number | undefined;
+    connector.request = async (message: string, timeout?: number) => {
+      connector.lastRequestMessage = message;
+      seenTimeout = timeout;
+      return null;
+    };
+    const recognizer = new StpRecognizer(connector);
+    await recognizer.connect('Svc', 1);
+
+    await recognizer.resetCoaTaskOrg({ affiliation: 'friend' }, 7);
+    expect(seenTimeout).toBe(7);
+    expect(JSON.parse(connector.lastRequestMessage!).params).toEqual({ affiliation: 'friend' });
   });
 
   it('private promiseWithTimeout rejects when timeout expires first', async () => {

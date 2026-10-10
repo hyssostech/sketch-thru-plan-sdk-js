@@ -35,6 +35,19 @@
   release so older servers and saved data still compare
 - OpenRPC contract: `TaskROE` values and the task enum descriptions corrected to the
   wire spelling
+- Fixed `resetCoaTaskOrg` sending `SetCoaTaskOrg`, with the COA poid as `affiliation`
+  and the timeout as `coaPoid`; it now sends `ResetCoaTaskOrg`. It also accepts
+  `{ affiliation, coaPoid }`, so `resetCoaTaskOrg({ affiliation: 'friend' })` resets the
+  default task org for an affiliation; a plain string is still taken as the COA poid
+- Documented the COA methods as the engine now dispatches them (STP-1058): per-COA task
+  orgs (`coaPoid` on `setCoaTaskOrg` / `resetCoaTaskOrg`) are refused for now, and
+  `importCoaContent`, `importTaskOrgContent` and their object-set forms keep the poids
+  in the content rather than generating new ones
+- OpenRPC contract raised to 0.6.0: the eight COA methods (`AddCoa`, `UpdateCoa`,
+  `DeleteCoa`, `SetCurrentCoa`, `GetCoaContent`, `ImportCoaContent`, `SetCoaTaskOrg`,
+  `ResetCoaTaskOrg`) lose `x-engineDispatch: none` and are described as dispatched;
+  `ResetCoaTaskOrg` gains `affiliation`; `CoaAdded`, `CoaModified` and `CoaDeleted` added
+  to `x-stpEvents`; the "fresh unique IDs" claim on the four import methods corrected
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
