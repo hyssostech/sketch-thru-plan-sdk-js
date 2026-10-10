@@ -191,7 +191,11 @@ The contract uses four `x-`prefixed extensions beyond the base OpenRPC spec:
   params and is answered with a `RequestResponse` event carrying `success: false`
   ("No handler"). See the rule enforced by the STP repo's
   `tools/check-openrpc-surface.sh`, which fails a build if a contract method is
-  missing from the engine's dispatch switch and not marked this way.
+  missing from the engine's dispatch switch and not marked this way. No method
+  carries it as of contract 0.5.0: the eight COA methods (`AddCoa`, `UpdateCoa`,
+  `DeleteCoa`, `SetCurrentCoa`, `GetCoaContent`, `ImportCoaContent`,
+  `SetCoaTaskOrg`, `ResetCoaTaskOrg`) that carried it until 0.4.0 are now
+  dispatched (STP-1058).
 * `"x-layer": "transport"` - marks a message that belongs to the wire protocol
   rather than to the application surface. Three carry it: the `Register` and
   `Request` methods and the `RequestResponse` event. Every SDK builds and consumes
