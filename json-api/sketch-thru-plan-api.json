@@ -2,12 +2,12 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.0"
+    "version": "0.9.1"
   },
   "methods": [
     {
       "name": "SendPenDown",
-      "description": "Notify STP that the user began a sketch gesture (pen down) at a map coordinate.",
+      "description": "Tell STP that the user has started a sketch stroke (pen or mouse down) at a map coordinate. Send it once at the start of each stroke, then send the whole stroke with SendInk when the pen lifts. Fire and forget: the engine sends no reply and no event. A missing location or a malformed timestamp is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -66,7 +66,7 @@
     },
     {
       "name": "SendInk",
-      "description": "Send a sketched gesture (stroke) to STP, including the window bounds, map extents, stroke points and intersection context.",
+      "description": "Send one sketched stroke for recognition, when the pen lifts (after SendPenDown). Use it to turn what a user draws, alone or with speech sent at about the same time (SendSpeechRecognition or SendSimulatedSpeechRecognition), into symbols, tasks, edits or commands; to place a fully specified symbol without recognition, use AddSymbol instead. List in intersectedPoids the symbols the stroke crosses, so the gesture can move, edit or delete them. Recognition starts when the segmentation timeout expires (see ChangeTimeOut) or on RecognizeNow. Fire and forget: the engine sends no reply; the outcome arrives only as the events listed - InkProcessed when the sketch is finished, then SymbolAdded, TaskAdded and so on if it was recognized, or nothing more if it was not. A missing strokePoints or a malformed time is silently ignored. Known issue STP-1080: a discarded sketch may not send InkProcessed.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -441,7 +441,7 @@
     },
     {
       "name": "SendSpeechRecognition",
-      "description": "Send transcribed speech recognition results to STP (or typed phrases).",
+      "description": "Send a speech recognizer's hypotheses for one utterance (an n-best list of text with confidence). STP fuses speech with ink sent at about the same time (SendInk) to create or edit symbols and tasks; speech alone can also do that, or be a command. For typed text use SendSimulatedSpeechRecognition, which converts numbers and letters to spoken form. Fire and forget: the engine sends no reply. SpeechParsed (to the caller) follows with the hypotheses that matched the grammar, SpeechRecognized carries the single phrase that integrated, and any symbol or task arrives as the events listed. An empty or missing recoList, or a malformed time, is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -764,7 +764,7 @@
     },
     {
       "name": "SendSimulatedSpeechRecognition",
-      "description": "Send typed text to STP that will be treated as simulated speech recognition. Numbers and letters are converted server-side to speech-like transcriptions (e.g. 'A 3 1' becomes 'alpha three one').",
+      "description": "Send typed text as if a speech recognizer had heard it - the simplest way for a program to 'say' a phrase such as 'infantry platoon', with a SendInk stroke or on its own. Numbers and letters are converted server-side to spoken form (e.g. 'A 3 1' becomes 'alpha three one'); startTime defaults to now and the utterance is taken to last 0.5 s. Fire and forget: the engine sends no reply. SpeechParsed (to the caller) always follows, SpeechRecognized carries the phrase that integrated, and a recognized symbol or task arrives as SymbolAdded / TaskAdded. Text the grammar does not match gives SpeechParsed with no alternates and nothing else; missing text is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -1057,7 +1057,7 @@
     },
     {
       "name": "CreateNewScenario",
-      "description": "Create and load a new scenario, replacing any previous content. Other clients of the session receive NewScenario; the caller does not.",
+      "description": "Start a new, empty scenario: discards everything the session holds (symbols, tasks, task orgs, COAs, the current COA and the default task orgs) and creates a planning scenario called name (default 'STP_' plus the creation time). Use it to plan from scratch; use LoadNewScenario to start from saved content. Returns the new scenario's poid. Other clients of the session receive NewScenario; the caller does not. Destructive: nothing of the previous scenario survives.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -1127,7 +1127,7 @@
     },
     {
       "name": "LoadNewScenario",
-      "description": "Load a scenario from a serialized content string (object_set([...])). Replaces previous content. Other clients of the session receive NewScenario; the caller does not.",
+      "description": "Replace the whole scenario with saved object_set([...]) text, typically from GetScenarioContent. Everything the session held is discarded first (as CreateNewScenario), then every object in the content is added with its poid unchanged; the content's first planning_scenario is kept, or one is created if it has none. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Other clients of the session receive NewScenario; the caller does not; every client then receives the per-object events listed. A blank or missing content does nothing at all (no reset); malformed content is refused with the parse error and nothing changes. To add content without discarding the scenario, use ImportPlanData or SyncScenarioSession.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -1382,7 +1382,7 @@
     },
     {
       "name": "ImportPlanData",
-      "description": "Import additional content into the current scenario (object_set([...])). An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
+      "description": "Merge object_set([...]) content into the current scenario without discarding it. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Replaced objects arrive as *Added events, never *Modified. Answers null; malformed or missing content is refused with the parse error. Needs an active scenario: with none the objects are still added, but HasActiveScenario stays false. To replace the scenario instead, use LoadNewScenario.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -1624,7 +1624,7 @@
     },
     {
       "name": "GetScenarioContent",
-      "description": "Return the current scenario as a serialized string (object_set([...])) suitable for persistence.",
+      "description": "Return the whole current scenario as object_set([...]) text - the form to save a plan and later restore it with LoadNewScenario (replace) or ImportPlanData / SyncScenarioSession (merge). It holds the planning scenario, COAs, symbols, tasks and task orgs, plus deleted objects carrying the deletion version; session state such as viewports and ink is left out. Far smaller than the JSON forms (GetScenarioObjectSet, GetAllObjects), whose objects each carry a large engine term. Read-only; no event follows. A session with nothing loaded returns an empty object_set([]).",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -1655,7 +1655,7 @@
     },
     {
       "name": "JoinScenarioSession",
-      "description": "Replay the current scenario to this client only, as if its objects had just arrived live (SymbolAdded, TaskAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, CoaAdded; deleted objects skipped), so a client can rebuild its local state. Task orgs themselves are not replayed (no TaskOrgAdded): list them with GetScenarioTaskOrgList. Changes nothing on the server.",
+      "description": "Replay the current scenario to this client only, as if its objects had just arrived live (SymbolAdded, TaskAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, CoaAdded; deleted objects skipped), so a client can rebuild its local state. Task orgs themselves are not replayed (no TaskOrgAdded): list them with GetScenarioTaskOrgList. Changes nothing on the server. Call it after connecting to a session whose scenario already exists; to also merge content of your own, use SyncScenarioSession. Answers null; with no scenario it still succeeds.",
       "x-stpSafety": "read",
       "x-stpEmits": [
         {
@@ -1734,7 +1734,7 @@
     },
     {
       "name": "SyncScenarioSession",
-      "description": "Merge a scenario into the active session and update the session state with the differences. Takes object-set text (object_set([...])); a blank string does nothing. It first joins the session (as JoinScenarioSession), then drops infrastructure objects (planning_scenario, system_state, edit, viewport, ink, parse_info, gesture, speech) from the content and imports the rest. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. It does NOT discard the current contents first - use LoadNewScenario for that. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
+      "description": "Merge a scenario into the active session and update the session state with the differences. Takes object-set text (object_set([...])); a blank string does nothing. It first joins the session (as JoinScenarioSession), then drops infrastructure objects (planning_scenario, system_state, edit, viewport, ink, parse_info, gesture, speech) from the content and imports the rest. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. It does NOT discard the current contents first - use LoadNewScenario for that. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null; malformed content is refused with the parse error. Use JoinScenarioSession when there is nothing to merge.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -1993,7 +1993,7 @@
     },
     {
       "name": "HasActiveScenario",
-      "description": "Check whether STP currently has a loaded scenario.",
+      "description": "Return true when the session holds a planning scenario (created or loaded by any client of the session), false otherwise. Check it after connecting to choose between joining the existing scenario (JoinScenarioSession) and creating or loading one (CreateNewScenario, LoadNewScenario). Writes made with no scenario are not refused - the objects are created but this stays false - so check before adding content. It is also false after ResetStpScenario. Read-only.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -2024,7 +2024,7 @@
     },
     {
       "name": "AddSymbol",
-      "description": "Request addition of a symbol. STP will respond with a SymbolAdded event.",
+      "description": "Create one symbol (a unit, tactical graphic or other 2525/APP-6 object) directly from a full definition, with no sketch or speech recognition - use it when the program already knows the symbol's sidc and location; to recognize what a user draws and says, use SendInk with speech instead. The engine assigns the poid and fills in the descriptions from the sidc. Fire and forget: the engine sends no reply; the result arrives as SymbolAdded (to every client, with the new poid), after an InkProcessed to the caller. A symbol without a valid sidc and location produces only InkProcessed and no symbol; a missing symbol is silently ignored. Needs an active scenario: with none the symbol is still created, but HasActiveScenario stays false.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -2262,7 +2262,7 @@
     },
     {
       "name": "UpdateSymbol",
-      "description": "Request update of a symbol. STP will respond with a SymbolModified event.",
+      "description": "Change an existing symbol, identified by poid (from SymbolAdded or GetPoidObject) - for example move it or edit its designators or extensions - sending the new symbol properties. Fire and forget: the engine sends no reply; the result arrives as SymbolModified to every client (SymbolDeleted instead if the poid names a deleted symbol). An unknown poid or a missing symbol is silently ignored - nothing comes back - so verify with GetPoidObject when it matters.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -2440,7 +2440,7 @@
     },
     {
       "name": "DeleteSymbol",
-      "description": "Request deletion of a symbol. STP will respond with a SymbolDeleted event.",
+      "description": "Delete a symbol, identified by poid (from SymbolAdded or GetPoidObject). The symbol is kept as a tombstone, listed by GetDeletedObjects. Fire and forget: the engine sends no reply; SymbolDeleted goes to every client. An unknown, missing or already deleted poid is silently ignored - no event and no error - so when no SymbolDeleted arrives, check with GetPoidObject. Tasks, task orgs and COAs have their own Delete methods.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -2509,7 +2509,7 @@
     },
     {
       "name": "ChooseAlternate",
-      "description": "Pick an alternate recognition for a symbol/task.",
+      "description": "Select another recognition hypothesis for a symbol or task: nBestIndex is the zero-based position in the alternates array of its SymbolAdded or TaskAdded event. For a task the caller created, choosing an alternate also confirms it (TaskModified, plus SymbolAdded for any tactical graphics the chosen task needs). Fire and forget: the engine sends no reply. An unknown poid or out-of-range index is silently ignored, and choosing a symbol alternate produced no event on a live engine, so verify the choice with GetPoidObject. To confirm a task's current interpretation, use ConfirmTask.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -2577,7 +2577,7 @@
     },
     {
       "name": "ImportTaskOrgContent",
-      "description": "Import a Task Organization (TO) from serialized content. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the poid of the task_org object in the content. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
+      "description": "Load a Task Organization (ORBAT) - the task_org with its units and relationships - from object_set([...]) text, typically saved with GetTaskOrgContent. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Returns the poid of the task_org object in the content (null for blank content, which imports nothing, or content without one). Importing does not select the TO: follow with SetCoaTaskOrg using that poid. Malformed content is refused with the parse error.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -2782,7 +2782,7 @@
     },
     {
       "name": "GetTaskOrgContent",
-      "description": "Return the serialized content of a Task Organization.",
+      "description": "Return one Task Organization - the task_org object with its units and relationships - as object_set([...]) text, ready to save and load back with ImportTaskOrgContent. Get the poid from GetScenarioTaskOrgList or a TaskOrgAdded event. Read-only; no event follows. An unknown poid returns an empty object_set([]); a missing poid returns the whole scenario instead of an error, so always send one.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
@@ -2836,7 +2836,7 @@
     },
     {
       "name": "SetDefaultTaskOrg",
-      "description": "Set a TO as the default for its affiliation (used when a COA is selected).",
+      "description": "Make a Task Organization the default for its own affiliation: a hostile TO becomes the hostile default, a TO of any other affiliation the friend default. The engine derives each client's current task org from these defaults; TaskOrgSwitched reports a change to the caller's. The same as SetCoaTaskOrg without coaPoid, which is preferred because it refuses a missing poid. Get the poid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Answers null. Known issue STP-1091: an unknown or missing poid also answers success and changes nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -2917,7 +2917,7 @@
     },
     {
       "name": "ResetDefaultTaskOrg",
-      "description": "Unset the default TO for an affiliation.",
+      "description": "Clear the default Task Organization for an affiliation, so that affiliation has no default; the TO itself is not deleted. affiliation hostile clears the hostile default; any other value, including a missing or unknown one, clears the friend default (Known issue STP-1091: the value is not checked). The same as ResetCoaTaskOrg without coaPoid, which is preferred because it refuses a missing affiliation. Answers null; TaskOrgSwitched reports a change to the caller's current task org. In a session with no scenario the call does not answer until its request times out ('The operation was canceled.').",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -2989,7 +2989,7 @@
     },
     {
       "name": "AddTaskOrg",
-      "description": "Add a Task Organization (ORBAT) definition.",
+      "description": "Create a Task Organization (ORBAT) with a name and affiliation - an empty container that units (AddTaskOrgUnit) and relationships (AddTaskOrgRelationship) are then added to; to load a complete ORBAT at once, use ImportTaskOrgContent. Fire and forget: the engine sends no reply; the new poid arrives in TaskOrgAdded (to every client) - use it as parentTO for its units and with SetCoaTaskOrg to make it the default. A missing taskOrg is silently ignored; the affiliation value is not checked.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3068,7 +3068,7 @@
     },
     {
       "name": "UpdateTaskOrg",
-      "description": "Update an existing TO definition.",
+      "description": "Change a Task Organization's own definition (its name or affiliation), identified by poid (from TaskOrgAdded or GetScenarioTaskOrgList); units and relationships have their own Update methods. Fire and forget: the engine sends no reply; TaskOrgModified goes to every client (TaskOrgDeleted instead if the poid names a deleted TO). An unknown poid or a missing taskOrg is silently ignored. Known issue STP-1091: the poid is not checked to be a TO - a symbol's poid is accepted and turns that object into a task org - so pass only TO poids.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3167,7 +3167,7 @@
     },
     {
       "name": "DeleteTaskOrg",
-      "description": "Delete a Task Organization.",
+      "description": "Delete a Task Organization, identified by poid (from TaskOrgAdded or GetScenarioTaskOrgList). Fire and forget: the engine sends no reply; TaskOrgDeleted goes to every client, and TaskOrgSwitched to the caller when it was the caller's current TO. An unknown poid is silently ignored - no event and no error.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3228,7 +3228,7 @@
     },
     {
       "name": "AddTaskOrgUnit",
-      "description": "Add a Task Org Unit (e.g., a military unit within the ORBAT).",
+      "description": "Add a unit to a Task Organization (ORBAT): send it as toUnit with parentTO set to the TO's poid (from TaskOrgAdded or GetScenarioTaskOrgList) and its definition (for example sidc, name, echelon and affiliation). A TO unit is an ORBAT entry, not a symbol on the map. Fire and forget: the engine sends no reply; the new poid arrives in TaskOrgUnitAdded (to every client) - use it as parent or child in AddTaskOrgRelationship. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit. Known issue STP-1091: an unknown parentTO is accepted, leaving an orphan unit.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3239,7 +3239,6 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1088",
         "STP-1091"
       ],
       "params": [
@@ -3335,7 +3334,7 @@
     },
     {
       "name": "UpdateTaskOrgUnit",
-      "description": "Update a Task Org Unit.",
+      "description": "Change a Task Organization unit, identified by poid (from TaskOrgUnitAdded or GetTaskOrgContent), sending the new definition as toUnit. Fire and forget: the engine sends no reply; TaskOrgUnitModified goes to every client (TaskOrgUnitDeleted instead if the poid names a deleted unit). An unknown poid is silently ignored. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3350,9 +3349,6 @@
           "condition": "the poid names a deleted task org unit: TaskOrgUnitDeleted instead of TaskOrgUnitModified",
           "to": "session"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1088"
       ],
       "params": [
         {
@@ -3458,7 +3454,7 @@
     },
     {
       "name": "DeleteTaskOrgUnit",
-      "description": "Delete a Task Org Unit.",
+      "description": "Delete a unit from a Task Organization, identified by poid (from TaskOrgUnitAdded or GetTaskOrgContent). The unit is kept as a tombstone, listed by GetDeletedObjects. Fire and forget: the engine sends no reply; TaskOrgUnitDeleted goes to every client. An unknown poid is silently ignored - no event and no error.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3513,7 +3509,7 @@
     },
     {
       "name": "AddTaskOrgRelationship",
-      "description": "Add a relationship between TO units (e.g., command/attached).",
+      "description": "Link two units of a Task Organization (for example organic, attached or opcon): send toRelationship with parent and child set to TO unit poids (from TaskOrgUnitAdded), the relationship kind, and parentTO set to the TO's poid. Fire and forget: the engine sends no reply. Engines before STP-1088 read the object only as taskOrgRelationship, and its TO as parentPoid, and silently drop toRelationship. Known issue STP-1080/STP-1089: even when the relationship is stored, no TaskOrgRelationshipAdded is sent - verify with GetTaskOrgContent for the TO.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3525,7 +3521,6 @@
       ],
       "x-stpKnownIssues": [
         "STP-1080",
-        "STP-1088",
         "STP-1089"
       ],
       "params": [
@@ -3575,7 +3570,7 @@
     },
     {
       "name": "UpdateTaskOrgRelationship",
-      "description": "Update a relationship between TO units.",
+      "description": "Change a relationship between two Task Organization units (for example from organic to attached), identified by poid (from GetTaskOrgContent), sending the new definition as toRelationship. Fire and forget: the engine sends no reply. An unknown poid is silently ignored. Engines before STP-1088 read the object only as taskOrgRelationship and silently drop toRelationship. Known issue STP-1080/STP-1089: no TaskOrgRelationshipModified is sent - verify with GetTaskOrgContent.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3587,7 +3582,6 @@
       ],
       "x-stpKnownIssues": [
         "STP-1080",
-        "STP-1088",
         "STP-1089"
       ],
       "params": [
@@ -3646,7 +3640,7 @@
     },
     {
       "name": "DeleteTaskOrgRelationship",
-      "description": "Delete a relationship between TO units.",
+      "description": "Delete a relationship between two Task Organization units, identified by poid (from GetTaskOrgContent, or TaskOrgRelationshipAdded after an import). Fire and forget: the engine sends no reply. An unknown poid is silently ignored. Known issue STP-1080/STP-1089: the deletion is applied - the relationship then appears in GetDeletedObjects - but no TaskOrgRelationshipDeleted is sent.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3696,7 +3690,7 @@
     },
     {
       "name": "AddTask",
-      "description": "Request addition of a task. STP will respond with TaskAdded.",
+      "description": "Create a task directly - who does what, how and why, with which tactical graphics (tgs) - without sketch or speech recognition, which can also produce tasks (SendInk with speech, or automatic tasking). Set who to the executing unit's poid (from SymbolAdded) and what, how, why and roe to members of the TaskWhat, TaskHow, TaskWhy and TaskROE enums. Fire and forget: the engine sends no reply; the new poid arrives in TaskAdded (to every client), followed at once by a TaskModified for the same task. A value that is not an engine enum member, or a missing task, makes the engine drop the call silently. Known issue STP-1091: an unknown who poid is accepted.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3895,7 +3889,7 @@
     },
     {
       "name": "UpdateTask",
-      "description": "Request update of a task (usually one of the alternates). STP will respond with TaskModified.",
+      "description": "Change a task, identified by poid (from TaskAdded): send as alternates the task's alternates array from its latest TaskAdded or TaskModified, with the entries you changed (usually the first). Fire and forget: the engine sends no reply; TaskModified goes to every client. A missing alternates is silently ignored. Known issue STP-1080: today's engine may send no TaskModified - verify with GetPoidObject. Known issue STP-1091: an unknown poid is not refused; the engine stores a new task under it.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3998,7 +3992,7 @@
     },
     {
       "name": "DeleteTask",
-      "description": "Request deletion of a task. STP will respond with TaskDeleted.",
+      "description": "Delete a task, identified by poid (from TaskAdded). The task is kept as a tombstone, listed by GetDeletedObjects. Fire and forget: the engine sends no reply; TaskDeleted goes to every client. An unknown poid is silently ignored - no event and no error.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -4053,7 +4047,7 @@
     },
     {
       "name": "ConfirmTask",
-      "description": "Confirm or unconfirm a task alternate, transitioning UI status between 'confirming' and 'confirmed'.",
+      "description": "Confirm a task interpretation, identified by poid (from TaskAdded): nBestIndex 0 confirms the task's current interpretation; a higher index first switches to that alternate (as ChooseAlternate) and confirms it. A C2SIM Order export (GetC2SIMContent) needs confirmed tasks. Fire and forget: the engine sends no reply; TaskModified goes to every client (for an index above 0 only when the caller created the task), plus SymbolAdded for any tactical graphics the confirmed task needs. isConfirmed is ignored over this API: every call confirms, so it cannot unconfirm. An unknown poid or out-of-range index is silently ignored. Known issue STP-1080 affects task confirmation.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -4212,7 +4206,7 @@
     },
     {
       "name": "SetCoaTaskOrg",
-      "description": "Choose the Task Organization (TO) used for COAs. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
+      "description": "Choose the Task Organization (TO) used for COAs; take toPoid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid, except that a missing toPoid is refused. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing. Known issue STP-1091: today's engine does not check toPoid - an unknown one answers success and changes nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -4307,7 +4301,7 @@
     },
     {
       "name": "ResetCoaTaskOrg",
-      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg. With coaPoid: removes the TO tied to that COA for affiliation, or for every affiliation when affiliation is omitted, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. An unknown coaPoid is refused (success=false with the reason). Answers null on success. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
+      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg (hostile clears the hostile default, any other value the friend default). With coaPoid: removes the TO tied to that COA for affiliation, or for every affiliation when affiliation is omitted, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. An unknown coaPoid is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -4387,7 +4381,7 @@
     },
     {
       "name": "ImportCoaContent",
-      "description": "Load a COA and its units, graphics and tasks from STP object-set text, typically produced by GetCoaContent, into the active scenario. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the imported COA's poid (the poid of the coa object in the content); use it with SetCurrentCoa to work on the COA. Task-organization data is not part of COA content; load it with ImportTaskOrgContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
+      "description": "Load a COA and its units, graphics and tasks from STP object-set text, typically produced by GetCoaContent, into the active scenario. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the imported COA's poid (the poid of the coa object in the content); use it with SetCurrentCoa to work on the COA. Task-organization data is not part of COA content; load it with ImportTaskOrgContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Answers null for content without a coa object, and for blank content, which imports nothing. Malformed content is refused with the parse error.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -4517,7 +4511,7 @@
     },
     {
       "name": "GetCoaContent",
-      "description": "Return a COA and its units, graphics and tasks as STP object-set text (object_set([...])), ready to be saved and later loaded back with ImportCoaContent. The text does NOT include task-organization units or relationships; save those separately with GetTaskOrgContent. Read-only: nothing changes and no event follows.",
+      "description": "Return a COA and its units, graphics and tasks as STP object-set text (object_set([...])), ready to be saved and later loaded back with ImportCoaContent. The text does NOT include task-organization units or relationships; save those separately with GetTaskOrgContent. Read-only: nothing changes and no event follows. Get the poid from CoaAdded or the ImportCoaContent result. An unknown poid returns an empty object_set([]); a missing poid returns the whole scenario instead of an error, so always send one.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
@@ -4572,7 +4566,7 @@
     },
     {
       "name": "SetCurrentCoa",
-      "description": "Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false).",
+      "description": "Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Get the poid from CoaAdded or the ImportCoaContent result. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false). An unknown poid, or a session with no scenario, is refused after about 10 s ('the engine did not confirm within 10 s').",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -4674,7 +4668,7 @@
     },
     {
       "name": "AddCoa",
-      "description": "Add a Course of Action (COA) - an alternative plan for one affiliation - to the active scenario. Use it to create a new, empty COA; its units, graphics and tasks are then drawn or spoken while it is current (see SetCurrentCoa), or come in with ImportCoaContent instead of this call. Fire and forget: there is no result. On success the engine emits CoaAdded with the COA's poid and definition; treat that event, not this call, as the confirmation.",
+      "description": "Add a Course of Action (COA) - an alternative plan for one affiliation - to the active scenario. Use it to create a new, empty COA; its units, graphics and tasks are then drawn or spoken while it is current (see SetCurrentCoa), or come in with ImportCoaContent instead of this call. Fire and forget: there is no result. On success the engine emits CoaAdded with the COA's poid and definition; treat that event, not this call, as the confirmation. A missing coa is refused with an StpMessage; a coa that is not an object is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -4762,7 +4756,7 @@
     },
     {
       "name": "UpdateCoa",
-      "description": "Change the definition of an existing COA (for example its name), identified by poid. Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state.",
+      "description": "Change the definition of an existing COA (for example its name), identified by poid (from CoaAdded). Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state. A missing poid or coa is refused with an StpMessage; an unknown poid is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -4862,7 +4856,7 @@
     },
     {
       "name": "DeleteCoa",
-      "description": "Delete a COA, identified by poid, from the active scenario. Fire and forget: there is no result. On success the engine emits CoaDeleted.",
+      "description": "Delete a COA, identified by poid (from CoaAdded or the ImportCoaContent result), from the active scenario. Fire and forget: there is no result. On success the engine emits CoaDeleted to every client. The engine waits up to 10 s to confirm the delete: an unknown poid is refused after that wait with an StpMessage ('the engine did not confirm within 10 s'), and a missing poid at once.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -4929,7 +4923,7 @@
     },
     {
       "name": "SetRole",
-      "description": "Switch the role associated with the current COA (e.g., S2, S3, S4, FSO, ENG). If no COA exists for the role and createIfNone is true, a default COA may be created.",
+      "description": "Switch this client's role: S2, S3, S4, FSO or ENG, or 'none' to clear it (as ResetRole does). S2 works on the hostile side and the other roles on the friendly side; the client's current COA and task org may change with the role (CoaSwitched, TaskOrgSwitched). Answers null once the engine confirms with RoleSwitched (role in lower case); a switch to the role the client already has answers at once with no event, and one not confirmed within 10 s is refused. createIfNone is ignored over this API: no COA is created. A missing role is refused. Known issue STP-1091: an unknown role value is accepted.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -5024,7 +5018,7 @@
     },
     {
       "name": "ConvertC2SIMContent",
-      "description": "Convert C2SIM content (e.g. between BML/IBML formats) to STP's native object-set representation. The conversion happens entirely inside the engine's own SDK layer and never reaches the C2SIM bridge agent. Returns the converted objects as the multiline string ObjectSet.ToMultilineString() produces: \"object_set([\" followed by one STP object per line and a closing \"])\". Three things are worth knowing before you rely on the result. SYMBOLS ONLY: units and tactical graphics are extracted, but tasks are not created. This is a long-standing, deliberate limitation - STP tasks carry more detail than C2SIM captures, and the missing information cannot be filled in from an Order document. NOT IDEMPOTENT: the conversion mints a task org to hold the converted symbols (one per affiliation present, named \"Friendly TO\" and \"Hostile TO\") with a freshly generated identifier on every call, so converting the same document twice yields two different task orgs. NO PARENT COA: converted symbols are parented to that minted task org, but a purely local conversion mints no course of action, so nothing carries a parent COA - a caller that needs COA-parented objects, to load them into a scenario say, must mint the COAs and parent the objects itself. Input must be well-formed XML: a well-formed document with nothing convertible yields an empty \"object_set([])\" shell, but malformed content fails the call rather than returning an empty result.",
+      "description": "Convert a C2SIM XML document (for example an Initialization from PullC2SIMInitialization) into STP object_set([...]) text. The conversion is local to the engine: nothing is loaded into the scenario and no C2SIM server is contacted, so options is ignored. Know three things before relying on the result. SYMBOLS ONLY: units and tactical graphics are converted, tasks are not - STP tasks carry more detail than C2SIM captures. NOT IDEMPOTENT: every call mints task orgs to hold the symbols (one per affiliation present, named 'Friendly TO' and 'Hostile TO') with fresh poids, so converting the same document twice yields two different task orgs. NO PARENT COA: no COA is minted and no object carries a parent COA; a caller that needs COA-parented objects, to load them into a scenario say, must mint the COAs and parent the objects itself. Well-formed XML with nothing convertible returns an empty object_set([]); malformed XML or missing content is refused.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
@@ -5091,7 +5085,7 @@
     },
     {
       "name": "GetC2SIMContent",
-      "description": "Return content for the scenario (or specified COAs) rendered in a C2SIM format (e.g. BML/IBML), selected by data type and affiliation.",
+      "description": "Export the current scenario, or the COAs listed in coaPoids, as a C2SIM XML document. dataType must be Initialization (units, tactical graphics and task org items) or Order (confirmed tasks); a missing, unknown or All value is refused. affiliation scopes the export to one side. options apply to this call only, and an unknown key is refused. Read-only: nothing changes in STP and nothing is sent - use PushC2SIMContent to send a document to a C2SIM server. Refused when there is nothing to export: no units, graphics or task org items for Initialization (as in a session with no scenario), or no confirmed tasks for Order (see ConfirmTask).",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
@@ -5339,7 +5333,7 @@
     },
     {
       "name": "GetCoaObjectSet",
-      "description": "Return the objects making up a COA as an in-memory object set. Object-set equivalent of GetCoaContent.",
+      "description": "Return the objects of one COA - the coa object with its units, tactical graphics and tasks - as a JSON array; the object-set form of GetCoaContent. Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm), so prefer GetCoaContent to read, save or reload a COA. Read-only. An unknown poid returns []; a missing poid returns every object in the session, session state included. Known issue STP-1090: this output cannot be fed back to ImportCoaFromObjectSet.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "x-stpKnownIssues": [
@@ -5405,7 +5399,7 @@
     },
     {
       "name": "GetScenarioObjectSet",
-      "description": "Return the current scenario as an in-memory object set (array of STP objects). Object-set equivalent of GetScenarioContent. Takes no parameters.",
+      "description": "Return the whole scenario as a JSON array - the same objects as GetScenarioContent (planning scenario, COAs, symbols, tasks, task orgs, and deleted objects carrying the deletion version), session state left out. Takes no parameters. Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm): about 30 times the size of the text form. Prefer GetScenarioContent to save or reload a scenario, and GetPoidObject for a single object. Read-only. Known issue STP-1090: this output cannot be fed back to the *FromObjectSet methods.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "x-stpKnownIssues": [
@@ -5469,7 +5463,7 @@
     },
     {
       "name": "GetTaskOrgObjectSet",
-      "description": "Return the objects making up a Task Organization as an in-memory object set. Object-set equivalent of GetTaskOrgContent.",
+      "description": "Return one Task Organization - the task_org object with its units and relationships - as a JSON array; the object-set form of GetTaskOrgContent, and the same call as GetTaskOrgObjects. Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm). Useful to list the poids of a TO's units and relationships; prefer GetTaskOrgContent to save or reload. Read-only. An unknown poid returns []; a missing poid returns every object in the session. Known issue STP-1090: this output cannot be fed back to ImportTaskOrgFromObjectSet.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "x-stpKnownIssues": [
@@ -5551,7 +5545,7 @@
     },
     {
       "name": "ImportCoaFromObjectSet",
-      "description": "Import a COA from an in-memory object set (array of STP objects). Poids are kept exactly as they are in the objects; no new ids are generated. Object-set equivalent of ImportCoaContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
+      "description": "Import a COA from a JSON array of STP objects; the object-set form of ImportCoaContent. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Returns the poid of the first coa object (null when there is none; an empty array imports nothing). Known issue STP-1090: the round trip from GetCoaObjectSet does not work - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it they import with empty fields. Use ImportCoaContent with GetCoaContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -5699,7 +5693,7 @@
     },
     {
       "name": "ImportPlanDataFromObjectSet",
-      "description": "Import additional content into the current scenario from an in-memory object set (array of STP objects). Object-set equivalent of ImportPlanData. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
+      "description": "Merge a JSON array of STP objects into the current scenario; the object-set form of ImportPlanData. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Known issue STP-1090: the round trip from GetScenarioObjectSet fails - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it the load aborts part way ('STP did not acknowledge ...') after some objects were already applied. Use ImportPlanData with GetScenarioContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -5887,7 +5881,7 @@
     },
     {
       "name": "ImportTaskOrgFromObjectSet",
-      "description": "Import a Task Organization from an in-memory object set (array of STP objects). Poids are kept exactly as they are in the objects; no new ids are generated. Object-set equivalent of ImportTaskOrgContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
+      "description": "Import a Task Organization from a JSON array of STP objects; the object-set form of ImportTaskOrgContent. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Returns the poid of the first task_org object (null when there is none; an empty array imports nothing). Known issue STP-1090: the round trip from GetTaskOrgObjectSet does not work - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it they import with empty fields. Use ImportTaskOrgContent with GetTaskOrgContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -6104,7 +6098,7 @@
     },
     {
       "name": "LoadNewScenarioFromObjectSet",
-      "description": "Create and load a new scenario from an in-memory object set (array of STP objects), replacing any previous content. Object-set equivalent of LoadNewScenario. Other clients of the session receive NewScenario; the caller does not.",
+      "description": "Replace the whole scenario with a JSON array of STP objects; the object-set form of LoadNewScenario. Everything the session held is discarded first; an empty array leaves a new, empty scenario. Other clients of the session receive NewScenario; the caller does not. Answers null. Known issue STP-1090: the round trip from GetScenarioObjectSet fails - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it the load aborts part way, leaving the scenario reset and partly loaded. Use LoadNewScenario with GetScenarioContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -6311,7 +6305,7 @@
     },
     {
       "name": "PullC2SIMInitialization",
-      "description": "Fetch the C2SIM initialization (for example the order of battle) from the external C2SIM server named by options: the engine joins that server's session and reads its status. Returns the initialization XML and the server status; nothing is loaded into the STP scenario - convert or import the content separately if you want it there.",
+      "description": "Fetch the C2SIM Initialization document (for example the order of battle) from the external C2SIM server named by options (restUrl; the engine's configured server when omitted) and return it as XML. Only the XML comes back; the server status is not returned over this API. Nothing is loaded into the STP scenario: convert it with ConvertC2SIMContent and import the result if you want it there. Reaches a system outside STP. options apply to this call only, and an unknown key is refused. An unreachable server is refused within about a second ('Connection refused (host:port)').",
       "x-stpSafety": "write",
       "x-stpOpenWorld": true,
       "x-stpEmits": [],
@@ -6489,7 +6483,7 @@
     },
     {
       "name": "PushC2SIMContent",
-      "description": "Send C2SIM-formatted content (an initialization or an order, per dataType) to the EXTERNAL C2SIM server named by options. Nothing is imported into the STP scenario. Depending on options the engine first resets the server to its initializing state (clearing what it holds) and afterwards switches it to running, so this changes shared state outside STP.",
+      "description": "Send a C2SIM XML document - an Initialization or an Order, per dataType - to the EXTERNAL C2SIM server named by options (restUrl; the engine's configured server when omitted), typically a document from GetC2SIMContent. Nothing is imported into the STP scenario. Destructive outside STP: with resetBeforeInitialize the server is first reset to its initializing state (clearing what it holds), and with runAfterInitialize it is switched to running afterwards, so this changes shared state outside STP. Answers null. options apply to this call only, and an unknown key is refused. An unreachable server is refused with the reason ('Connection refused (host:port)').",
       "x-stpSafety": "destructive",
       "x-stpOpenWorld": true,
       "x-stpEmits": [
@@ -6695,7 +6689,7 @@
     },
     {
       "name": "Register",
-      "description": "Register a client service with STP, declaring the event types it can solve/handle and its machine/session identifiers. TRANSPORT: this message is built and consumed by the SDK connectors themselves; an application using an SDK never sends or sees it. It is documented here because a client written without an SDK must implement it.",
+      "description": "TRANSPORT: sent once after connecting. It names the service, lists in solvables the event names this client wants to receive (a client receives only the events it registers), and joins the session sessionId (the connection's default session when omitted). Returns the session id. On a client's first registration the engine may announce its role, current COA and task org (RoleSwitched, CoaSwitched, TaskOrgSwitched). Built and consumed by the SDK connectors: an application using an SDK never sends it, but a client written without an SDK must.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -6814,7 +6808,7 @@
     },
     {
       "name": "Request",
-      "description": "Meta-message that wraps another JSON-RPC request (as a serialized string) for STP to dispatch; the result is returned asynchronously as a RequestResponse event carrying the same cookie. TRANSPORT: this message is built and consumed by the SDK connectors themselves; an application using an SDK never sends or sees it. It is documented here because a client written without an SDK must implement it.",
+      "description": "TRANSPORT: wraps another method call so that it gets an answer. jsonRequest holds the inner call ({method, params}) as a JSON string; the engine dispatches it and answers with a RequestResponse event carrying the same cookie, success, and the result or the refusal reason. timeout is in seconds (0 or omitted: none). A fire-and-forget method sent this way answers success:true as soon as it is dispatched, which says nothing about its outcome. Engines before STP-1088 never answer a jsonRequest they cannot read. Built and consumed by the SDK connectors: an application using an SDK never sends it, but a client written without an SDK must.",
       "x-stpSafety": "write",
       "x-stpEmits": [],
       "params": [
@@ -6901,7 +6895,7 @@
     },
     {
       "name": "SyncScenarioSessionFromObjectSet",
-      "description": "Merge a scenario into the active session from an in-memory object set and update the session state with the differences. Object-set equivalent of SyncScenarioSession, with the same merge rules. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
+      "description": "Merge a JSON array of STP objects into the active session; the object-set form of SyncScenarioSession, with the same rules. It first replays the current scenario to the caller (as JoinScenarioSession), then imports the objects; an empty array only replays. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Known issue STP-1090: the round trip from GetScenarioObjectSet fails - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it the load aborts part way after some objects were applied. Use SyncScenarioSession with GetScenarioContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -7114,7 +7108,7 @@
     },
     {
       "name": "ChangeTimeOut",
-      "description": "Set the wait and segmentation timeouts together, in seconds. This is the only public control over how long STP waits before deciding a sketch is finished, so it is required whenever a user draws a multi-stroke 2525/APP6 symbol: use 0.0 for ordinary single-stroke point, line and area work, and around 2.5 while a full symbol is being drawn. Fire and forget.",
+      "description": "Set the wait and segmentation timeouts together, in seconds. This is the only public control over how long STP waits before deciding a sketch is finished, so it is required whenever a user draws a multi-stroke 2525/APP6 symbol: use 0.0 for ordinary single-stroke point, line and area work, and around 2.5 while a full symbol is being drawn. RecognizeNow ends the wait early. Fire and forget: no event confirms it, and a missing or non-numeric timeout is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -7158,7 +7152,7 @@
     },
     {
       "name": "ResetSegmentationTimeout",
-      "description": "Restore the segmentation timeout to its configured default, undoing an earlier ChangeTimeOut. Fire and forget.",
+      "description": "Restore the segmentation timeout - how long STP waits after a stroke before recognizing the sketch - to its configured default. It resets only that timeout: the wait timeout that ChangeTimeOut also sets is left as it is. Fire and forget; no event confirms it.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -7181,7 +7175,7 @@
     },
     {
       "name": "SetSpeechListening",
-      "description": "Turn speech capture on or off for this client. Fire and forget; no event reports the resulting state.",
+      "description": "Turn speech listening on (true) or off (false) for this client. SendListen does the same with an extra 'once' mode. Fire and forget; no event reports the resulting state, and a non-boolean listen is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -7221,7 +7215,7 @@
     },
     {
       "name": "RecognizeNow",
-      "description": "Recognize whatever has been collected so far instead of waiting for the segmentation timeout to expire. Fire and forget.",
+      "description": "Recognize the strokes collected so far now, instead of waiting for the segmentation timeout to expire - useful when the timeout is long (ChangeTimeOut) and the user has finished drawing. Fire and forget: the engine sends no reply; the result arrives as the events listed (InkProcessed, then SymbolAdded and so on). With nothing pending it does nothing and sends nothing. Known issue STP-1080: a discarded sketch may not send InkProcessed.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -7456,7 +7450,7 @@
     },
     {
       "name": "SendListen",
-      "description": "Ask STP to start or stop listening. Fire and forget. NB the .NET SDK serialises `mode` with default settings, so it arrives as the ORDINAL of the enum rather than its name; the engine accepts either spelling.",
+      "description": "Start or stop STP's speech listening: mode once listens until the first inactivity, on until told to stop, off stops. Compared with SetSpeechListening (on/off), it adds the once mode and a timestamp. mode may be sent as the name or as its ordinal (0, 1, 2); the .NET SDK sends the ordinal. Fire and forget; no event reports the state, and a missing or unknown mode is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -7529,7 +7523,7 @@
     },
     {
       "name": "SendAudioCaptureState",
-      "description": "Report this client's own audio capture state to STP so other components can reflect it in their user interface. Fire and forget.",
+      "description": "Report whether this client is currently capturing audio, so other components can reflect it in their user interface. It reports state only; use SetSpeechListening or SendListen to control listening. Fire and forget; no event follows, and a missing isListening is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -7569,7 +7563,7 @@
     },
     {
       "name": "AdvertiseViewport",
-      "description": "Tell STP which geographic area this client is currently showing, so recognition can be biased towards what the user can actually see. Fire and forget.",
+      "description": "Tell STP which map area this client is showing: topLeft is the north-west corner and botRight the south-east corner. STP keeps it as the context for this client's strokes; SendInk sends its own map extents the same way when they change, so call this when the view moves without a stroke. Fire and forget; no event follows, and a missing corner is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -7626,7 +7620,7 @@
     },
     {
       "name": "SetAutoTasking",
-      "description": "Enable or disable automatic tasking, in which STP infers tasks from symbols without an explicit spoken task. Fire and forget.",
+      "description": "Turn automatic (implicit) tasking on or off: when on, STP infers tasks from the symbols placed, without an explicitly spoken task, and announces them with TaskAdded (taskStatus implicit). Scenario loads and merges (LoadNewScenario, ImportPlanData, SyncScenarioSession) suspend it while they run and restore it afterwards. Fire and forget; no event confirms the setting, and a missing isEnabled is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [],
@@ -7666,7 +7660,7 @@
     },
     {
       "name": "ResetRole",
-      "description": "Clear the role previously set with SetRole, returning this client to the default role. Fire and forget.",
+      "description": "Clear this client's role, leaving it with no role - the same as SetRole with 'none', without waiting for confirmation. Fire and forget: the engine sends no reply; RoleSwitched with a null role follows if a role was set, and CoaSwitched / TaskOrgSwitched if the client's current COA or task org changes with it.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -7713,7 +7707,7 @@
     },
     {
       "name": "UndoLastOp",
-      "description": "Undo the last operation applied to an object. STP replays the effect as ordinary events carrying isUndo = true, so a client that already handles the Added/Modified/Deleted events needs no extra handling. Fire and forget.",
+      "description": "Undo the last operation applied to one object - a symbol, task, task org unit or relationship - identified by poid. STP replays the effect as ordinary events carrying isUndo = true (for example SymbolDeleted for an undone add, SymbolAdded for an undone delete), so a client that already handles the Added/Modified/Deleted events needs no extra handling. Fire and forget. An unknown or missing poid is silently ignored. Known issue STP-1080: today's engine sends no event for an undo; read the object back with GetPoidObject.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -7827,7 +7821,7 @@
     },
     {
       "name": "ResetStpScenario",
-      "description": "Discard the current scenario contents on the server, leaving the scenario itself in place. Returns no value. No Deleted event is sent per object; other clients of the session receive NewScenario, the caller does not.",
+      "description": "Discard the whole scenario - every object and the planning scenario itself - leaving the session with no active scenario (HasActiveScenario answers false) until CreateNewScenario or LoadNewScenario. It also clears the current COA (CoaSwitched with no COA) and the default task orgs. Returns no value. No Deleted event is sent per object; other clients of the session receive NewScenario, the caller does not. With no scenario left, a second call does nothing.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -7887,7 +7881,7 @@
     },
     {
       "name": "GetActiveScenarioDescription",
-      "description": "Return the metadata of the scenario currently loaded - its name, id and session details - without fetching any of its contents.",
+      "description": "Return the planning scenario object of the current scenario - its Name, poid and flags such as IsLoaded - without any of its contents, or null when the session has no active scenario. HasActiveScenario answers just the yes/no. Read-only.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -7933,7 +7927,7 @@
     },
     {
       "name": "GetAllObjects",
-      "description": "Return every object in the current scenario as a flat list, symbols, tasks and task organizations alike. Prefer GetScenarioContent or GetScenarioObjectSet when the structured form is wanted.",
+      "description": "Return every live object in the session as a flat JSON array - planning scenario, COAs, symbols, tasks, task orgs with their units and relationships, plus session-state objects such as system_state; deleted objects are not included (see GetDeletedObjects). Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm), so the answer is large (about 2 MB for 50 objects). Prefer GetScenarioContent for the scenario, GetPoidObject for one object and GetScenarioTaskOrgList for task orgs. Read-only.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -7993,7 +7987,7 @@
     },
     {
       "name": "GetDeletedObjects",
-      "description": "Return the objects deleted from the current scenario. A deleted object is TOMBSTONED rather than removed, so it is still reachable here and its poid can be reused by a later add.",
+      "description": "Return the objects deleted from the current scenario. A deleted object is TOMBSTONED rather than removed (dbVersion v0), so it is still listed here; use it to confirm a delete whose event did not arrive. Same object shape as GetAllObjects (content in PrologTerm). Read-only; [] with no scenario.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -8053,7 +8047,7 @@
     },
     {
       "name": "GetPoidObject",
-      "description": "Return a single object by its unique id. Returns null when no object carries that poid.",
+      "description": "Return one object of any type (symbol, task, COA, task org, unit or relationship) by its unique id, as fsTYPE, poid, timestamps, version and its content in PrologTerm; null when no object carries that poid. Use it to check the outcome of a fire-and-forget call whose event did not arrive. Read-only. A missing poid returns the session's system_state object instead of null, so always send one.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
@@ -8127,7 +8121,7 @@
     },
     {
       "name": "GetScenarioTaskOrgList",
-      "description": "Return the task organizations (ORBATs) defined in the current scenario, as summaries rather than full contents.",
+      "description": "Return the task organizations (ORBATs) defined in the current scenario as summaries - poid, name, affiliation and timestamp - newest first, without their units. This is where to find TO poids for SetCoaTaskOrg, GetTaskOrgContent and parentTO in AddTaskOrgUnit; JoinScenarioSession does not replay TaskOrgAdded. Read-only; [] with no scenario.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -8192,7 +8186,7 @@
     },
     {
       "name": "GetTaskOrgObjects",
-      "description": "Return the objects making up a task organization as a plain array. This is a SYNONYM of GetTaskOrgObjectSet - both reach the same engine call and return the same array; the two spellings exist because the .NET SDK grew both.",
+      "description": "Return the objects making up a task organization (the task_org with its units and relationships) as a plain array. This is a SYNONYM of GetTaskOrgObjectSet - both reach the same engine call and return the same array; the two spellings exist because the .NET SDK grew both. Each object carries its content in PrologTerm; prefer GetTaskOrgContent to save or reload. Read-only. An unknown poid returns []; a missing poid returns every object in the session.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
