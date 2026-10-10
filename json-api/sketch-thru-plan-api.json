@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.7.0"
+    "version": "0.8.0"
   },
   "methods": [
     {
@@ -10,6 +10,7 @@
       "description": "Notify STP that the user began a sketch gesture (pen down) at a map coordinate.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "location",
@@ -33,6 +34,71 @@
       "description": "Send a sketched gesture (stroke) to STP, including the window bounds, map extents, stroke points and intersection context.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "InkProcessed",
+          "when": "if",
+          "condition": "the sketch this stroke belongs to is finished (segmentation timeout or RecognizeNow), integrated or discarded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "speech integrates with the sketch: the single phrase that integrated",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "the sketch, alone or with speech, is recognized as a symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolModified",
+          "when": "may",
+          "condition": "the gesture moves or changes an existing symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "the gesture deletes a symbol",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "sketch and speech express a task, or automatic tasking infers one",
+          "to": "session"
+        },
+        {
+          "event": "SymbolEdited",
+          "when": "may",
+          "condition": "the gesture selects or edits a symbol",
+          "to": "caller"
+        },
+        {
+          "event": "MapOperation",
+          "when": "may",
+          "condition": "the gesture is a map operation, such as a zoom",
+          "to": "caller"
+        },
+        {
+          "event": "Command",
+          "when": "may",
+          "condition": "the gesture or utterance is a command",
+          "to": "session"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "a command: every client receives its phrase",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": [
         {
           "name": "pixelBoundsWindow",
@@ -98,6 +164,79 @@
       "description": "Send transcribed speech recognition results to STP (or typed phrases).",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "SpeechParsed",
+          "when": "always",
+          "to": "caller"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "the speech integrates with pending ink",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "if",
+          "condition": "the speech integrates into a symbol, task or edit: the single phrase that integrated, not the hypotheses sent",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "if",
+          "condition": "the speech is a command: every client receives its phrase",
+          "to": "session"
+        },
+        {
+          "event": "SpeechDiscarded",
+          "when": "if",
+          "condition": "the speech integrates with nothing before the recognizer's timeout",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "the speech, alone or with a sketch, creates a symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolModified",
+          "when": "may",
+          "condition": "the speech changes an existing symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "the speech deletes a symbol",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "the speech expresses a task, or automatic tasking infers one",
+          "to": "session"
+        },
+        {
+          "event": "SymbolEdited",
+          "when": "may",
+          "condition": "speech and gesture select or edit a symbol",
+          "to": "caller"
+        },
+        {
+          "event": "MapOperation",
+          "when": "may",
+          "condition": "speech and gesture are a map operation, such as a zoom",
+          "to": "caller"
+        },
+        {
+          "event": "Command",
+          "when": "may",
+          "condition": "the utterance is a command",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "recoList",
@@ -132,6 +271,79 @@
       "description": "Send typed text to STP that will be treated as simulated speech recognition. Numbers and letters are converted server-side to speech-like transcriptions (e.g. 'A 3 1' becomes 'alpha three one').",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "SpeechParsed",
+          "when": "always",
+          "to": "caller"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "the speech integrates with pending ink",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "if",
+          "condition": "the speech integrates into a symbol, task or edit: the single phrase that integrated, not the hypotheses sent",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "if",
+          "condition": "the speech is a command: every client receives its phrase",
+          "to": "session"
+        },
+        {
+          "event": "SpeechDiscarded",
+          "when": "if",
+          "condition": "the speech integrates with nothing before the recognizer's timeout",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "the speech, alone or with a sketch, creates a symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolModified",
+          "when": "may",
+          "condition": "the speech changes an existing symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "the speech deletes a symbol",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "the speech expresses a task, or automatic tasking infers one",
+          "to": "session"
+        },
+        {
+          "event": "SymbolEdited",
+          "when": "may",
+          "condition": "speech and gesture select or edit a symbol",
+          "to": "caller"
+        },
+        {
+          "event": "MapOperation",
+          "when": "may",
+          "condition": "speech and gesture are a map operation, such as a zoom",
+          "to": "caller"
+        },
+        {
+          "event": "Command",
+          "when": "may",
+          "condition": "the utterance is a command",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "text",
@@ -152,8 +364,34 @@
     },
     {
       "name": "CreateNewScenario",
-      "description": "Create and load a new scenario, replacing any previous content.",
+      "description": "Create and load a new scenario, replacing any previous content. Other clients of the session receive NewScenario; the caller does not.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "NewScenario",
+          "when": "if",
+          "condition": "the session has other clients: each of them receives it; the caller never does",
+          "to": "session"
+        },
+        {
+          "event": "RoleSwitched",
+          "when": "if",
+          "condition": "re-announces each OTHER client's role, if it has one; the caller keeps its role and hears nothing",
+          "to": "session"
+        },
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "a COA was current: the reset clears it (CoaSwitched with no COA)",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes (the reset clears the default task orgs)",
+          "to": "caller"
+        }
+      ],
       "params": [
         {
           "name": "name",
@@ -172,8 +410,121 @@
     },
     {
       "name": "LoadNewScenario",
-      "description": "Load a scenario from a serialized content string (object_set([...])). Replaces previous content.",
+      "description": "Load a scenario from a serialized content string (object_set([...])). Replaces previous content. Other clients of the session receive NewScenario; the caller does not.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "NewScenario",
+          "when": "if",
+          "condition": "the session has other clients: each of them receives it; the caller never does",
+          "to": "session"
+        },
+        {
+          "event": "RoleSwitched",
+          "when": "if",
+          "condition": "re-announces each OTHER client's role, if it has one; the caller keeps its role and hears nothing",
+          "to": "session"
+        },
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "a COA was current: the reset clears it (CoaSwitched with no COA)",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes (the reset clears the default task orgs, and they are re-selected after the load)",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "content",
@@ -194,6 +545,101 @@
       "name": "ImportPlanData",
       "description": "Import additional content into the current scenario (object_set([...])). An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the default task orgs re-selected afterwards change the caller's current task org",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "content",
@@ -214,6 +660,7 @@
       "name": "GetScenarioContent",
       "description": "Return the current scenario as a serialized string (object_set([...])) suitable for persistence.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [],
       "result": {
         "name": "content",
@@ -224,8 +671,52 @@
     },
     {
       "name": "JoinScenarioSession",
-      "description": "Replay the current scenario to this client as if its objects had just arrived live (the usual Added events, deleted objects skipped), so a client can rebuild its local state. Changes nothing on the server.",
+      "description": "Replay the current scenario to this client only, as if its objects had just arrived live (SymbolAdded, TaskAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, CoaAdded; deleted objects skipped), so a client can rebuild its local state. Task orgs themselves are not replayed (no TaskOrgAdded): list them with GetScenarioTaskOrgList. Changes nothing on the server.",
       "x-stpSafety": "read",
+      "x-stpEmits": [
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per live symbol in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per live task in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per live task org unit in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per live task org relationship in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per live COA in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per replayed symbol this client created, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "a replayed symbol this client created carries a speech phrase",
+          "to": "caller"
+        }
+      ],
       "params": [],
       "result": {
         "name": "ok",
@@ -238,6 +729,131 @@
       "name": "SyncScenarioSession",
       "description": "Merge a scenario into the active session and update the session state with the differences. Takes object-set text (object_set([...])); a blank string does nothing. It first joins the session (as JoinScenarioSession), then drops infrastructure objects (planning_scenario, system_state, edit, viewport, ink, parse_info, gesture, speech) from the content and imports the rest. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. It does NOT discard the current contents first - use LoadNewScenario for that. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live symbol in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live task in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live task org unit in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live task org relationship in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live COA in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per replayed symbol this client created and per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "a replayed or imported symbol of this client carries a speech phrase",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the default task orgs re-selected afterwards change the caller's current task org",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "content",
@@ -258,6 +874,7 @@
       "name": "HasActiveScenario",
       "description": "Check whether STP currently has a loaded scenario.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [],
       "result": {
         "name": "active",
@@ -271,6 +888,30 @@
       "description": "Request addition of a symbol. STP will respond with a SymbolAdded event.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "InkProcessed",
+          "when": "always",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "if",
+          "condition": "the symbol carries a speech phrase",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "automatic tasking infers a task from the symbol",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "symbol",
@@ -286,6 +927,31 @@
       "description": "Request update of a symbol. STP will respond with a SymbolModified event.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "InkProcessed",
+          "when": "if",
+          "condition": "the caller created the symbol",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "if",
+          "condition": "the caller created the symbol and it carries a speech phrase",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolModified",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "if",
+          "condition": "the poid names a deleted symbol: SymbolDeleted instead of SymbolModified",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -308,6 +974,13 @@
       "description": "Request deletion of a symbol. STP will respond with a SymbolDeleted event.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "SymbolDeleted",
+          "when": "always",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -323,6 +996,20 @@
       "description": "Pick an alternate recognition for a symbol/task.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskModified",
+          "when": "if",
+          "condition": "the poid is a task the caller created: choosing its alternate also confirms it",
+          "to": "session"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "a chosen task alternate needs tactical graphics, which are created",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -344,6 +1031,80 @@
       "name": "ImportTaskOrgContent",
       "description": "Import a Task Organization (TO) from serialized content. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the poid of the task_org object in the content. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified); automatic tasking may add more",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        }
+      ],
       "params": [
         {
           "name": "content",
@@ -364,6 +1125,7 @@
       "name": "GetTaskOrgContent",
       "description": "Return the serialized content of a Task Organization.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "poid",
@@ -384,6 +1146,14 @@
       "name": "SetDefaultTaskOrg",
       "description": "Set a TO as the default for its affiliation (used when a COA is selected).",
       "x-stpSafety": "write",
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes as a result",
+          "to": "caller"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -404,6 +1174,14 @@
       "name": "ResetDefaultTaskOrg",
       "description": "Unset the default TO for an affiliation.",
       "x-stpSafety": "write",
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes as a result",
+          "to": "caller"
+        }
+      ],
       "params": [
         {
           "name": "affiliation",
@@ -425,6 +1203,13 @@
       "description": "Add a Task Organization (ORBAT) definition.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgAdded",
+          "when": "always",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "taskOrg",
@@ -440,6 +1225,19 @@
       "description": "Update an existing TO definition.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgModified",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "if",
+          "condition": "the poid names a deleted task org: TaskOrgDeleted instead of TaskOrgModified",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -462,6 +1260,19 @@
       "description": "Delete a Task Organization.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgDeleted",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "may",
+          "condition": "the deleted task org was the caller's current one",
+          "to": "caller"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -477,6 +1288,13 @@
       "description": "Add a Task Org Unit (e.g., a military unit within the ORBAT).",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "always",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "toUnit",
@@ -492,6 +1310,19 @@
       "description": "Update a Task Org Unit.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgUnitModified",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "if",
+          "condition": "the poid names a deleted task org unit: TaskOrgUnitDeleted instead of TaskOrgUnitModified",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -514,6 +1345,13 @@
       "description": "Delete a Task Org Unit.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "always",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -529,6 +1367,16 @@
       "description": "Add a relationship between TO units (e.g., command/attached).",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "always",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": [
         {
           "name": "toRelationship",
@@ -544,6 +1392,16 @@
       "description": "Update a relationship between TO units.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgRelationshipModified",
+          "when": "always",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": [
         {
           "name": "poid",
@@ -566,6 +1424,16 @@
       "description": "Delete a relationship between TO units.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "always",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": [
         {
           "name": "poid",
@@ -581,6 +1449,13 @@
       "description": "Request addition of a task. STP will respond with TaskAdded.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskAdded",
+          "when": "always",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "task",
@@ -596,6 +1471,23 @@
       "description": "Request update of a task (usually one of the alternates). STP will respond with TaskModified.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskModified",
+          "when": "if",
+          "condition": "the poid names an existing task",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "if",
+          "condition": "the poid is unknown: the task is added",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": [
         {
           "name": "poid",
@@ -621,6 +1513,13 @@
       "description": "Request deletion of a task. STP will respond with TaskDeleted.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskDeleted",
+          "when": "always",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "poid",
@@ -636,6 +1535,23 @@
       "description": "Confirm or unconfirm a task alternate, transitioning UI status between 'confirming' and 'confirmed'.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "TaskModified",
+          "when": "if",
+          "condition": "nBestIndex 0: every time; another alternate: only when the caller created the task",
+          "to": "session"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "the confirmed alternate needs tactical graphics, which are created",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": [
         {
           "name": "poid",
@@ -664,6 +1580,23 @@
       "name": "SetCoaTaskOrg",
       "description": "Choose the Task Organization (TO) used for COAs. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "x-stpSafety": "write",
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes as a result",
+          "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1077"
+      ],
       "params": [
         {
           "name": "toPoid",
@@ -691,6 +1624,23 @@
       "name": "ResetCoaTaskOrg",
       "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg. With coaPoid: removes the TO tied to that COA for affiliation, or for every affiliation when affiliation is omitted, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. An unknown coaPoid is refused (success=false with the reason). Answers null on success. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "x-stpSafety": "write",
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes as a result",
+          "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1077"
+      ],
       "params": [
         {
           "name": "affiliation",
@@ -718,6 +1668,59 @@
       "name": "ImportCoaContent",
       "description": "Load a COA and its units, graphics and tasks from STP object-set text, typically produced by GetCoaContent, into the active scenario. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the imported COA's poid (the poid of the coa object in the content); use it with SetCurrentCoa to work on the COA. Task-organization data is not part of COA content; load it with ImportTaskOrgContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified); automatic tasking may add more",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "content",
@@ -739,6 +1742,7 @@
       "name": "GetCoaContent",
       "description": "Return a COA and its units, graphics and tasks as STP object-set text (object_set([...])), ready to be saved and later loaded back with ImportCoaContent. The text does NOT include task-organization units or relationships; save those separately with GetTaskOrgContent. Read-only: nothing changes and no event follows.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "poid",
@@ -760,6 +1764,29 @@
       "name": "SetCurrentCoa",
       "description": "Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false).",
       "x-stpSafety": "write",
+      "x-stpEmits": [
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "the COA was not already current",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the switch changes the caller's current task org",
+          "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1079"
+      ],
       "params": [
         {
           "name": "poid",
@@ -781,6 +1808,22 @@
       "description": "Add a Course of Action (COA) - an alternative plan for one affiliation - to the active scenario. Use it to create a new, empty COA; its units, graphics and tasks are then drawn or spoken while it is current (see SetCurrentCoa), or come in with ImportCoaContent instead of this call. Fire and forget: there is no result. On success the engine emits CoaAdded with the COA's poid and definition; treat that event, not this call, as the confirmation.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "CoaAdded",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "coa",
@@ -796,6 +1839,22 @@
       "description": "Change the definition of an existing COA (for example its name), identified by poid. Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "CoaModified",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "poid",
@@ -818,6 +1877,23 @@
       "description": "Delete a COA, identified by poid, from the active scenario. Fire and forget: there is no result. On success the engine emits CoaDeleted.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "CoaDeleted",
+          "when": "always",
+          "to": "session"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078",
+        "STP-1079"
+      ],
       "params": [
         {
           "name": "poid",
@@ -832,6 +1908,29 @@
       "name": "SetRole",
       "description": "Switch the role associated with the current COA (e.g., S2, S3, S4, FSO, ENG). If no COA exists for the role and createIfNone is true, a default COA may be created.",
       "x-stpSafety": "write",
+      "x-stpEmits": [
+        {
+          "event": "RoleSwitched",
+          "when": "if",
+          "condition": "the role changes",
+          "to": "caller"
+        },
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "the caller's current COA changes with the role",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes with the role",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1079"
+      ],
       "params": [
         {
           "name": "role",
@@ -859,6 +1958,7 @@
       "name": "ConvertC2SIMContent",
       "description": "Convert C2SIM content (e.g. between BML/IBML formats) to STP's native object-set representation. The conversion happens entirely inside the engine's own SDK layer and never reaches the C2SIM bridge agent. Returns the converted objects as the multiline string ObjectSet.ToMultilineString() produces: \"object_set([\" followed by one STP object per line and a closing \"])\". Three things are worth knowing before you rely on the result. SYMBOLS ONLY: units and tactical graphics are extracted, but tasks are not created. This is a long-standing, deliberate limitation - STP tasks carry more detail than C2SIM captures, and the missing information cannot be filled in from an Order document. NOT IDEMPOTENT: the conversion mints a task org to hold the converted symbols (one per affiliation present, named \"Friendly TO\" and \"Hostile TO\") with a freshly generated identifier on every call, so converting the same document twice yields two different task orgs. NO PARENT COA: converted symbols are parented to that minted task org, but a purely local conversion mints no course of action, so nothing carries a parent COA - a caller that needs COA-parented objects, to load them into a scenario say, must mint the COAs and parent the objects itself. Input must be well-formed XML: a well-formed document with nothing convertible yields an empty \"object_set([])\" shell, but malformed content fails the call rather than returning an empty result.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "content",
@@ -888,6 +1988,7 @@
       "name": "GetC2SIMContent",
       "description": "Return content for the scenario (or specified COAs) rendered in a C2SIM format (e.g. BML/IBML), selected by data type and affiliation.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "name",
@@ -1069,6 +2170,7 @@
       "name": "GetCoaObjectSet",
       "description": "Return the objects making up a COA as an in-memory object set. Object-set equivalent of GetCoaContent.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "poid",
@@ -1094,6 +2196,7 @@
       "name": "GetScenarioObjectSet",
       "description": "Return the current scenario as an in-memory object set (array of STP objects). Object-set equivalent of GetScenarioContent. Takes no parameters.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [],
       "x-descriptionStatus": "draft",
       "result": {
@@ -1111,6 +2214,7 @@
       "name": "GetTaskOrgObjectSet",
       "description": "Return the objects making up a Task Organization as an in-memory object set. Object-set equivalent of GetTaskOrgContent.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "poid",
@@ -1136,6 +2240,59 @@
       "name": "ImportCoaFromObjectSet",
       "description": "Import a COA from an in-memory object set (array of STP objects). Poids are kept exactly as they are in the objects; no new ids are generated. Object-set equivalent of ImportCoaContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified); automatic tasking may add more",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "objects",
@@ -1161,6 +2318,101 @@
       "name": "ImportPlanDataFromObjectSet",
       "description": "Import additional content into the current scenario from an in-memory object set (array of STP objects). Object-set equivalent of ImportPlanData. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the default task orgs re-selected afterwards change the caller's current task org",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "objects",
@@ -1186,6 +2438,80 @@
       "name": "ImportTaskOrgFromObjectSet",
       "description": "Import a Task Organization from an in-memory object set (array of STP objects). Poids are kept exactly as they are in the objects; no new ids are generated. Object-set equivalent of ImportTaskOrgContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified); automatic tasking may add more",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        }
+      ],
       "params": [
         {
           "name": "objects",
@@ -1209,8 +2535,121 @@
     },
     {
       "name": "LoadNewScenarioFromObjectSet",
-      "description": "Create and load a new scenario from an in-memory object set (array of STP objects), replacing any previous content. Object-set equivalent of LoadNewScenario.",
+      "description": "Create and load a new scenario from an in-memory object set (array of STP objects), replacing any previous content. Object-set equivalent of LoadNewScenario. Other clients of the session receive NewScenario; the caller does not.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "NewScenario",
+          "when": "if",
+          "condition": "the session has other clients: each of them receives it; the caller never does",
+          "to": "session"
+        },
+        {
+          "event": "RoleSwitched",
+          "when": "if",
+          "condition": "re-announces each OTHER client's role, if it has one; the caller keeps its role and hears nothing",
+          "to": "session"
+        },
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "a COA was current: the reset clears it (CoaSwitched with no COA)",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes (the reset clears the default task orgs, and they are re-selected after the load)",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "objects",
@@ -1237,6 +2676,7 @@
       "description": "Fetch the C2SIM initialization (for example the order of battle) from the external C2SIM server named by options: the engine joins that server's session and reads its status. Returns the initialization XML and the server status; nothing is loaded into the STP scenario - convert or import the content separately if you want it there.",
       "x-stpSafety": "write",
       "x-stpOpenWorld": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "options",
@@ -1388,6 +2828,14 @@
       "description": "Send C2SIM-formatted content (an initialization or an order, per dataType) to the EXTERNAL C2SIM server named by options. Nothing is imported into the STP scenario. Depending on options the engine first resets the server to its initializing state (clearing what it holds) and afterwards switches it to running, so this changes shared state outside STP.",
       "x-stpSafety": "destructive",
       "x-stpOpenWorld": true,
+      "x-stpEmits": [
+        {
+          "event": "SymbolReport",
+          "when": "may",
+          "condition": "later, while a pushed order runs on the C2SIM server with updateUnitPositions on: unit position reports",
+          "to": "session"
+        }
+      ],
       "params": [
         {
           "name": "content",
@@ -1552,6 +3000,26 @@
       "name": "Register",
       "description": "Register a client service with STP, declaring the event types it can solve/handle and its machine/session identifiers. TRANSPORT: this message is built and consumed by the SDK connectors themselves; an application using an SDK never sends or sees it. It is documented here because a client written without an SDK must implement it.",
       "x-stpSafety": "write",
+      "x-stpEmits": [
+        {
+          "event": "RoleSwitched",
+          "when": "if",
+          "condition": "first registration of this client, and its new session state has a role",
+          "to": "caller"
+        },
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "first registration of this client, and its new session state has a current COA",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "first registration of this client, and its new session state has a current task org",
+          "to": "caller"
+        }
+      ],
       "params": [
         {
           "name": "serviceName",
@@ -1605,6 +3073,7 @@
       "name": "Request",
       "description": "Meta-message that wraps another JSON-RPC request (as a serialized string) for STP to dispatch; the result is returned asynchronously as a RequestResponse event carrying the same cookie. TRANSPORT: this message is built and consumed by the SDK connectors themselves; an application using an SDK never sends or sees it. It is documented here because a client written without an SDK must implement it.",
       "x-stpSafety": "write",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "jsonRequest",
@@ -1641,6 +3110,131 @@
       "name": "SyncScenarioSessionFromObjectSet",
       "description": "Merge a scenario into the active session from an in-memory object set and update the session state with the differences. Object-set equivalent of SyncScenarioSession, with the same merge rules. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded.",
       "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live symbol in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live task in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live task org unit in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live task org relationship in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "replay first, as JoinScenarioSession: one per live COA in the scenario",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "one per symbol in the content, also one that replaces a resident symbol (never SymbolModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "one per task in the content, also one that replaces a resident task (never TaskModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgAdded",
+          "when": "may",
+          "condition": "one per task org in the content, also one that replaces a resident task org (never TaskOrgModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "one per task org unit in the content, also one that replaces a resident task org unit (never TaskOrgUnitModified)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "one per task org relationship in the content, also one that replaces a resident task org relationship (never TaskOrgRelationshipModified)",
+          "to": "session"
+        },
+        {
+          "event": "CoaAdded",
+          "when": "may",
+          "condition": "one per COA in the content, also one that replaces a resident COA (never CoaModified)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "one per symbol in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "one per task in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgDeleted",
+          "when": "may",
+          "condition": "one per task org in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "one per task org unit in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "one per task org relationship in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "CoaDeleted",
+          "when": "may",
+          "condition": "one per COA in the content carrying the deletion version (fsdb_version 0)",
+          "to": "session"
+        },
+        {
+          "event": "InkProcessed",
+          "when": "may",
+          "condition": "one per replayed symbol this client created and per imported symbol, just before its SymbolAdded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "a replayed or imported symbol of this client carries a speech phrase",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the default task orgs re-selected afterwards change the caller's current task org",
+          "to": "caller"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1078"
+      ],
       "params": [
         {
           "name": "objects",
@@ -1667,6 +3261,7 @@
       "description": "Set the wait and segmentation timeouts together, in seconds. This is the only public control over how long STP waits before deciding a sketch is finished, so it is required whenever a user draws a multi-stroke 2525/APP6 symbol: use 0.0 for ordinary single-stroke point, line and area work, and around 2.5 while a full symbol is being drawn. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "timeout",
@@ -1682,13 +3277,15 @@
       "description": "Restore the segmentation timeout to its configured default, undoing an earlier ChangeTimeOut. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": []
     },
     {
       "name": "SetSpeechListening",
-      "description": "Turn speech capture on or off for this client. Fire and forget; STP reports the resulting state through the AudioCapture event.",
+      "description": "Turn speech capture on or off for this client. Fire and forget; no event reports the resulting state.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "listen",
@@ -1704,6 +3301,71 @@
       "description": "Recognize whatever has been collected so far instead of waiting for the segmentation timeout to expire. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "InkProcessed",
+          "when": "if",
+          "condition": "strokes were pending: their sketch is integrated or discarded",
+          "to": "caller"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "speech integrates with the sketch: the single phrase that integrated",
+          "to": "caller"
+        },
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "the sketch, alone or with speech, is recognized as a symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolModified",
+          "when": "may",
+          "condition": "the gesture moves or changes an existing symbol",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "the gesture deletes a symbol",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "sketch and speech express a task, or automatic tasking infers one",
+          "to": "session"
+        },
+        {
+          "event": "SymbolEdited",
+          "when": "may",
+          "condition": "the gesture selects or edits a symbol",
+          "to": "caller"
+        },
+        {
+          "event": "MapOperation",
+          "when": "may",
+          "condition": "the gesture is a map operation, such as a zoom",
+          "to": "caller"
+        },
+        {
+          "event": "Command",
+          "when": "may",
+          "condition": "the gesture or utterance is a command",
+          "to": "session"
+        },
+        {
+          "event": "SpeechRecognized",
+          "when": "may",
+          "condition": "a command: every client receives its phrase",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": []
     },
     {
@@ -1711,6 +3373,7 @@
       "description": "Ask STP to start or stop listening. Fire and forget. NB the .NET SDK serialises `mode` with default settings, so it arrives as the ORDINAL of the enum rather than its name; the engine accepts either spelling.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "mode",
@@ -1751,6 +3414,7 @@
       "description": "Report this client's own audio capture state to STP so other components can reflect it in their user interface. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "isListening",
@@ -1766,6 +3430,7 @@
       "description": "Tell STP which geographic area this client is currently showing, so recognition can be biased towards what the user can actually see. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "topLeft",
@@ -1788,6 +3453,7 @@
       "description": "Enable or disable automatic tasking, in which STP infers tasks from symbols without an explicit spoken task. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [],
       "params": [
         {
           "name": "isEnabled",
@@ -1803,6 +3469,26 @@
       "description": "Clear the role previously set with SetRole, returning this client to the default role. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "RoleSwitched",
+          "when": "if",
+          "condition": "a role was set (RoleSwitched with no role)",
+          "to": "caller"
+        },
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "the caller's current COA changes with the role",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes with the role",
+          "to": "caller"
+        }
+      ],
       "params": []
     },
     {
@@ -1810,6 +3496,83 @@
       "description": "Undo the last operation applied to an object. STP replays the effect as ordinary events carrying isUndo = true, so a client that already handles the Added/Modified/Deleted events needs no extra handling. Fire and forget.",
       "x-stpSafety": "write",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "SymbolAdded",
+          "when": "may",
+          "condition": "the undone operation deleted a symbol (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolModified",
+          "when": "may",
+          "condition": "the undone operation changed a symbol (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "SymbolDeleted",
+          "when": "may",
+          "condition": "the undone operation added a symbol (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskAdded",
+          "when": "may",
+          "condition": "the undone operation deleted a task (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskModified",
+          "when": "may",
+          "condition": "the undone operation changed a task (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskDeleted",
+          "when": "may",
+          "condition": "the undone operation added a task (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitAdded",
+          "when": "may",
+          "condition": "the undone operation deleted a task org unit (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitModified",
+          "when": "may",
+          "condition": "the undone operation changed a task org unit (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgUnitDeleted",
+          "when": "may",
+          "condition": "the undone operation added a task org unit (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipAdded",
+          "when": "may",
+          "condition": "the undone operation deleted a task org relationship (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipModified",
+          "when": "may",
+          "condition": "the undone operation changed a task org relationship (isUndo = true)",
+          "to": "session"
+        },
+        {
+          "event": "TaskOrgRelationshipDeleted",
+          "when": "may",
+          "condition": "the undone operation added a task org relationship (isUndo = true)",
+          "to": "session"
+        }
+      ],
+      "x-stpKnownIssues": [
+        "STP-1080"
+      ],
       "params": [
         {
           "name": "poid",
@@ -1822,15 +3585,42 @@
     },
     {
       "name": "ResetStpScenario",
-      "description": "Discard the current scenario contents on the server, leaving the scenario itself in place. Returns no value.",
+      "description": "Discard the current scenario contents on the server, leaving the scenario itself in place. Returns no value. No Deleted event is sent per object; other clients of the session receive NewScenario, the caller does not.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
+      "x-stpEmits": [
+        {
+          "event": "NewScenario",
+          "when": "if",
+          "condition": "the session has other clients: each of them receives it; the caller never does",
+          "to": "session"
+        },
+        {
+          "event": "RoleSwitched",
+          "when": "if",
+          "condition": "re-announces each OTHER client's role, if it has one; the caller keeps its role and hears nothing",
+          "to": "session"
+        },
+        {
+          "event": "CoaSwitched",
+          "when": "if",
+          "condition": "a COA was current: the reset clears it (CoaSwitched with no COA)",
+          "to": "caller"
+        },
+        {
+          "event": "TaskOrgSwitched",
+          "when": "if",
+          "condition": "the caller's current task org changes (the reset clears the default task orgs)",
+          "to": "caller"
+        }
+      ],
       "params": []
     },
     {
       "name": "GetActiveScenarioDescription",
       "description": "Return the metadata of the scenario currently loaded - its name, id and session details - without fetching any of its contents.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [],
       "result": {
         "name": "scenario",
@@ -1844,6 +3634,7 @@
       "name": "GetAllObjects",
       "description": "Return every object in the current scenario as a flat list, symbols, tasks and task organizations alike. Prefer GetScenarioContent or GetScenarioObjectSet when the structured form is wanted.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [],
       "result": {
         "name": "objects",
@@ -1860,6 +3651,7 @@
       "name": "GetDeletedObjects",
       "description": "Return the objects deleted from the current scenario. A deleted object is TOMBSTONED rather than removed, so it is still reachable here and its poid can be reused by a later add.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [],
       "result": {
         "name": "objects",
@@ -1876,6 +3668,7 @@
       "name": "GetPoidObject",
       "description": "Return a single object by its unique id. Returns null when no object carries that poid.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "poid",
@@ -1897,6 +3690,7 @@
       "name": "GetScenarioTaskOrgList",
       "description": "Return the task organizations (ORBATs) defined in the current scenario, as summaries rather than full contents.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [],
       "result": {
         "name": "taskOrgs",
@@ -1912,6 +3706,7 @@
       "name": "GetTaskOrgObjects",
       "description": "Return the objects making up a task organization as a plain array. This is a SYNONYM of GetTaskOrgObjectSet - both reach the same engine call and return the same array; the two spellings exist because the .NET SDK grew both.",
       "x-stpSafety": "read",
+      "x-stpEmits": [],
       "params": [
         {
           "name": "poid",
@@ -2875,13 +4670,13 @@
   "x-stpEvents": [
     {
       "name": "InkProcessed",
-      "description": "Emitted after a sketched gesture has been integrated (or discarded) by the recognizer, signaling that ink processing has completed. Carries no parameters. On the wire the params key is ABSENT (the engine sends null and JsonMessage omits it), not an empty array - do not index into it.",
+      "description": "Emitted after a sketched gesture has been integrated (or discarded) by the recognizer, signaling that ink processing has completed. Also sent to a client just before the SymbolAdded of a symbol that client added or imported. Carries no parameters. On the wire the params key is ABSENT (the engine sends null and JsonMessage omits it), not an empty array - do not index into it.",
       "x-descriptionStatus": "draft",
       "params": []
     },
     {
       "name": "SpeechRecognized",
-      "description": "Emitted with the recognized speech phrase hypotheses after STP processes a speech recognition request.",
+      "description": "Emitted when speech integrates into a symbol, task, edit or command, with the single phrase that integrated - not the hypotheses that were sent. Also sent to a client just before the SymbolAdded of a symbol that client added or imported, when the symbol carries a speech phrase. Speech that integrates with nothing produces SpeechDiscarded instead.",
       "x-descriptionStatus": "draft",
       "params": [
         {
@@ -2921,7 +4716,7 @@
     },
     {
       "name": "NewScenario",
-      "description": "Emitted when a new scenario has been created or loaded. Carries no parameters. On the wire the params key is ABSENT (the engine sends null and JsonMessage omits it), not an empty array - do not index into it.",
+      "description": "Emitted to the other clients of a session when a client creates, loads or resets the scenario (CreateNewScenario, LoadNewScenario, LoadNewScenarioFromObjectSet, ResetStpScenario); the client that made the call does not receive it. Carries no parameters. On the wire the params key is ABSENT (the engine sends null and JsonMessage omits it), not an empty array - do not index into it.",
       "x-descriptionStatus": "draft",
       "params": []
     },

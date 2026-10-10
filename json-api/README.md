@@ -221,3 +221,25 @@ The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
   has either a `result` or this marker.
 * `"x-stpOpenWorld": true` - the call reaches a system outside STP (the C2SIM server):
   `PullC2SIMInitialization`, `PushC2SIMContent`.
+* `"x-stpEmits": [ { "event", "when", "condition", "to" } ]` - on every method (STP-1059):
+  the events that follow a call, so a client knows what to wait for. An empty array means
+  the call produces no event (every `read` method except `JoinScenarioSession`, which
+  replays the scenario to the caller). Each entry names an event from `x-stpEvents` and says:
+  * `when` - `always`: follows every successful call; `if`: follows when `condition` holds
+    (for example only on a real change); `may`: depends on the content or on recognition -
+    an import sends one event per object, a sketch may produce several events or none;
+  * `condition` - a short statement of when it is sent, present unless `when` is `always`;
+  * `to` - `caller`: only the client that made the call; `session`: every client in the
+    session, the caller included unless `condition` says otherwise.
+
+  **A client receives an event only if it registered that event's name when it connected**
+  (`Register`; the SDKs register the events the application has handlers for). An entry
+  is not a promise to a client that did not register the event.
+  `RequestResponse` (the answer to every wrapped `Request`) and general `StpMessage`
+  warnings are not listed; `StpMessage` is listed on the methods that also announce a
+  refusal with it. The entries describe the intended behaviour; where the engine does not yet deliver
+  it, the method also carries `x-stpKnownIssues`.
+* `"x-stpKnownIssues": ["STP-1078", ...]` - the method is affected by filed engine issues,
+  by ticket key: today's engine may not deliver what its description or `x-stpEmits` says
+  (for example an event that never arrives, or a call that times out although it worked).
+  The key is dropped from the contract once the fix ships.
