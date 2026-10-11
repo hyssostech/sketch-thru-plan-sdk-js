@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.3"
+    "version": "0.9.4"
   },
   "methods": [
     {
@@ -2281,7 +2281,7 @@
     },
     {
       "name": "UpdateSymbol",
-      "description": "Change an existing symbol, identified by poid (from SymbolAdded or GetPoidObject) - for example move it or edit its designators or extensions - sending the new symbol properties. Fire and forget: the engine sends no reply; the result arrives as SymbolModified to every client (SymbolDeleted instead if the poid names a deleted symbol). An unknown poid or a missing symbol is silently ignored - nothing comes back - so verify with GetPoidObject when it matters.",
+      "description": "Change an existing symbol, identified by poid (from SymbolAdded or GetPoidObject) - for example move it or edit its designators or extensions - sending the new symbol properties. Fire and forget: the engine sends no reply; the result arrives as SymbolModified to every client. A missing or unknown poid, or one that names a deleted symbol or an object of another type, is refused with an StpMessage and nothing changes; a missing symbol is silently ignored. Engines before STP-1091 ignore an unknown poid, send SymbolDeleted for a deleted symbol, and apply the update to an object of another type, turning it into a symbol.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -2303,10 +2303,10 @@
           "to": "session"
         },
         {
-          "event": "SymbolDeleted",
+          "event": "StpMessage",
           "when": "if",
-          "condition": "the poid names a deleted symbol: SymbolDeleted instead of SymbolModified",
-          "to": "session"
+          "condition": "the call is refused",
+          "to": "caller"
         }
       ],
       "params": [
@@ -2328,7 +2328,23 @@
       "x-stpEdgeCases": [
         {
           "when": "unknown poid",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "'UpdateSymbol' refused: UpdateSymbol: 'poid' idGHOST1091MV4A3OKQS names no object in this session - send the poid of an existing symbol"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "announced",
+          "message": "'UpdateSymbol' refused: UpdateSymbol: missing 'poid' - name the symbol to update"
+        },
+        {
+          "when": "poid of a task org (cross-type update)",
+          "outcome": "announced",
+          "message": "'UpdateSymbol' refused: UpdateSymbol: 'poid' id62H0P9SDVE0DGT75HPT2428ML names a task org, not a symbol"
+        },
+        {
+          "when": "poid of a deleted symbol",
+          "outcome": "announced",
+          "message": "'UpdateSymbol' refused: UpdateSymbol: 'poid' id12VYXZVHS5FXBA3F6Q7S9XWP5M names a deleted unit"
         },
         {
           "when": "missing symbol",
@@ -2336,8 +2352,8 @@
         },
         {
           "when": "sent through Request (unknown poid, no symbol)",
-          "outcome": "accepted",
-          "note": "success",
+          "outcome": "refused",
+          "message": "UpdateSymbol: 'poid' idNOSUCHSYM094 names no object in this session - send the poid of an existing symbol",
           "wire": "request"
         }
       ],
@@ -2855,7 +2871,7 @@
     },
     {
       "name": "SetDefaultTaskOrg",
-      "description": "Make a Task Organization the default for its own affiliation: a hostile TO becomes the hostile default, a TO of any other affiliation the friend default. The engine derives each client's current task org from these defaults; TaskOrgSwitched reports a change to the caller's. The same as SetCoaTaskOrg without coaPoid, which is preferred because it refuses a missing poid. Get the poid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Answers null. Known issue STP-1091: an unknown or missing poid also answers success and changes nothing.",
+      "description": "Make a Task Organization the default for its own affiliation: a hostile TO becomes the hostile default, a TO of any other affiliation the friend default. The engine derives each client's current task org from these defaults; TaskOrgSwitched reports a change to the caller's. The same as SetCoaTaskOrg without coaPoid. Get the poid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Answers null. A missing or unknown poid, or one that names a deleted TO or an object of another type, is refused (success=false with the reason); engines before STP-1091 answer success to a missing or unknown poid and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -2863,10 +2879,13 @@
           "when": "if",
           "condition": "the caller's current task org changes as a result",
           "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1091"
       ],
       "params": [
         {
@@ -2885,19 +2904,29 @@
       },
       "x-stpEdgeCases": [
         {
-          "when": "no active scenario",
+          "when": "no active scenario (TO added in the session)",
           "outcome": "accepted",
-          "note": "success"
+          "note": "success; events: TaskOrgSwitched"
         },
         {
           "when": "unknown poid",
-          "outcome": "accepted",
-          "note": "success"
+          "outcome": "refused",
+          "message": "SetDefaultTaskOrg: 'poid' idNOSUCHTO1091 names no object in this session - send the poid of an existing task org"
         },
         {
           "when": "missing poid",
-          "outcome": "accepted",
-          "note": "success"
+          "outcome": "refused",
+          "message": "SetDefaultTaskOrg: missing 'poid' - name the task org to make the default"
+        },
+        {
+          "when": "poid of a unit symbol",
+          "outcome": "refused",
+          "message": "SetDefaultTaskOrg: 'poid' id186SJRWMK42B358PV21AYGWEK names a unit, not a task org"
+        },
+        {
+          "when": "poid of a deleted task org",
+          "outcome": "refused",
+          "message": "SetDefaultTaskOrg: 'poid' id80097CS958U2LLNVDL7JQR9QV names a deleted task org"
         }
       ],
       "examples": [
@@ -2936,7 +2965,7 @@
     },
     {
       "name": "ResetDefaultTaskOrg",
-      "description": "Clear the default Task Organization for an affiliation, so that affiliation has no default; the TO itself is not deleted. affiliation hostile clears the hostile default; any other value, including a missing or unknown one, clears the friend default (Known issue STP-1091: the value is not checked). The same as ResetCoaTaskOrg without coaPoid, which is preferred because it refuses a missing affiliation. Answers null; TaskOrgSwitched reports a change to the caller's current task org. In a session with no scenario the call does not answer until its request times out ('The operation was canceled.').",
+      "description": "Clear the default Task Organization for an affiliation - friend, hostile or any - so that affiliation has no default; the TO itself is not deleted. The same as ResetCoaTaskOrg without coaPoid. Answers null; TaskOrgSwitched reports a change to the caller's current task org. A missing or unknown affiliation is refused (success=false with the reason). Engines before STP-1091 clear the friend default for any value but hostile, a missing one included, and do not answer a client that has a current COA until its request times out ('The operation was canceled.').",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -2944,10 +2973,13 @@
           "when": "if",
           "condition": "the caller's current task org changes as a result",
           "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1091"
       ],
       "params": [
         {
@@ -2967,18 +2999,18 @@
       "x-stpEdgeCases": [
         {
           "when": "no active scenario",
-          "outcome": "refused",
-          "message": "The operation was canceled."
-        },
-        {
-          "when": "missing affiliation",
           "outcome": "accepted",
           "note": "success; events: TaskOrgSwitched"
         },
         {
+          "when": "missing affiliation",
+          "outcome": "refused",
+          "message": "ResetDefaultTaskOrg: missing 'affiliation' - name the affiliation whose default task org to reset"
+        },
+        {
           "when": "unknown affiliation value",
-          "outcome": "accepted",
-          "note": "success"
+          "outcome": "refused",
+          "message": "ResetDefaultTaskOrg: unknown affiliation 'martian' - use friend, hostile or any"
         }
       ],
       "examples": [
@@ -3087,7 +3119,7 @@
     },
     {
       "name": "UpdateTaskOrg",
-      "description": "Change a Task Organization's own definition (its name or affiliation), identified by poid (from TaskOrgAdded or GetScenarioTaskOrgList); units and relationships have their own Update methods. Fire and forget: the engine sends no reply; TaskOrgModified goes to every client (TaskOrgDeleted instead if the poid names a deleted TO). An unknown poid or a missing taskOrg is silently ignored. Known issue STP-1091: the poid is not checked to be a TO - a symbol's poid is accepted and turns that object into a task org - so pass only TO poids.",
+      "description": "Change a Task Organization's own definition (its name or affiliation), identified by poid (from TaskOrgAdded or GetScenarioTaskOrgList); units and relationships have their own Update methods. Fire and forget: the engine sends no reply; TaskOrgModified goes to every client. A missing or unknown poid, or one that names a deleted TO or an object of another type, is refused with an StpMessage and nothing changes; a missing taskOrg is announced as a failure. Engines before STP-1091 ignore an unknown poid, send TaskOrgDeleted for a deleted TO, and apply the update to an object of another type - a symbol's poid turns that object into a task org.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3097,14 +3129,11 @@
           "to": "session"
         },
         {
-          "event": "TaskOrgDeleted",
+          "event": "StpMessage",
           "when": "if",
-          "condition": "the poid names a deleted task org: TaskOrgDeleted instead of TaskOrgModified",
-          "to": "session"
+          "condition": "the call is refused or fails",
+          "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1091"
       ],
       "params": [
         {
@@ -3125,21 +3154,33 @@
       "x-stpEdgeCases": [
         {
           "when": "unknown poid",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "'UpdateTaskOrg' refused: UpdateTaskOrg: 'poid' idNOSUCHTO094 names no object in this session - send the poid of an existing task org"
+        },
+        {
+          "when": "missing poid",
+          "outcome": "announced",
+          "message": "'UpdateTaskOrg' refused: UpdateTaskOrg: missing 'poid' - name the task org to update"
+        },
+        {
+          "when": "poid of a unit symbol (cross-type update)",
+          "outcome": "announced",
+          "message": "'UpdateTaskOrg' refused: UpdateTaskOrg: 'poid' id186SJRWMK42B358PV21AYGWEK names a unit, not a task org"
+        },
+        {
+          "when": "poid of a deleted task org",
+          "outcome": "announced",
+          "message": "'UpdateTaskOrg' refused: UpdateTaskOrg: 'poid' id80097CS958U2LLNVDL7JQR9QV names a deleted task org"
         },
         {
           "when": "missing taskOrg",
-          "outcome": "ignored"
-        },
-        {
-          "when": "poid of an existing UNIT symbol (cross-type update)",
-          "outcome": "accepted",
-          "note": "events: TaskOrgModified"
+          "outcome": "announced",
+          "message": "'UpdateTaskOrg' failed: Error modifying Task Org - invalid parameters?"
         },
         {
           "when": "sent through Request (unknown poid, no taskOrg)",
           "outcome": "refused",
-          "message": "Error modifying Task Org - invalid parameters?",
+          "message": "UpdateTaskOrg: 'poid' idNOSUCHTO094 names no object in this session - send the poid of an existing task org",
           "wire": "request"
         }
       ],
@@ -3247,7 +3288,7 @@
     },
     {
       "name": "AddTaskOrgUnit",
-      "description": "Add a unit to a Task Organization (ORBAT): send it as toUnit with parentTO set to the TO's poid (from TaskOrgAdded or GetScenarioTaskOrgList) and its definition (for example sidc, name, echelon and affiliation). A TO unit is an ORBAT entry, not a symbol on the map. Fire and forget: the engine sends no reply; the new poid arrives in TaskOrgUnitAdded (to every client) - use it as parent or child in AddTaskOrgRelationship. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit. Known issue STP-1091: an unknown parentTO is accepted, leaving an orphan unit.",
+      "description": "Add a unit to a Task Organization (ORBAT): send it as toUnit with parentTO set to the TO's poid (from TaskOrgAdded or GetScenarioTaskOrgList) and its definition (for example sidc, name, echelon and affiliation). A TO unit is an ORBAT entry, not a symbol on the map. Fire and forget: the engine sends no reply; the new poid arrives in TaskOrgUnitAdded (to every client) - use it as parent or child in AddTaskOrgRelationship. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit. A parentTO that names no live task org is refused with an StpMessage and no unit is added (engines before STP-1091 add an orphan unit).",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3255,10 +3296,13 @@
           "event": "TaskOrgUnitAdded",
           "when": "always",
           "to": "session"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1091"
       ],
       "params": [
         {
@@ -3272,8 +3316,8 @@
       "x-stpEdgeCases": [
         {
           "when": "unknown parentTO poid",
-          "outcome": "accepted",
-          "note": "events: TaskOrgUnitAdded"
+          "outcome": "announced",
+          "message": "'AddTaskOrgUnit' refused: AddTaskOrgUnit: 'toUnit.parentTO' idNOSUCHTO1091 names no object in this session - send the poid of an existing task org"
         },
         {
           "when": "sent through Request (missing unit)",
@@ -3353,7 +3397,7 @@
     },
     {
       "name": "UpdateTaskOrgUnit",
-      "description": "Change a Task Organization unit, identified by poid (from TaskOrgUnitAdded or GetTaskOrgContent), sending the new definition as toUnit. Fire and forget: the engine sends no reply; TaskOrgUnitModified goes to every client (TaskOrgUnitDeleted instead if the poid names a deleted unit). An unknown poid is silently ignored. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit.",
+      "description": "Change a Task Organization unit, identified by poid (from TaskOrgUnitAdded or GetTaskOrgContent), sending the new definition as toUnit. Fire and forget: the engine sends no reply; TaskOrgUnitModified goes to every client. A missing or unknown poid, or one that names a deleted TO unit or an object of another type, is refused with an StpMessage and nothing changes. Engines before STP-1088 read the unit only under the name taskOrgUnit and silently drop toUnit. Engines before STP-1091 ignore an unknown poid, send TaskOrgUnitDeleted for a deleted unit, and apply the update to an object of another type, turning it into a TO unit.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3363,10 +3407,10 @@
           "to": "session"
         },
         {
-          "event": "TaskOrgUnitDeleted",
+          "event": "StpMessage",
           "when": "if",
-          "condition": "the poid names a deleted task org unit: TaskOrgUnitDeleted instead of TaskOrgUnitModified",
-          "to": "session"
+          "condition": "the call is refused",
+          "to": "caller"
         }
       ],
       "params": [
@@ -3388,12 +3432,23 @@
       "x-stpEdgeCases": [
         {
           "when": "unknown poid",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "'UpdateTaskOrgUnit' refused: UpdateTaskOrgUnit: 'poid' idNOSUCHTOU094 names no object in this session - send the poid of an existing task org unit"
+        },
+        {
+          "when": "poid of a task (cross-type update)",
+          "outcome": "announced",
+          "message": "'UpdateTaskOrgUnit' refused: UpdateTaskOrgUnit: 'poid' id6TUCCUM9736CJV9M78VUM6SJJ names a task, not a task org unit"
+        },
+        {
+          "when": "poid of a deleted task org unit",
+          "outcome": "announced",
+          "message": "'UpdateTaskOrgUnit' refused: UpdateTaskOrgUnit: 'poid' id19KUTHJT7AKJW2Q81KVCZD1RBH names a deleted task org unit"
         },
         {
           "when": "sent through Request (unknown poid, no unit)",
-          "outcome": "accepted",
-          "note": "success",
+          "outcome": "refused",
+          "message": "UpdateTaskOrgUnit: 'poid' idNOSUCHTOU094 names no object in this session - send the poid of an existing task org unit",
           "wire": "request"
         }
       ],
@@ -3606,7 +3661,7 @@
     },
     {
       "name": "UpdateTaskOrgRelationship",
-      "description": "Change a relationship between two Task Organization units (for example from organic to attached), identified by poid (from GetTaskOrgContent), sending the new definition as toRelationship. Fire and forget: the engine sends no reply; TaskOrgRelationshipModified goes to every client in the session. An unknown poid is silently ignored. Engines before STP-1088 read the object only as taskOrgRelationship and silently drop toRelationship. Engines before STP-1089 apply the change but send no TaskOrgRelationshipModified - verify with GetTaskOrgContent.",
+      "description": "Change a relationship between two Task Organization units (for example from organic to attached), identified by poid (from GetTaskOrgContent), sending the new definition as toRelationship. Fire and forget: the engine sends no reply; TaskOrgRelationshipModified goes to every client in the session. A missing or unknown poid, or one that names an object of another type, is refused with an StpMessage and nothing changes (engines before STP-1091 ignore an unknown poid). Engines before STP-1088 read the object only as taskOrgRelationship and silently drop toRelationship. Engines before STP-1089 apply the change but send no TaskOrgRelationshipModified - verify with GetTaskOrgContent.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3614,6 +3669,12 @@
           "event": "TaskOrgRelationshipModified",
           "when": "always",
           "to": "session"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
       ],
       "params": [
@@ -3635,12 +3696,13 @@
       "x-stpEdgeCases": [
         {
           "when": "unknown poid",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "'UpdateTaskOrgRelationship' refused: UpdateTaskOrgRelationship: 'poid' idNOSUCHREL094 names no object in this session - send the poid of an existing task org relationship"
         },
         {
           "when": "sent through Request (unknown poid, no relationship)",
-          "outcome": "accepted",
-          "note": "success",
+          "outcome": "refused",
+          "message": "UpdateTaskOrgRelationship: 'poid' idNOSUCHREL094 names no object in this session - send the poid of an existing task org relationship",
           "wire": "request"
         }
       ],
@@ -3746,7 +3808,7 @@
     },
     {
       "name": "AddTask",
-      "description": "Create a task directly - who does what, how and why, with which tactical graphics (tgs) - without sketch or speech recognition, which can also produce tasks (SendInk with speech, or automatic tasking). Set who to the executing unit's poid (from SymbolAdded) and what, how, why and roe to members of the TaskWhat, TaskHow, TaskWhy and TaskROE enums. Fire and forget: the engine sends no reply; the new poid arrives in TaskAdded (to every client), followed at once by a TaskModified for the same task. A value that is not an engine enum member, or a missing task, makes the engine drop the call silently. Known issue STP-1091: an unknown who poid is accepted.",
+      "description": "Create a task directly - who does what, how and why, with which tactical graphics (tgs) - without sketch or speech recognition, which can also produce tasks (SendInk with speech, or automatic tasking). Set who to the executing unit's poid (from SymbolAdded) and what, how, why and roe to members of the TaskWhat, TaskHow, TaskWhy and TaskROE enums. Fire and forget: the engine sends no reply; the new poid arrives in TaskAdded (to every client), followed at once by a TaskModified for the same task. A value that is not an engine enum member, or a missing task, makes the engine drop the call silently. A who that names no live unit or TO unit is refused with an StpMessage and no task is created (engines before STP-1091 create the task).",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3754,10 +3816,13 @@
           "event": "TaskAdded",
           "when": "always",
           "to": "session"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1091"
       ],
       "params": [
         {
@@ -3779,8 +3844,8 @@
         },
         {
           "when": "unknown who poid",
-          "outcome": "accepted",
-          "note": "events: TaskAdded, TaskModified"
+          "outcome": "announced",
+          "message": "'AddTask' refused: AddTask: 'task.who' idNOSUCHUNIT1091 names no object in this session - send the poid of an existing unit or task org unit"
         },
         {
           "when": "sent through Request (missing task)",
@@ -3945,7 +4010,7 @@
     },
     {
       "name": "UpdateTask",
-      "description": "Change a task, identified by poid (from TaskAdded): send as alternates the task's alternates array from its latest TaskAdded or TaskModified, with the entries you changed (usually the first). Fire and forget: the engine sends no reply; TaskModified goes to every client. Alternates taken from an earlier event carry an out-of-date dbVersion, and the update is then silently dropped; a missing alternates is silently ignored. Engines before STP-1080 apply the update but send no TaskModified, nor a TaskDeleted when the task is deleted later. Known issue STP-1091: an unknown poid is not refused; the engine stores a new task under it and sends no event.",
+      "description": "Change a task, identified by poid (from TaskAdded): send as alternates the task's alternates array from its latest TaskAdded or TaskModified, with the entries you changed (usually the first). Fire and forget: the engine sends no reply; TaskModified goes to every client. Alternates taken from an earlier event carry an out-of-date dbVersion, and the update is then silently dropped; a missing alternates is silently ignored. Engines before STP-1080 apply the update but send no TaskModified, nor a TaskDeleted when the task is deleted later. A missing or unknown poid, or one that names a deleted task or an object of another type, is refused with an StpMessage and nothing is stored; engines before STP-1091 store a new task under an unknown poid and send no event.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3956,14 +4021,11 @@
           "to": "session"
         },
         {
-          "event": "TaskAdded",
+          "event": "StpMessage",
           "when": "if",
-          "condition": "the poid is unknown: the task is added",
-          "to": "session"
+          "condition": "the call is refused",
+          "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1091"
       ],
       "params": [
         {
@@ -3987,7 +4049,13 @@
       "x-stpEdgeCases": [
         {
           "when": "unknown poid",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "'UpdateTask' refused: UpdateTask: 'poid' idGHOST1091MV4A3OKQ names no object in this session - send the poid of an existing task"
+        },
+        {
+          "when": "poid of a unit (cross-type update)",
+          "outcome": "announced",
+          "message": "'UpdateTask' refused: UpdateTask: 'poid' id186SJRWMK42B358PV21AYGWEK names a unit, not a task"
         },
         {
           "when": "missing alternates",
@@ -3995,8 +4063,8 @@
         },
         {
           "when": "sent through Request (unknown poid, no alternates)",
-          "outcome": "accepted",
-          "note": "success",
+          "outcome": "refused",
+          "message": "UpdateTask: 'poid' idNOSUCHTASK094 names no object in this session - send the poid of an existing task",
           "wire": "request"
         },
         {
@@ -4335,7 +4403,7 @@
     },
     {
       "name": "SetCoaTaskOrg",
-      "description": "Choose the Task Organization (TO) used for COAs; take toPoid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid, except that a missing toPoid is refused. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing. Known issue STP-1091: today's engine does not check toPoid - an unknown one answers success and changes nothing.",
+      "description": "Choose the Task Organization (TO) used for COAs; take toPoid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing. Engines before STP-1091 answer success to an unknown toPoid and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -4352,8 +4420,7 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1077",
-        "STP-1091"
+        "STP-1077"
       ],
       "params": [
         {
@@ -4390,8 +4457,13 @@
         },
         {
           "when": "unknown toPoid",
-          "outcome": "accepted",
-          "note": "success"
+          "outcome": "refused",
+          "message": "SetCoaTaskOrg: 'toPoid' idNOSUCHTO1091 names no object in this session - send the poid of an existing task org"
+        },
+        {
+          "when": "toPoid of a unit symbol",
+          "outcome": "refused",
+          "message": "SetCoaTaskOrg: 'toPoid' id186SJRWMK42B358PV21AYGWEK names a unit, not a task org"
         }
       ],
       "examples": [
@@ -4430,7 +4502,7 @@
     },
     {
       "name": "ResetCoaTaskOrg",
-      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg (hostile clears the hostile default, any other value the friend default). With coaPoid: removes the TO tied to that COA for affiliation, or for every affiliation when affiliation is omitted, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. An unknown coaPoid is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
+      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg (friend, hostile or any; another value is refused). With coaPoid: removes the TO tied to that COA for affiliation, or for every affiliation when affiliation is omitted, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. An unknown coaPoid is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -4481,6 +4553,11 @@
           "when": "missing affiliation",
           "outcome": "refused",
           "message": "ResetCoaTaskOrg: missing 'affiliation' - name the affiliation whose default task org to reset"
+        },
+        {
+          "when": "unknown affiliation value",
+          "outcome": "refused",
+          "message": "ResetCoaTaskOrg: unknown affiliation 'martian' - use friend, hostile or any"
         }
       ],
       "examples": [
@@ -4695,7 +4772,7 @@
     },
     {
       "name": "SetCurrentCoa",
-      "description": "Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Get the poid from CoaAdded or the ImportCoaContent result. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false). An unknown poid, or a session with no scenario, is refused after about 10 s ('the engine did not confirm within 10 s').",
+      "description": "Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Get the poid from CoaAdded or the ImportCoaContent result. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false). An unknown poid, or one that names a deleted COA or an object of another type, is refused at once; engines before STP-1091 refuse an unknown poid only after about 10 s ('the engine did not confirm within 10 s').",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -4734,9 +4811,9 @@
       },
       "x-stpEdgeCases": [
         {
-          "when": "no active scenario",
-          "outcome": "refused",
-          "message": "SetCurrentCoa: the engine did not confirm within 10 s"
+          "when": "no active scenario (COA added in the session)",
+          "outcome": "accepted",
+          "note": "success; events: CoaSwitched"
         },
         {
           "when": "already current (same poid again)",
@@ -4751,7 +4828,7 @@
         {
           "when": "unknown poid",
           "outcome": "refused",
-          "message": "SetCurrentCoa: the engine did not confirm within 10 s"
+          "message": "SetCurrentCoa: 'poid' idNOSUCHCOA1091 names no object in this session - send the poid of an existing COA"
         },
         {
           "when": "poid and coaPoid disagree",
@@ -4885,7 +4962,7 @@
     },
     {
       "name": "UpdateCoa",
-      "description": "Change the definition of an existing COA (for example its name), identified by poid (from CoaAdded). Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state. A missing poid or coa is refused with an StpMessage; an unknown poid is silently ignored.",
+      "description": "Change the definition of an existing COA (for example its name), identified by poid (from CoaAdded). Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state. A missing poid or coa, an unknown poid, or one that names a deleted COA or an object of another type, is refused with an StpMessage (engines before STP-1091 ignore an unknown poid).",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -4930,7 +5007,8 @@
         },
         {
           "when": "unknown poid",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "'UpdateCoa' refused: UpdateCoa: 'poid' idNOSUCHCOA094 names no object in this session - send the poid of an existing COA"
         },
         {
           "when": "sent through Request (missing coa)",
@@ -5052,7 +5130,7 @@
     },
     {
       "name": "SetRole",
-      "description": "Switch this client's role: S2, S3, S4, FSO or ENG, or 'none' to clear it (as ResetRole does). S2 works on the hostile side and the other roles on the friendly side; the client's current COA and task org may change with the role (CoaSwitched, TaskOrgSwitched). Answers null once the engine confirms with RoleSwitched (role in lower case); a switch to the role the client already has answers at once with no event, and one not confirmed within 10 s is refused. createIfNone is ignored over this API: no COA is created. A missing role is refused. Known issue STP-1091: an unknown role value is accepted.",
+      "description": "Switch this client's role: S2, S3, S4, FSO or ENG, or 'none' to clear it (as ResetRole does). S2 works on the hostile side and the other roles on the friendly side; the client's current COA and task org may change with the role (CoaSwitched, TaskOrgSwitched). Answers null once the engine confirms with RoleSwitched (role in lower case); a switch to the role the client already has answers at once with no event, and one not confirmed within 10 s is refused. createIfNone is ignored over this API: no COA is created. A missing or unknown role is refused (engines before STP-1091 accept any value and confirm it with RoleSwitched).",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -5072,10 +5150,13 @@
           "when": "if",
           "condition": "the caller's current task org changes with the role",
           "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1091"
       ],
       "params": [
         {
@@ -5112,8 +5193,8 @@
         },
         {
           "when": "unknown role value",
-          "outcome": "accepted",
-          "note": "success; events: RoleSwitched"
+          "outcome": "refused",
+          "message": "SetRole: unknown role 'XO' - use s2, s3, s4, fso, eng, or none"
         }
       ],
       "examples": [
