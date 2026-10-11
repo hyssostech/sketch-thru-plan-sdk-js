@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.2"
+    "version": "0.9.3"
   },
   "methods": [
     {
@@ -1633,7 +1633,7 @@
     },
     {
       "name": "GetScenarioContent",
-      "description": "Return the whole current scenario as object_set([...]) text - the form to save a plan and later restore it with LoadNewScenario (replace) or ImportPlanData / SyncScenarioSession (merge). It holds the planning scenario, COAs, symbols, tasks and task orgs, plus deleted objects carrying the deletion version; session state such as viewports and ink is left out. Far smaller than the JSON forms (GetScenarioObjectSet, GetAllObjects), whose objects each carry a large engine term. Read-only; no event follows. A session with nothing loaded returns an empty object_set([]). Engines before STP-1083 fail it after an UndoLastOp that undid an add.",
+      "description": "Return the whole current scenario as object_set([...]) text - the form to save a plan and later restore it with LoadNewScenario (replace) or ImportPlanData / SyncScenarioSession (merge). It holds the planning scenario, COAs, symbols, tasks and task orgs, plus deleted objects carrying the deletion version; session state such as viewports and ink is left out. The JSON forms (GetScenarioObjectSet, GetAllObjects) carry the same text per object, in PrologTerm. Read-only; no event follows. A session with nothing loaded returns an empty object_set([]). Engines before STP-1083 fail it after an UndoLastOp that undid an add.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -5462,12 +5462,9 @@
     },
     {
       "name": "GetCoaObjectSet",
-      "description": "Return the objects of one COA - the coa object with its units, tactical graphics and tasks - as a JSON array; the object-set form of GetCoaContent. Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm), so prefer GetCoaContent to read, save or reload a COA. Read-only. An unknown poid returns []; a missing poid returns every object in the session, session state included. Known issue STP-1090: this output cannot be fed back to ImportCoaFromObjectSet.",
+      "description": "Return the objects of one COA - the coa object with its units, tactical graphics and tasks - as a JSON array; the object-set form of GetCoaContent. The array is valid input for ImportCoaFromObjectSet as it is. Each object carries fsTYPE, poid, dbTimestamp, dbCreationTimestamp, dbVersion and Description, and its content in PrologTerm: a string holding the object's STP text, the same text GetCoaContent returns for it (for example [fsTYPE: coa,poid: id1Q1MT3LD4G16Q75ANN1HNRN2GU,fsdb_timestamp: '639273441310089207',fsdb_creation_timestamp: '639273441310089207',fsdb_version: vJTXMQ32SV2G1TS5XVNFSQTUFE,name: 'Alpha COA',type: friend,creator_role: 'S3']). The objects are free-form JSON: read the content from PrologTerm, not from the other fields. Read-only. An unknown poid returns []; a missing poid returns every object in the session, session state included. Engines before STP-1090 return PrologTerm as a nested array that no import reads back; with those, use GetCoaContent and ImportCoaContent instead.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [
         {
           "name": "poid",
@@ -5506,7 +5503,7 @@
           "params": [
             {
               "name": "poid",
-              "value": "idN1Y9DR3HV80RFR2P5959C2695"
+              "value": "id1Q1MT3LD4G16Q75ANN1HNRN2GU"
             }
           ],
           "result": {
@@ -5514,26 +5511,23 @@
             "value": [
               {
                 "fsTYPE": "coa",
-                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
-                "dbTimestamp": "639272659345014258",
-                "dbCreationTimestamp": "639272659345014258",
-                "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                "dbTimestamp": "639273441310089207",
+                "dbCreationTimestamp": "639273441310089207",
+                "dbVersion": "vJTXMQ32SV2G1TS5XVNFSQTUFE",
                 "Description": ""
               }
             ]
           },
-          "description": "Captured from a live engine (STP-1059), request wire, answered in 5 ms."
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 11 ms; each object's PrologTerm (its STP text) is left out here, as in every example (STP-1085)."
         }
       ]
     },
     {
       "name": "GetScenarioObjectSet",
-      "description": "Return the whole scenario as a JSON array - the same objects as GetScenarioContent (planning scenario, COAs, symbols, tasks, task orgs, and deleted objects carrying the deletion version), session state left out. Takes no parameters. Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm): about 30 times the size of the text form. Prefer GetScenarioContent to save or reload a scenario, and GetPoidObject for a single object. Read-only. Known issue STP-1090: this output cannot be fed back to the *FromObjectSet methods.",
+      "description": "Return the whole scenario as a JSON array - the same objects as GetScenarioContent (planning scenario, COAs, symbols, tasks, task orgs, and deleted objects carrying the deletion version), session state left out. Takes no parameters. The array is valid input for LoadNewScenarioFromObjectSet, SyncScenarioSessionFromObjectSet and ImportPlanDataFromObjectSet as it is. Each object carries fsTYPE, poid, dbTimestamp, dbCreationTimestamp, dbVersion and Description, and its content in PrologTerm: a string holding the object's STP text, the same text GetScenarioContent returns for it (for example [fsTYPE: coa,poid: id1Q1MT3LD4G16Q75ANN1HNRN2GU,fsdb_timestamp: ...,name: 'Alpha COA',type: friend,creator_role: 'S3']). The objects are free-form JSON: read the content from PrologTerm, not from the other fields. A scenario of 8 objects came to about 7 KB. Use GetPoidObject for a single object. Read-only. Engines before STP-1090 return PrologTerm as a nested array that no import reads back; with those, use GetScenarioContent and LoadNewScenario, SyncScenarioSession or ImportPlanData instead.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [],
       "x-descriptionStatus": "draft",
       "result": {
@@ -5562,42 +5556,39 @@
             "value": [
               {
                 "fsTYPE": "planning_scenario",
-                "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
-                "dbTimestamp": "639272659133487486",
-                "dbCreationTimestamp": "639272659133487486",
-                "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                "poid": "id1KY0ZZZEJ1NLCSYPWBB601KGLF",
+                "dbTimestamp": "639273441254319626",
+                "dbCreationTimestamp": "639273441254319626",
+                "dbVersion": "vJ3B2ZUEQ6KJ1K8DE5XF28RN73",
                 "Description": ""
               },
               {
                 "fsTYPE": "coa",
-                "poid": "idESHXV6HURZW2TMP775XHC5QKC",
-                "dbTimestamp": "639272659267220061",
-                "dbCreationTimestamp": "639272659267220061",
-                "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                "dbTimestamp": "639273441310089207",
+                "dbCreationTimestamp": "639273441310089207",
+                "dbVersion": "vJTXMQ32SV2G1TS5XVNFSQTUFE",
                 "Description": ""
               },
               {
-                "fsTYPE": "coa",
-                "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
-                "dbTimestamp": "639272659314776471",
-                "dbCreationTimestamp": "639272659314776471",
-                "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                "fsTYPE": "task_org",
+                "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                "dbTimestamp": "639273441367070157",
+                "dbCreationTimestamp": "639273441367070157",
+                "dbVersion": "v13Z6TVF2QNS308SR1HRKJZMGTC",
                 "Description": ""
               }
             ]
           },
-          "description": "Captured from a live engine (STP-1059), request wire, answered in 27 ms; result abbreviated from the capture."
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 17 ms; result abbreviated from the capture; each object's PrologTerm (its STP text) is left out here, as in every example (STP-1085)."
         }
       ]
     },
     {
       "name": "GetTaskOrgObjectSet",
-      "description": "Return one Task Organization - the task_org object with its units and relationships - as a JSON array; the object-set form of GetTaskOrgContent, and the same call as GetTaskOrgObjects. Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm). Useful to list the poids of a TO's units and relationships; prefer GetTaskOrgContent to save or reload. Read-only. An unknown poid returns []; a missing poid returns every object in the session. Known issue STP-1090: this output cannot be fed back to ImportTaskOrgFromObjectSet.",
+      "description": "Return one Task Organization - the task_org object with its units and relationships - as a JSON array; the object-set form of GetTaskOrgContent, and the same call as GetTaskOrgObjects. The array is valid input for ImportTaskOrgFromObjectSet as it is, and lists the poids of the TO's units and relationships. Each object carries fsTYPE, poid, dbTimestamp, dbCreationTimestamp, dbVersion and Description, and its content in PrologTerm: a string holding the object's STP text, the same text GetTaskOrgContent returns for it (for example [fsTYPE: task_org,poid: idBSRY3QPQL082YTSYA9HPZDSKR,fsdb_timestamp: ...,name: 'Alpha TO',affiliation: friend,...]). The objects are free-form JSON: read the content from PrologTerm, not from the other fields. Read-only. An unknown poid returns []; a missing poid returns every object in the session. Engines before STP-1090 return PrologTerm as a nested array that no import reads back; with those, use GetTaskOrgContent and ImportTaskOrgContent instead.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [
         {
           "name": "poid",
@@ -5636,7 +5627,7 @@
           "params": [
             {
               "name": "poid",
-              "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+              "value": "idBSRY3QPQL082YTSYA9HPZDSKR"
             }
           ],
           "result": {
@@ -5644,37 +5635,37 @@
             "value": [
               {
                 "fsTYPE": "task_org",
-                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
-                "dbTimestamp": "639272661799152434",
-                "dbCreationTimestamp": "639272661799152434",
-                "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL",
+                "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                "dbTimestamp": "639273441367070157",
+                "dbCreationTimestamp": "639273441367070157",
+                "dbVersion": "v13Z6TVF2QNS308SR1HRKJZMGTC",
                 "Description": ""
               },
               {
                 "fsTYPE": "task_org_unit",
-                "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
-                "dbTimestamp": "639272661935296924",
-                "dbCreationTimestamp": "639272661935296924",
-                "dbVersion": "v14TP3BMG51ME1C2D195N8VYMRC",
+                "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                "dbTimestamp": "639273441374939557",
+                "dbCreationTimestamp": "639273441374939557",
+                "dbVersion": "v18BV64Z8X0ESRGJNAUNJZG09WM",
                 "Description": ""
               },
               {
                 "fsTYPE": "task_org_unit",
-                "poid": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
-                "dbTimestamp": "639272661942758403",
-                "dbCreationTimestamp": "639272661942758403",
-                "dbVersion": "v15HPP7WE8TAR13SX302WPLCZPS",
+                "poid": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                "dbTimestamp": "639273441382732494",
+                "dbCreationTimestamp": "639273441382732494",
+                "dbVersion": "v7QT7U5TS28L9ULT69FGYV4HJC",
                 "Description": ""
               }
             ]
           },
-          "description": "Captured from a live engine (STP-1059), request wire, answered in 7 ms; result abbreviated from the capture."
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 6 ms; result abbreviated from the capture; each object's PrologTerm (its STP text) is left out here, as in every example (STP-1085)."
         }
       ]
     },
     {
       "name": "ImportCoaFromObjectSet",
-      "description": "Import a COA from a JSON array of STP objects; the object-set form of ImportCoaContent. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Returns the poid of the first coa object (null when there is none; an empty array imports nothing). Known issue STP-1090: the round trip from GetCoaObjectSet does not work - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it they import with empty fields. Use ImportCoaContent with GetCoaContent text instead.",
+      "description": "Import a COA from a JSON array of STP objects; the object-set form of ImportCoaContent. Send the objects as GetCoaObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first coa object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetCoaObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportCoaContent with GetCoaContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -5726,9 +5717,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [
         {
           "name": "objects",
@@ -5752,9 +5740,35 @@
       "x-stpEdgeCases": [
         {
           "when": "round trip: objects = GetCoaObjectSet(coa1) output verbatim (PrologTerm included)",
+          "outcome": "accepted",
+          "note": "success, result id1Q1MT3LD4G16Q75ANN1HNRN2GU; events: CoaAdded; into a fresh scenario. Engines before STP-1090 refuse it as unreadable; engines before STP-1088 never answer."
+        },
+        {
+          "when": "round trip: objects = GetCoaObjectSet(coa1) output with PrologTerm removed",
           "outcome": "refused",
-          "message": "Could not read 'ImportCoaFromObjectSet': ...",
-          "note": "Engines before STP-1088 never answer this call."
+          "message": "Could not read 'ImportCoaFromObjectSet': params.objects[0] (coa 'id1Q1MT3LD4G16Q75ANN1HNRN2GU') carries no PrologTerm, which holds the object's content: only its type and id would be imported. Send the objects exactly as Get*ObjectSet returned them (only a deletion marker, dbVersion 'v0', needs no content)",
+          "note": "nothing is applied. Engines before STP-1090 accept it and import the objects with empty fields."
+        },
+        {
+          "when": "PrologTerm in the old array form",
+          "outcome": "refused",
+          "message": "Could not read 'ImportCoaFromObjectSet': params.objects[0] (coa 'id1Q1MT3LD4G16Q75ANN1HNRN2GU') has its PrologTerm in the array form engines returned before STP-1090, which drops the names of compound terms and cannot be read back. Read the objects again with Get*ObjectSet from this engine, or use the text form (Get*Content / Import*Content)",
+          "note": "the form engines before STP-1090 returned; nothing is applied"
+        },
+        {
+          "when": "PrologTerm text that is not an object",
+          "outcome": "refused",
+          "message": "Could not read 'ImportCoaFromObjectSet': params.objects[0] (coa 'id1Q1MT3LD4G16Q75ANN1HNRN2GU'): PrologTerm is not readable STP text: Parse failed: Terms not properly separated - missing comma? [not an object]"
+        },
+        {
+          "when": "a null entry",
+          "outcome": "refused",
+          "message": "Could not read 'ImportCoaFromObjectSet': params.objects[0] is not an STP object (found null); send the objects as Get*ObjectSet returned them"
+        },
+        {
+          "when": "malformed objects (strings)",
+          "outcome": "refused",
+          "message": "Could not read 'ImportCoaFromObjectSet': params.objects[0] is not an STP object (found string); send the objects as Get*ObjectSet returned them"
         },
         {
           "when": "empty objects",
@@ -5762,15 +5776,25 @@
           "note": "success"
         },
         {
-          "when": "malformed objects (strings)",
+          "when": "missing objects",
           "outcome": "refused",
-          "message": "Could not read 'ImportCoaFromObjectSet': ...",
-          "note": "Engines before STP-1088 never answer this call."
+          "message": "Object reference not set to an instance of an object."
         },
         {
-          "when": "no active scenario, real content (PrologTerm removed)",
+          "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
           "outcome": "accepted",
-          "note": "success, result idN1Y9DR3HV80RFR2P5959C2695; events: CoaAdded"
+          "note": "success; events: SymbolDeleted"
+        },
+        {
+          "when": "a task whose PrologTerm lacks its content, last of the objects (the load stops there)",
+          "outcome": "refused",
+          "message": "The object-set load stopped at object 2 of 2, task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ': STP rejected fsdb_update add: filling out FS failed. Applied before it (1): coa 'id1Q1MT3LD4G16Q75ANN1HNRN2GU'. Not applied (1): task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ'.",
+          "note": "events: CoaAdded - the objects before it stay applied"
+        },
+        {
+          "when": "no active scenario, real content",
+          "outcome": "accepted",
+          "note": "success, result id1Q1MT3LD4G16Q75ANN1HNRN2GU; events: CoaAdded"
         }
       ],
       "examples": [
@@ -5782,10 +5806,10 @@
               "value": [
                 {
                   "fsTYPE": "coa",
-                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
-                  "dbTimestamp": "639272659345014258",
-                  "dbCreationTimestamp": "639272659345014258",
-                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273441310089207",
+                  "dbCreationTimestamp": "639273441310089207",
+                  "dbVersion": "vJTXMQ32SV2G1TS5XVNFSQTUFE",
                   "Description": ""
                 }
               ]
@@ -5793,36 +5817,36 @@
           ],
           "result": {
             "name": "coaPoid",
-            "value": "idN1Y9DR3HV80RFR2P5959C2695"
+            "value": "id1Q1MT3LD4G16Q75ANN1HNRN2GU"
           },
           "x-stpEventsObserved": [
             {
               "event": "CoaAdded",
               "params": {
-                "poid": "idN1Y9DR3HV80RFR2P5959C2695",
+                "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
                 "coa": {
                   "fsTYPE": "coa",
-                  "name": null,
-                  "affiliation": null,
-                  "creatorRole": null,
+                  "name": "Alpha COA",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
                   "taskOrg": null,
-                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
-                  "dbTimestamp": "639272664741082293",
-                  "dbCreationTimestamp": "639272664741082293",
-                  "dbVersion": "vZ769SDUZERR7Q4HUE68QF6A5E",
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273441563338848",
+                  "dbCreationTimestamp": "639273441563338848",
+                  "dbVersion": "vF2HLZ3SQJDDNQ9548KL6MSGC4",
                   "Description": ""
                 },
                 "isUndo": false
               }
             }
           ],
-          "description": "Captured from a live engine (STP-1059), request wire, answered in 5 ms."
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 23 ms; each object's PrologTerm is left out here, as in every example (STP-1085); the call sent the objects exactly as GetCoaObjectSet returned them, PrologTerm included."
         }
       ]
     },
     {
       "name": "ImportPlanDataFromObjectSet",
-      "description": "Merge a JSON array of STP objects into the current scenario; the object-set form of ImportPlanData. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Known issue STP-1090: the round trip from GetScenarioObjectSet fails - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it the load aborts part way ('STP did not acknowledge ...') after some objects were already applied. Use ImportPlanData with GetScenarioContent text instead.",
+      "description": "Merge a JSON array of STP objects into the current scenario; the object-set form of ImportPlanData. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. A GetScenarioObjectSet output brings its planning_scenario object along, so the scenario then holds two planning_scenario objects (ImportPlanData does the same with GetScenarioContent text). Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm ('STP did not acknowledge ...'), after some were applied; with those, use ImportPlanData with GetScenarioContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -5916,9 +5940,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [
         {
           "name": "objects",
@@ -5942,14 +5963,35 @@
       "x-stpEdgeCases": [
         {
           "when": "round trip: objects = GetScenarioObjectSet output verbatim (PrologTerm included)",
-          "outcome": "refused",
-          "message": "Could not read 'ImportPlanDataFromObjectSet': ...",
-          "note": "Engines before STP-1088 never answer this call."
+          "outcome": "accepted",
+          "note": "success; events: CoaAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, TaskAdded, TaskOrgSwitched; into a fresh scenario, which then holds two planning_scenario objects. Engines before STP-1090 refuse it as unreadable; engines before STP-1088 never answer."
         },
         {
           "when": "round trip: objects = GetScenarioObjectSet output with PrologTerm removed",
           "outcome": "refused",
-          "message": "STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply"
+          "message": "Could not read 'ImportPlanDataFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF') carries no PrologTerm, which holds the object's content: only its type and id would be imported. Send the objects exactly as Get*ObjectSet returned them (only a deletion marker, dbVersion 'v0', needs no content)",
+          "note": "nothing is applied. Engines before STP-1090 stop part way, after some objects were applied."
+        },
+        {
+          "when": "PrologTerm in the old array form",
+          "outcome": "refused",
+          "message": "Could not read 'ImportPlanDataFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF') has its PrologTerm in the array form engines returned before STP-1090, which drops the names of compound terms and cannot be read back. Read the objects again with Get*ObjectSet from this engine, or use the text form (Get*Content / Import*Content)",
+          "note": "the form engines before STP-1090 returned; nothing is applied"
+        },
+        {
+          "when": "PrologTerm text that is not an object",
+          "outcome": "refused",
+          "message": "Could not read 'ImportPlanDataFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF'): PrologTerm is not readable STP text: Parse failed: Terms not properly separated - missing comma? [not an object]"
+        },
+        {
+          "when": "a null entry",
+          "outcome": "refused",
+          "message": "Could not read 'ImportPlanDataFromObjectSet': params.objects[0] is not an STP object (found null); send the objects as Get*ObjectSet returned them"
+        },
+        {
+          "when": "malformed objects (strings)",
+          "outcome": "refused",
+          "message": "Could not read 'ImportPlanDataFromObjectSet': params.objects[0] is not an STP object (found string); send the objects as Get*ObjectSet returned them"
         },
         {
           "when": "empty objects",
@@ -5960,57 +6002,185 @@
           "when": "missing objects",
           "outcome": "refused",
           "message": "Object reference not set to an instance of an object."
+        },
+        {
+          "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
+          "outcome": "accepted",
+          "note": "success; events: SymbolDeleted"
+        },
+        {
+          "when": "a task whose PrologTerm lacks its content, last of the objects (the load stops there)",
+          "outcome": "refused",
+          "message": "The object-set load stopped at object 8 of 8, task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ': STP rejected fsdb_update add: filling out FS failed. Applied before it (7): planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF', coa 'id1Q1MT3LD4G16Q75ANN1HNRN2GU', task_org 'idBSRY3QPQL082YTSYA9HPZDSKR', task_org_unit 'idH1ZGLAR7GSZA79RKH9YCHXB5X', task_org_unit 'id1LWW5JF9CFMKGHHZJHE2ZY4BBQ', task_org_relationship 'idJE7RRD48A3M8NWP7M6TG2KF6E', unit 'idRS1PB0U0UR8YZAEB7Z1W7NQ31'. Not applied (1): task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ'.",
+          "note": "events: CoaAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, TaskOrgSwitched - the objects before it stay applied"
         }
       ],
       "examples": [
         {
-          "name": "ImportPlanDataFromObjectSet (captured, not completed)",
+          "name": "ImportPlanDataFromObjectSet (captured)",
           "params": [
             {
               "name": "objects",
               "value": [
                 {
                   "fsTYPE": "planning_scenario",
-                  "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
-                  "dbTimestamp": "639272659133487486",
-                  "dbCreationTimestamp": "639272659133487486",
-                  "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                  "poid": "id1KY0ZZZEJ1NLCSYPWBB601KGLF",
+                  "dbTimestamp": "639273441254319626",
+                  "dbCreationTimestamp": "639273441254319626",
+                  "dbVersion": "vJ3B2ZUEQ6KJ1K8DE5XF28RN73",
                   "Description": ""
                 },
                 {
                   "fsTYPE": "coa",
-                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
-                  "dbTimestamp": "639272659267220061",
-                  "dbCreationTimestamp": "639272659267220061",
-                  "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273441310089207",
+                  "dbCreationTimestamp": "639273441310089207",
+                  "dbVersion": "vJTXMQ32SV2G1TS5XVNFSQTUFE",
                   "Description": ""
                 },
                 {
-                  "fsTYPE": "coa",
-                  "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
-                  "dbTimestamp": "639272659314776471",
-                  "dbCreationTimestamp": "639272659314776471",
-                  "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                  "fsTYPE": "task_org",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "dbTimestamp": "639273441367070157",
+                  "dbCreationTimestamp": "639273441367070157",
+                  "dbVersion": "v13Z6TVF2QNS308SR1HRKJZMGTC",
                   "Description": ""
                 },
                 {
-                  "fsTYPE": "coa",
-                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
-                  "dbTimestamp": "639272659345014258",
-                  "dbCreationTimestamp": "639272659345014258",
-                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "fsTYPE": "task_org_unit",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "dbTimestamp": "639273441374939557",
+                  "dbCreationTimestamp": "639273441374939557",
+                  "dbVersion": "v18BV64Z8X0ESRGJNAUNJZG09WM",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "dbTimestamp": "639273441382732494",
+                  "dbCreationTimestamp": "639273441382732494",
+                  "dbVersion": "v7QT7U5TS28L9ULT69FGYV4HJC",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "dbTimestamp": "639273441389928542",
+                  "dbCreationTimestamp": "639273441389928542",
+                  "dbVersion": "v1EA70T1P4FWADMBC9KBFSRDTV7",
                   "Description": ""
                 }
               ]
             }
           ],
-          "description": "Captured from a live engine (STP-1059); the call could not be completed there (round trip: objects = GetScenarioObjectSet output with PrologTerm removed): STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply."
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Alpha COA",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273442541824774",
+                  "dbCreationTimestamp": "639273442541824774",
+                  "dbVersion": "vNPLZ0NNLWKRFHATBCYVN6ETB1",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "name": "Alpha TO",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-11T19:35:36.706Z",
+                  "dbTimestamp": "639273442541836350",
+                  "dbVersion": "v1GCY0ZQZKXWHKUXC69WEVC562M",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----F---",
+                    "delta": "10031000161211000000",
+                    "partA": "1003100016",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----F---"
+                  },
+                  "shortDescription": "1",
+                  "description": "INFANTRY BATTALION",
+                  "fullDescription": "FRIENDLY INFANTRY BATTALION 1",
+                  "affiliation": "friend",
+                  "echelon": "battalion",
+                  "parent": null,
+                  "designator1": "1",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "FIRST BATTALION",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639273442542272795",
+                  "dbVersion": "v1NNLEXXMCCE0TATX3CVHRGJP3D",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "parent": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "child": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "relationship": "organic",
+                  "isMTOE": false,
+                  "dbTimestamp": "639273442543414684",
+                  "dbVersion": "v2PUSFQFXZU60VAU16KP9EPSMT",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 470 ms; params abbreviated from the capture; each object's PrologTerm is left out here, as in every example (STP-1085); the call sent the objects exactly as GetScenarioObjectSet returned them, PrologTerm included."
         }
       ]
     },
     {
       "name": "ImportTaskOrgFromObjectSet",
-      "description": "Import a Task Organization from a JSON array of STP objects; the object-set form of ImportTaskOrgContent. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Returns the poid of the first task_org object (null when there is none; an empty array imports nothing). Known issue STP-1090: the round trip from GetTaskOrgObjectSet does not work - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it they import with empty fields. Use ImportTaskOrgContent with GetTaskOrgContent text instead.",
+      "description": "Import a Task Organization from a JSON array of STP objects; the object-set form of ImportTaskOrgContent. Send the objects as GetTaskOrgObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first task_org object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetTaskOrgObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportTaskOrgContent with GetTaskOrgContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -6086,9 +6256,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [
         {
           "name": "objects",
@@ -6112,14 +6279,61 @@
       "x-stpEdgeCases": [
         {
           "when": "round trip: objects = GetTaskOrgObjectSet(to1) output verbatim (PrologTerm included)",
+          "outcome": "accepted",
+          "note": "success, result idBSRY3QPQL082YTSYA9HPZDSKR; events: TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded; into a fresh scenario. Engines before STP-1090 refuse it as unreadable; engines before STP-1088 never answer."
+        },
+        {
+          "when": "round trip: objects = GetTaskOrgObjectSet(to1) output with PrologTerm removed",
           "outcome": "refused",
-          "message": "Could not read 'ImportTaskOrgFromObjectSet': ...",
-          "note": "Engines before STP-1088 never answer this call."
+          "message": "Could not read 'ImportTaskOrgFromObjectSet': params.objects[0] (task_org 'idBSRY3QPQL082YTSYA9HPZDSKR') carries no PrologTerm, which holds the object's content: only its type and id would be imported. Send the objects exactly as Get*ObjectSet returned them (only a deletion marker, dbVersion 'v0', needs no content)",
+          "note": "nothing is applied. Engines before STP-1090 accept it and import the objects with empty fields."
+        },
+        {
+          "when": "PrologTerm in the old array form",
+          "outcome": "refused",
+          "message": "Could not read 'ImportTaskOrgFromObjectSet': params.objects[0] (task_org 'idBSRY3QPQL082YTSYA9HPZDSKR') has its PrologTerm in the array form engines returned before STP-1090, which drops the names of compound terms and cannot be read back. Read the objects again with Get*ObjectSet from this engine, or use the text form (Get*Content / Import*Content)",
+          "note": "the form engines before STP-1090 returned; nothing is applied"
+        },
+        {
+          "when": "PrologTerm text that is not an object",
+          "outcome": "refused",
+          "message": "Could not read 'ImportTaskOrgFromObjectSet': params.objects[0] (task_org 'idBSRY3QPQL082YTSYA9HPZDSKR'): PrologTerm is not readable STP text: Parse failed: Terms not properly separated - missing comma? [not an object]"
+        },
+        {
+          "when": "a null entry",
+          "outcome": "refused",
+          "message": "Could not read 'ImportTaskOrgFromObjectSet': params.objects[0] is not an STP object (found null); send the objects as Get*ObjectSet returned them"
+        },
+        {
+          "when": "malformed objects (strings)",
+          "outcome": "refused",
+          "message": "Could not read 'ImportTaskOrgFromObjectSet': params.objects[0] is not an STP object (found string); send the objects as Get*ObjectSet returned them"
         },
         {
           "when": "empty objects",
           "outcome": "accepted",
           "note": "success"
+        },
+        {
+          "when": "missing objects",
+          "outcome": "refused",
+          "message": "Object reference not set to an instance of an object."
+        },
+        {
+          "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
+          "outcome": "accepted",
+          "note": "success; events: SymbolDeleted"
+        },
+        {
+          "when": "a task whose PrologTerm lacks its content, last of the objects (the load stops there)",
+          "outcome": "refused",
+          "message": "The object-set load stopped at object 5 of 5, task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ': STP rejected fsdb_update add: filling out FS failed. Applied before it (4): task_org 'idBSRY3QPQL082YTSYA9HPZDSKR', task_org_unit 'idH1ZGLAR7GSZA79RKH9YCHXB5X', task_org_unit 'id1LWW5JF9CFMKGHHZJHE2ZY4BBQ', task_org_relationship 'idJE7RRD48A3M8NWP7M6TG2KF6E'. Not applied (1): task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ'.",
+          "note": "events: TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded - the objects before it stay applied"
+        },
+        {
+          "when": "an object of the scenario sent back with dbVersion v0 (a deletion marker)",
+          "outcome": "accepted",
+          "note": "success; events: TaskOrgUnitDeleted"
         }
       ],
       "examples": [
@@ -6131,50 +6345,34 @@
               "value": [
                 {
                   "fsTYPE": "task_org",
-                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
-                  "dbTimestamp": "639272661799152434",
-                  "dbCreationTimestamp": "639272661799152434",
-                  "dbVersion": "v64V4UZ58UWCP8D85YYEV5M1PL",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "dbTimestamp": "639273441367070157",
+                  "dbCreationTimestamp": "639273441367070157",
+                  "dbVersion": "v13Z6TVF2QNS308SR1HRKJZMGTC",
                   "Description": ""
                 },
                 {
                   "fsTYPE": "task_org_unit",
-                  "poid": "id1P9RAY9PEQG8DF06UPEYZ1B6MT",
-                  "dbTimestamp": "639272661935296924",
-                  "dbCreationTimestamp": "639272661935296924",
-                  "dbVersion": "v14TP3BMG51ME1C2D195N8VYMRC",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "dbTimestamp": "639273441374939557",
+                  "dbCreationTimestamp": "639273441374939557",
+                  "dbVersion": "v18BV64Z8X0ESRGJNAUNJZG09WM",
                   "Description": ""
                 },
                 {
                   "fsTYPE": "task_org_unit",
-                  "poid": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
-                  "dbTimestamp": "639272661942758403",
-                  "dbCreationTimestamp": "639272661942758403",
-                  "dbVersion": "v15HPP7WE8TAR13SX302WPLCZPS",
-                  "Description": ""
-                },
-                {
-                  "fsTYPE": "task_org_unit",
-                  "poid": "id3DH60XF1HWE4ZUPKX049S7Q2A",
-                  "dbTimestamp": "639272662070574455",
-                  "dbCreationTimestamp": "639272662070574455",
-                  "dbVersion": "v15B7G2XG4YN1E5KRWS7JSBP0X5",
+                  "poid": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "dbTimestamp": "639273441382732494",
+                  "dbCreationTimestamp": "639273441382732494",
+                  "dbVersion": "v7QT7U5TS28L9ULT69FGYV4HJC",
                   "Description": ""
                 },
                 {
                   "fsTYPE": "task_org_relationship",
-                  "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
-                  "dbTimestamp": "639272662168067024",
-                  "dbCreationTimestamp": "639272662168067024",
-                  "dbVersion": "vLCW3Q34NNKQPPP4BEKRTHG826",
-                  "Description": ""
-                },
-                {
-                  "fsTYPE": "task_org_relationship",
-                  "poid": "id5H40GDVAGYULW3YBLF2FAB4WD",
-                  "dbTimestamp": "639272662218240114",
-                  "dbCreationTimestamp": "639272662218240114",
-                  "dbVersion": "vAXYT0HTY0RG2PX8Z565511RVP",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "dbTimestamp": "639273441389928542",
+                  "dbCreationTimestamp": "639273441389928542",
+                  "dbVersion": "v1EA70T1P4FWADMBC9KBFSRDTV7",
                   "Description": ""
                 }
               ]
@@ -6182,21 +6380,62 @@
           ],
           "result": {
             "name": "toPoid",
-            "value": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+            "value": "idBSRY3QPQL082YTSYA9HPZDSKR"
           },
           "x-stpEventsObserved": [
             {
               "event": "TaskOrgAdded",
               "params": {
-                "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
+                "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
                 "taskOrg": {
                   "fsTYPE": "task_org",
-                  "poid": "id15QMPSD13M7VGFUG8KBJ3Q2156",
-                  "name": null,
-                  "affiliation": null,
-                  "timestamp": "0001-01-01T00:00:00",
-                  "dbTimestamp": "639272665374681937",
-                  "dbVersion": "v1KH0Z6ZR3XQCC5E5T62DVHNH0L",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "name": "Alpha TO",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-11T19:35:36.706Z",
+                  "dbTimestamp": "639273442051108749",
+                  "dbVersion": "vZ6AG6R0CNQ732D5BBGR5LYHL7",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----F---",
+                    "delta": "10031000161211000000",
+                    "partA": "1003100016",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----F---"
+                  },
+                  "shortDescription": "1",
+                  "description": "INFANTRY BATTALION",
+                  "fullDescription": "FRIENDLY INFANTRY BATTALION 1",
+                  "affiliation": "friend",
+                  "echelon": "battalion",
+                  "parent": null,
+                  "designator1": "1",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "FIRST BATTALION",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639273442051477578",
+                  "dbVersion": "vH7ABKFHCCLKT2UVLYYJLNUFYS",
                   "extensions": null
                 },
                 "isUndo": false
@@ -6205,29 +6444,29 @@
             {
               "event": "TaskOrgRelationshipAdded",
               "params": {
-                "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
+                "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
                 "toRelationship": {
                   "fsTYPE": "task_org_relationship",
-                  "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
-                  "parent": null,
-                  "child": null,
-                  "relationship": "none",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "parent": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "child": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "relationship": "organic",
                   "isMTOE": false,
-                  "dbTimestamp": "639272665374712143",
-                  "dbVersion": "vYU21NC36LPX33THEL9XZ8RABG",
+                  "dbTimestamp": "639273442053200967",
+                  "dbVersion": "v14WVZ5KXXHU3X66SRLNB9LFY4F",
                   "extensions": null
                 },
                 "isUndo": false
               }
             }
           ],
-          "description": "Captured from a live engine (STP-1059), request wire, answered in 47 ms; params abbreviated from the capture."
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 218 ms; each object's PrologTerm is left out here, as in every example (STP-1085); the call sent the objects exactly as GetTaskOrgObjectSet returned them, PrologTerm included."
         }
       ]
     },
     {
       "name": "LoadNewScenarioFromObjectSet",
-      "description": "Replace the whole scenario with a JSON array of STP objects; the object-set form of LoadNewScenario. Everything the session held is discarded first; an empty array leaves a new, empty scenario. Other clients of the session receive NewScenario; the caller does not. Answers null. Known issue STP-1090: the round trip from GetScenarioObjectSet fails - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it the load aborts part way, leaving the scenario reset and partly loaded. Use LoadNewScenario with GetScenarioContent text instead.",
+      "description": "Replace the whole scenario with a JSON array of STP objects; the object-set form of LoadNewScenario. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. A deletion marker (dbVersion v0) needs no PrologTerm; one for a poid the new scenario never had is not an error and is announced as deleted. Everything the session held is discarded first; the content's planning_scenario becomes the scenario, and an empty array leaves a new, empty scenario. Other clients of the session receive NewScenario; the caller does not. Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. The reset comes first, so a load that stops leaves the scenario reset and holding only the objects before the one that stopped it. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm, leaving the scenario reset and partly loaded; with those, use LoadNewScenario with GetScenarioContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -6339,9 +6578,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [
         {
           "name": "objects",
@@ -6365,14 +6601,35 @@
       "x-stpEdgeCases": [
         {
           "when": "round trip: objects = GetScenarioObjectSet output verbatim (PrologTerm included)",
-          "outcome": "refused",
-          "message": "Could not read 'LoadNewScenarioFromObjectSet': ...",
-          "note": "Engines before STP-1088 never answer this call."
+          "outcome": "accepted",
+          "note": "success; events: CoaAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, TaskAdded, TaskOrgSwitched; into a fresh scenario. Engines before STP-1090 refuse it as unreadable; engines before STP-1088 never answer."
         },
         {
           "when": "round trip: objects = GetScenarioObjectSet output with PrologTerm removed",
           "outcome": "refused",
-          "message": "STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply"
+          "message": "Could not read 'LoadNewScenarioFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF') carries no PrologTerm, which holds the object's content: only its type and id would be imported. Send the objects exactly as Get*ObjectSet returned them (only a deletion marker, dbVersion 'v0', needs no content)",
+          "note": "nothing is applied. Engines before STP-1090 stop part way, after some objects were applied."
+        },
+        {
+          "when": "PrologTerm in the old array form",
+          "outcome": "refused",
+          "message": "Could not read 'LoadNewScenarioFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF') has its PrologTerm in the array form engines returned before STP-1090, which drops the names of compound terms and cannot be read back. Read the objects again with Get*ObjectSet from this engine, or use the text form (Get*Content / Import*Content)",
+          "note": "the form engines before STP-1090 returned; nothing is applied"
+        },
+        {
+          "when": "PrologTerm text that is not an object",
+          "outcome": "refused",
+          "message": "Could not read 'LoadNewScenarioFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF'): PrologTerm is not readable STP text: Parse failed: Terms not properly separated - missing comma? [not an object]"
+        },
+        {
+          "when": "a null entry",
+          "outcome": "refused",
+          "message": "Could not read 'LoadNewScenarioFromObjectSet': params.objects[0] is not an STP object (found null); send the objects as Get*ObjectSet returned them"
+        },
+        {
+          "when": "malformed objects (strings)",
+          "outcome": "refused",
+          "message": "Could not read 'LoadNewScenarioFromObjectSet': params.objects[0] is not an STP object (found string); send the objects as Get*ObjectSet returned them"
         },
         {
           "when": "empty objects",
@@ -6380,55 +6637,182 @@
           "note": "success"
         },
         {
-          "when": "malformed objects (strings)",
+          "when": "missing objects",
           "outcome": "refused",
-          "message": "Could not read 'LoadNewScenarioFromObjectSet': ...",
-          "note": "Engines before STP-1088 never answer this call."
+          "message": "Object reference not set to an instance of an object."
+        },
+        {
+          "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
+          "outcome": "accepted",
+          "note": "success; events: SymbolDeleted"
+        },
+        {
+          "when": "a task whose PrologTerm lacks its content, last of the objects (the load stops there)",
+          "outcome": "refused",
+          "message": "The object-set load stopped at object 8 of 8, task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ': STP rejected fsdb_update add: filling out FS failed. Applied before it (7): planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF', coa 'id1Q1MT3LD4G16Q75ANN1HNRN2GU', task_org 'idBSRY3QPQL082YTSYA9HPZDSKR', task_org_unit 'idH1ZGLAR7GSZA79RKH9YCHXB5X', task_org_unit 'id1LWW5JF9CFMKGHHZJHE2ZY4BBQ', task_org_relationship 'idJE7RRD48A3M8NWP7M6TG2KF6E', unit 'idRS1PB0U0UR8YZAEB7Z1W7NQ31'. Not applied (1): task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ'.",
+          "note": "events: CoaAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, TaskOrgSwitched - the objects before it stay applied; the scenario was reset first"
         }
       ],
       "examples": [
         {
-          "name": "LoadNewScenarioFromObjectSet (captured, not completed)",
+          "name": "LoadNewScenarioFromObjectSet (captured)",
           "params": [
             {
               "name": "objects",
               "value": [
                 {
                   "fsTYPE": "planning_scenario",
-                  "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
-                  "dbTimestamp": "639272659133487486",
-                  "dbCreationTimestamp": "639272659133487486",
-                  "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                  "poid": "id1KY0ZZZEJ1NLCSYPWBB601KGLF",
+                  "dbTimestamp": "639273441254319626",
+                  "dbCreationTimestamp": "639273441254319626",
+                  "dbVersion": "vJ3B2ZUEQ6KJ1K8DE5XF28RN73",
                   "Description": ""
                 },
                 {
                   "fsTYPE": "coa",
-                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
-                  "dbTimestamp": "639272659267220061",
-                  "dbCreationTimestamp": "639272659267220061",
-                  "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273441310089207",
+                  "dbCreationTimestamp": "639273441310089207",
+                  "dbVersion": "vJTXMQ32SV2G1TS5XVNFSQTUFE",
                   "Description": ""
                 },
                 {
-                  "fsTYPE": "coa",
-                  "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
-                  "dbTimestamp": "639272659314776471",
-                  "dbCreationTimestamp": "639272659314776471",
-                  "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                  "fsTYPE": "task_org",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "dbTimestamp": "639273441367070157",
+                  "dbCreationTimestamp": "639273441367070157",
+                  "dbVersion": "v13Z6TVF2QNS308SR1HRKJZMGTC",
                   "Description": ""
                 },
                 {
-                  "fsTYPE": "coa",
-                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
-                  "dbTimestamp": "639272659345014258",
-                  "dbCreationTimestamp": "639272659345014258",
-                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "fsTYPE": "task_org_unit",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "dbTimestamp": "639273441374939557",
+                  "dbCreationTimestamp": "639273441374939557",
+                  "dbVersion": "v18BV64Z8X0ESRGJNAUNJZG09WM",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "dbTimestamp": "639273441382732494",
+                  "dbCreationTimestamp": "639273441382732494",
+                  "dbVersion": "v7QT7U5TS28L9ULT69FGYV4HJC",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "dbTimestamp": "639273441389928542",
+                  "dbCreationTimestamp": "639273441389928542",
+                  "dbVersion": "v1EA70T1P4FWADMBC9KBFSRDTV7",
                   "Description": ""
                 }
               ]
             }
           ],
-          "description": "Captured from a live engine (STP-1059); the call could not be completed there (round trip: objects = GetScenarioObjectSet output with PrologTerm removed): STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply."
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Alpha COA",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273443526375535",
+                  "dbCreationTimestamp": "639273443526375535",
+                  "dbVersion": "vTSBAJUA11DBSQBMP72H732U7P",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "name": "Alpha TO",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-11T19:35:36.706Z",
+                  "dbTimestamp": "639273443526382443",
+                  "dbVersion": "v11YN22EXB04TZRZ0D4209VTMT4",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----F---",
+                    "delta": "10031000161211000000",
+                    "partA": "1003100016",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----F---"
+                  },
+                  "shortDescription": "1",
+                  "description": "INFANTRY BATTALION",
+                  "fullDescription": "FRIENDLY INFANTRY BATTALION 1",
+                  "affiliation": "friend",
+                  "echelon": "battalion",
+                  "parent": null,
+                  "designator1": "1",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "FIRST BATTALION",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639273443526598112",
+                  "dbVersion": "v176895X02L7CXU2D3ST5TZ5T6F",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "parent": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "child": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "relationship": "organic",
+                  "isMTOE": false,
+                  "dbTimestamp": "639273443526914615",
+                  "dbVersion": "vQH24YMH2590ZTAVKA1ZJPDETU",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 150 ms; params abbreviated from the capture; each object's PrologTerm is left out here, as in every example (STP-1085); the call sent the objects exactly as GetScenarioObjectSet returned them, PrologTerm included."
         }
       ]
     },
@@ -7024,7 +7408,7 @@
     },
     {
       "name": "SyncScenarioSessionFromObjectSet",
-      "description": "Merge a JSON array of STP objects into the active session; the object-set form of SyncScenarioSession, with the same rules. It first replays the current scenario to the caller (as JoinScenarioSession), then imports the objects; an empty array only replays. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Known issue STP-1090: the round trip from GetScenarioObjectSet fails - objects with their PrologTerm are refused as unreadable (older engines never answer), and without it the load aborts part way after some objects were applied. Use SyncScenarioSession with GetScenarioContent text instead.",
+      "description": "Merge a JSON array of STP objects into the active session; the object-set form of SyncScenarioSession, with the same rules. It first replays the current scenario to the caller (as JoinScenarioSession), then imports the objects, leaving out infrastructure objects such as planning_scenario; an empty array only replays. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm, after some were applied; with those, use SyncScenarioSession with GetScenarioContent text instead.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -7148,9 +7532,6 @@
           "to": "caller"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1090"
-      ],
       "params": [
         {
           "name": "objects",
@@ -7174,64 +7555,218 @@
       "x-stpEdgeCases": [
         {
           "when": "round trip: objects = GetScenarioObjectSet output verbatim (PrologTerm included)",
-          "outcome": "refused",
-          "message": "Could not read 'SyncScenarioSessionFromObjectSet': ...",
-          "note": "Engines before STP-1088 never answer this call."
-        },
-        {
-          "when": "round trip: objects = GetScenarioObjectSet output with PrologTerm removed",
-          "outcome": "refused",
-          "message": "STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply"
+          "outcome": "accepted",
+          "note": "success; events: CoaAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, TaskAdded, TaskOrgSwitched; into a fresh scenario. Engines before STP-1090 refuse it as unreadable; engines before STP-1088 never answer."
         },
         {
           "when": "empty objects",
           "outcome": "accepted",
-          "note": "success; events: CoaAdded, CoaAdded, CoaAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, TaskOrgRelationshipAdded, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, InkProcessed, TaskAdded, TaskAdded, TaskAdded, TaskAdded"
+          "note": "success; events: CoaAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, TaskAdded"
+        },
+        {
+          "when": "round trip: objects = GetScenarioObjectSet output with PrologTerm removed",
+          "outcome": "refused",
+          "message": "Could not read 'SyncScenarioSessionFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF') carries no PrologTerm, which holds the object's content: only its type and id would be imported. Send the objects exactly as Get*ObjectSet returned them (only a deletion marker, dbVersion 'v0', needs no content)",
+          "note": "nothing is applied. Engines before STP-1090 stop part way, after some objects were applied."
+        },
+        {
+          "when": "PrologTerm in the old array form",
+          "outcome": "refused",
+          "message": "Could not read 'SyncScenarioSessionFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF') has its PrologTerm in the array form engines returned before STP-1090, which drops the names of compound terms and cannot be read back. Read the objects again with Get*ObjectSet from this engine, or use the text form (Get*Content / Import*Content)",
+          "note": "the form engines before STP-1090 returned; nothing is applied"
+        },
+        {
+          "when": "PrologTerm text that is not an object",
+          "outcome": "refused",
+          "message": "Could not read 'SyncScenarioSessionFromObjectSet': params.objects[0] (planning_scenario 'id1KY0ZZZEJ1NLCSYPWBB601KGLF'): PrologTerm is not readable STP text: Parse failed: Terms not properly separated - missing comma? [not an object]"
+        },
+        {
+          "when": "a null entry",
+          "outcome": "refused",
+          "message": "Could not read 'SyncScenarioSessionFromObjectSet': params.objects[0] is not an STP object (found null); send the objects as Get*ObjectSet returned them"
+        },
+        {
+          "when": "malformed objects (strings)",
+          "outcome": "refused",
+          "message": "Could not read 'SyncScenarioSessionFromObjectSet': params.objects[0] is not an STP object (found string); send the objects as Get*ObjectSet returned them"
+        },
+        {
+          "when": "missing objects",
+          "outcome": "refused",
+          "message": "Object reference not set to an instance of an object."
+        },
+        {
+          "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
+          "outcome": "accepted",
+          "note": "success; events: SymbolDeleted"
+        },
+        {
+          "when": "a task whose PrologTerm lacks its content, last of the objects (the load stops there)",
+          "outcome": "refused",
+          "message": "The object-set load stopped at object 7 of 7, task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ': STP rejected fsdb_update add: filling out FS failed. Applied before it (6): coa 'id1Q1MT3LD4G16Q75ANN1HNRN2GU', task_org 'idBSRY3QPQL082YTSYA9HPZDSKR', task_org_unit 'idH1ZGLAR7GSZA79RKH9YCHXB5X', task_org_unit 'id1LWW5JF9CFMKGHHZJHE2ZY4BBQ', task_org_relationship 'idJE7RRD48A3M8NWP7M6TG2KF6E', unit 'idRS1PB0U0UR8YZAEB7Z1W7NQ31'. Not applied (1): task 'idJ06MNJ8FXNLMTWQNB1A0W8PGJ'.",
+          "note": "events: CoaAdded, TaskOrgAdded, TaskOrgUnitAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, InkProcessed, SymbolAdded, TaskOrgSwitched - the objects before it stay applied"
         }
       ],
       "examples": [
         {
-          "name": "SyncScenarioSessionFromObjectSet (captured, not completed)",
+          "name": "SyncScenarioSessionFromObjectSet (captured)",
           "params": [
             {
               "name": "objects",
               "value": [
                 {
                   "fsTYPE": "planning_scenario",
-                  "poid": "id1DJX2C3WQ2PTHQEJ88UKPL3QXH",
-                  "dbTimestamp": "639272659133487486",
-                  "dbCreationTimestamp": "639272659133487486",
-                  "dbVersion": "v4GFF6R6UGTA1PKNZU0MQX6M19",
+                  "poid": "id1KY0ZZZEJ1NLCSYPWBB601KGLF",
+                  "dbTimestamp": "639273441254319626",
+                  "dbCreationTimestamp": "639273441254319626",
+                  "dbVersion": "vJ3B2ZUEQ6KJ1K8DE5XF28RN73",
                   "Description": ""
                 },
                 {
                   "fsTYPE": "coa",
-                  "poid": "idESHXV6HURZW2TMP775XHC5QKC",
-                  "dbTimestamp": "639272659267220061",
-                  "dbCreationTimestamp": "639272659267220061",
-                  "dbVersion": "vB00EXPYALTBM55ARHVD4XGHKV",
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273441310089207",
+                  "dbCreationTimestamp": "639273441310089207",
+                  "dbVersion": "vJTXMQ32SV2G1TS5XVNFSQTUFE",
                   "Description": ""
                 },
                 {
-                  "fsTYPE": "coa",
-                  "poid": "id1K9JYL93M7QJ4GMUWJ11MZNWV1",
-                  "dbTimestamp": "639272659314776471",
-                  "dbCreationTimestamp": "639272659314776471",
-                  "dbVersion": "v1GBTKSCU3QJ62C4UKSXMC8Z344",
+                  "fsTYPE": "task_org",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "dbTimestamp": "639273441367070157",
+                  "dbCreationTimestamp": "639273441367070157",
+                  "dbVersion": "v13Z6TVF2QNS308SR1HRKJZMGTC",
                   "Description": ""
                 },
                 {
-                  "fsTYPE": "coa",
-                  "poid": "idN1Y9DR3HV80RFR2P5959C2695",
-                  "dbTimestamp": "639272659345014258",
-                  "dbCreationTimestamp": "639272659345014258",
-                  "dbVersion": "v5AF41L2FLSF5DVD0PQSWN3YUE",
+                  "fsTYPE": "task_org_unit",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "dbTimestamp": "639273441374939557",
+                  "dbCreationTimestamp": "639273441374939557",
+                  "dbVersion": "v18BV64Z8X0ESRGJNAUNJZG09WM",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "dbTimestamp": "639273441382732494",
+                  "dbCreationTimestamp": "639273441382732494",
+                  "dbVersion": "v7QT7U5TS28L9ULT69FGYV4HJC",
+                  "Description": ""
+                },
+                {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "dbTimestamp": "639273441389928542",
+                  "dbCreationTimestamp": "639273441389928542",
+                  "dbVersion": "v1EA70T1P4FWADMBC9KBFSRDTV7",
                   "Description": ""
                 }
               ]
             }
           ],
-          "description": "Captured from a live engine (STP-1059); the call could not be completed there (round trip: objects = GetScenarioObjectSet output with PrologTerm removed): STP did not acknowledge fsdb_update add for 'idD9VBP3XV8UZVX3VZTL5R7UE8U' during scenario load (timeout or connection loss) - aborting to avoid a silent partial apply."
+          "result": {
+            "name": "ok",
+            "value": null
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "CoaAdded",
+              "params": {
+                "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                "coa": {
+                  "fsTYPE": "coa",
+                  "name": "Alpha COA",
+                  "affiliation": "friend",
+                  "creatorRole": "S3",
+                  "taskOrg": null,
+                  "poid": "id1Q1MT3LD4G16Q75ANN1HNRN2GU",
+                  "dbTimestamp": "639273443035700789",
+                  "dbCreationTimestamp": "639273443035700789",
+                  "dbVersion": "v7A267JJ3ZFGU1049B15QV984",
+                  "Description": ""
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgAdded",
+              "params": {
+                "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                "taskOrg": {
+                  "fsTYPE": "task_org",
+                  "poid": "idBSRY3QPQL082YTSYA9HPZDSKR",
+                  "name": "Alpha TO",
+                  "affiliation": "friend",
+                  "timestamp": "2026-10-11T19:35:36.706Z",
+                  "dbTimestamp": "639273443035709794",
+                  "dbVersion": "v1CPWJ6SGPW7MWELNEW43C14ZAW",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgUnitAdded",
+              "params": {
+                "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                "toUnit": {
+                  "fsTYPE": "task_org_unit",
+                  "poid": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "creatorRole": null,
+                  "confidence": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----F---",
+                    "delta": "10031000161211000000",
+                    "partA": "1003100016",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----F---"
+                  },
+                  "shortDescription": "1",
+                  "description": "INFANTRY BATTALION",
+                  "fullDescription": "FRIENDLY INFANTRY BATTALION 1",
+                  "affiliation": "friend",
+                  "echelon": "battalion",
+                  "parent": null,
+                  "designator1": "1",
+                  "designator2": null,
+                  "status": "present",
+                  "modifier": "",
+                  "strength": "",
+                  "name": "FIRST BATTALION",
+                  "unitType": "INFANTRY",
+                  "info": null,
+                  "disCode": null,
+                  "federate": null,
+                  "resources": [],
+                  "dbTimestamp": "639273443035923308",
+                  "dbVersion": "v1A3RKAUC10356MT88LQ6SHLSH4",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            },
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "idJE7RRD48A3M8NWP7M6TG2KF6E",
+                  "parent": "idH1ZGLAR7GSZA79RKH9YCHXB5X",
+                  "child": "id1LWW5JF9CFMKGHHZJHE2ZY4BBQ",
+                  "relationship": "organic",
+                  "isMTOE": false,
+                  "dbTimestamp": "639273443036173878",
+                  "dbVersion": "v623N43KQQFXBGCUMFWD2A5UAX",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1090), request wire, answered in 140 ms; params abbreviated from the capture; each object's PrologTerm is left out here, as in every example (STP-1085); the call sent the objects exactly as GetScenarioObjectSet returned them, PrologTerm included."
         }
       ]
     },
@@ -8125,7 +8660,7 @@
     },
     {
       "name": "GetAllObjects",
-      "description": "Return every live object in the session as a flat JSON array - planning scenario, COAs, symbols, tasks, task orgs with their units and relationships, plus session-state objects such as system_state; deleted objects are not included (see GetDeletedObjects). Each object carries only fsTYPE, poid, timestamps and version, with its content in a large engine-term field (PrologTerm), so the answer is large (about 2 MB for 50 objects). Prefer GetScenarioContent for the scenario, GetPoidObject for one object and GetScenarioTaskOrgList for task orgs. Read-only.",
+      "description": "Return every live object in the session as a flat JSON array - planning scenario, COAs, symbols, tasks, task orgs with their units and relationships, plus session-state objects such as system_state; deleted objects are not included (see GetDeletedObjects). Each object carries fsTYPE, poid, timestamps and version, with its content in PrologTerm as STP text (10 objects came to about 8.5 KB; engines before STP-1090 send PrologTerm as a much larger nested array, about 2 MB for 50 objects). Prefer GetScenarioContent for the scenario, GetPoidObject for one object and GetScenarioTaskOrgList for task orgs. Read-only.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -8384,7 +8919,7 @@
     },
     {
       "name": "GetTaskOrgObjects",
-      "description": "Return the objects making up a task organization (the task_org with its units and relationships) as a plain array. This is a SYNONYM of GetTaskOrgObjectSet - both reach the same engine call and return the same array; the two spellings exist because the .NET SDK grew both. Each object carries its content in PrologTerm; prefer GetTaskOrgContent to save or reload. Read-only. An unknown poid returns []; a missing poid returns every object in the session.",
+      "description": "Return the objects making up a task organization (the task_org with its units and relationships) as a plain array. This is a SYNONYM of GetTaskOrgObjectSet - both reach the same engine call and return the same array; the two spellings exist because the .NET SDK grew both. Each object carries its content in PrologTerm, as STP text; the array is valid input for ImportTaskOrgFromObjectSet as it is (engines before STP-1090 return a nested array that no import reads back). Read-only. An unknown poid returns []; a missing poid returns every object in the session.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [

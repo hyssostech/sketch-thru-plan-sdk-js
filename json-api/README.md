@@ -246,7 +246,9 @@ The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
 * `"examples": [ ... ]` - on every method (STP-1059): one OpenRPC example pairing taken from
   a live engine, not hand-written. `params` and `result` are what went over the wire; a
   fire-and-forget method's example has no `result`. Long values are abbreviated and the
-  example's `description` says so. Each example can carry:
+  example's `description` says so. `PrologTerm`, the STP text each object of an object-set
+  result carries, is left out of every example (STP-1085); the object-set examples' `description`
+  says so. Each example can carry:
   * `x-stpEventsObserved` - the events the call produced, as `{ event, params }`;
   * a name ending in `(captured, not completed)` - the capture could not complete the call
     (it needs an external server, or a known issue stops it); its `description` says what

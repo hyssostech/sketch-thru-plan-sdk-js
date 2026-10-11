@@ -118,6 +118,28 @@
   `UpdateTask` expect their events again; no rule marks events unverifiable
 - `confirmTask`, `updateTask`, `undoLastOp` and the task org relationship methods say in their
   doc comments what an engine before STP-1080 / STP-1089 does
+- OpenRPC contract raised to 0.9.3 (STP-943): STP-1090 is fixed in the engine, so the eight
+  object-set methods no longer list it in `x-stpKnownIssues`; each description keeps one sentence
+  on what an engine before the fix does. Re-captured from a live engine:
+  - `GetCoaObjectSet`, `GetTaskOrgObjectSet` and `GetScenarioObjectSet` carry each object's
+    `PrologTerm` as a string, the object's STP text (the text `Get*Content` returns), and their
+    output is valid input for the matching `*FromObjectSet` import as it is;
+  - the five imports (`ImportCoaFromObjectSet`, `ImportTaskOrgFromObjectSet`,
+    `ImportPlanDataFromObjectSet`, `LoadNewScenarioFromObjectSet`,
+    `SyncScenarioSessionFromObjectSet`) read that text back. Refused before anything is applied,
+    with the object named: an object without `PrologTerm` (a deletion marker aside), the old array
+    form, text that is not an object, an entry that is not an object. A load the engine stops part
+    way answers `success: false` naming the object that stopped it, what was applied before it and
+    what was not - new edge cases for each, with the captured messages;
+  - the loads are not all-or-nothing: objects applied before the one that stopped a load stay
+    applied and announced. `ImportPlanDataFromObjectSet` of a `GetScenarioObjectSet` output adds a
+    second `planning_scenario`, as `ImportPlanData` does with the text;
+  - `GetAllObjects`, `GetTaskOrgObjects` and `GetScenarioContent` no longer call the JSON forms
+    large. `PrologTerm` stays out of the examples (STP-1085); the examples say so.
+- Call-validation rules checked against contract 0.9.3; no rule changed
+- The object-set methods say in their doc comments that `get*ObjectSet` output round-trips into
+  the matching import, what is refused, that a load is not all-or-nothing, and what an engine
+  before STP-1090 does
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected

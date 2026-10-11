@@ -114,9 +114,10 @@ describe('contract emitted events (STP-1059)', () => {
 
   it('drops a known issue once its fix ships', () => {
     // Fixed in the engine: STP-1078 (COA events), STP-1079 (COA and role switch waits), STP-1088
-    // (task org unit and relationship param names), STP-1089 (relationship events) and STP-1080
-    // (undo, discarded ink, ConfirmTask isConfirmed and UpdateTask events).
-    const fixed = new Set(['STP-1078', 'STP-1079', 'STP-1080', 'STP-1088', 'STP-1089']);
+    // (task org unit and relationship param names), STP-1089 (relationship events), STP-1080
+    // (undo, discarded ink, ConfirmTask isConfirmed and UpdateTask events) and STP-1090 (the
+    // object-set round trip).
+    const fixed = new Set(['STP-1078', 'STP-1079', 'STP-1080', 'STP-1088', 'STP-1089', 'STP-1090']);
     const stale = METHODS.filter((m) =>
       (m['x-stpKnownIssues'] ?? []).some((k: string) => fixed.has(k)),
     ).map((m) => m.name);
