@@ -289,9 +289,12 @@ it names exists in the contract.
 * `references` - params whose value is a poid that must name an existing object: `{ param, kind,
   required }`. `kind` is `symbol`, `unit` (a symbol whose `fsTYPE` is `unit`), `task`, `coa`,
   `taskOrg`, `taskOrgUnit`, `taskOrgRelationship` or `any`, or a list of them. `required: true`
-  marks the poid that names the call's target. The engine does not check most of these: a
-  delete or update of an unknown poid is ignored, `UpdateTask` on an unknown poid creates a task
-  (STP-1091), and `AddTask` with an unknown `who` creates an orphan task.
+  marks the poid that names the call's target. Since STP-1091 the engine refuses an update, a
+  task org default or a COA switch whose target poid names no live object of its kind, and an
+  `AddTask` `who` or an `AddTaskOrgUnit` `parentTO` that names none. It does not check the
+  others: a delete of an unknown poid is ignored. Engines before STP-1091 ignore an update of an
+  unknown poid, create a task for `UpdateTask` on one, and create an orphan task for an `AddTask`
+  with an unknown `who`.
 * `intent` - the events that prove the call did what it asked (V10, "diff intended vs actual"):
   * `expect` - the proof events. The default is the method's `x-stpEmits` entries with
     `when: always` (to the caller or the session), each given a matcher. Empty when the

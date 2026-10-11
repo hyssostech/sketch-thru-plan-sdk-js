@@ -140,6 +140,29 @@
 - The object-set methods say in their doc comments that `get*ObjectSet` output round-trips into
   the matching import, what is refused, that a load is not all-or-nothing, and what an engine
   before STP-1090 does
+- OpenRPC contract raised to 0.9.4 (STP-943): STP-1091 is fixed in the engine, so `UpdateTask`,
+  `UpdateTaskOrg`, `AddTask`, `AddTaskOrgUnit`, `SetDefaultTaskOrg`, `ResetDefaultTaskOrg`,
+  `SetCoaTaskOrg` and `SetRole` no longer list it in `x-stpKnownIssues`. Each description keeps
+  one sentence on what an engine before the fix does. Edge cases re-captured from a live engine:
+  - `UpdateSymbol`, `UpdateTask`, `UpdateTaskOrg`, `UpdateTaskOrgUnit`,
+    `UpdateTaskOrgRelationship` and `UpdateCoa` refuse a missing or unknown poid, or one that
+    names a deleted object or an object of another type. The refusal is an `StpMessage`, or
+    `success: false` through `Request`, and nothing changes. Before the fix the engine ignored an
+    unknown poid, `UpdateTask` stored a new task under it, and a cross-type update rewrote the
+    object's type. The `*Deleted` "instead" events and `UpdateTask`'s `TaskAdded` are no longer
+    listed in `x-stpEmits`; `StpMessage` is listed on these methods for the refusal;
+  - `AddTask` with a `who`, and `AddTaskOrgUnit` with a `parentTO`, that names no live object is
+    refused, with no orphan created;
+  - `SetDefaultTaskOrg` and `SetCoaTaskOrg` refuse a missing or unknown TO poid, or one that is
+    not a TO; `SetRole` refuses an unknown role; `ResetDefaultTaskOrg` and `ResetCoaTaskOrg`
+    take only `friend`, `hostile` or `any`, so a missing `affiliation` no longer clears the
+    friend default;
+  - `SetCurrentCoa` refuses an unknown poid at once, not after 10 s;
+  - `ResetDefaultTaskOrg` and `SetDefaultTaskOrg` answer a client that has a current COA; before
+    the fix they timed out. Writes with no active scenario are still accepted (the
+    `no active scenario` cases).
+- Call-validation rules 1.0.3, checked against contract 0.9.4; no rule changed. The engine now
+  enforces the `references` of the methods above itself
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
