@@ -96,6 +96,28 @@
   a client evaluates around every state-changing call - preconditions, required params and poid
   references before it, and the events that prove it was done after it. See the JSON API README,
   "Call validations"
+- OpenRPC contract raised to 0.9.2 (STP-943): STP-1089, STP-1080 and STP-1083 are fixed in the
+  engine, so they are no longer listed in `x-stpKnownIssues`; each description keeps one sentence
+  on what an engine before the fix does. Re-captured from a live engine:
+  - `AddTaskOrgRelationship`, `UpdateTaskOrgRelationship` and `DeleteTaskOrgRelationship` send
+    `TaskOrgRelationshipAdded` / `Modified` / `Deleted`, one each, to every client in the session.
+    An `AddTaskOrgRelationship` whose parent and child are unknown is stored and announced too;
+  - `UndoLastOp` replays the undone operation as `*Added` / `*Modified` / `*Deleted` with
+    `isUndo: true`, to every client in the session, for symbols, tasks, task org units and
+    relationships. Undoing a task add takes two calls (the add is followed by a change);
+  - `UpdateTask` sends `TaskModified`. Alternates carrying an out-of-date `dbVersion` (taken from an
+    earlier event) are dropped silently - a new edge case;
+  - `ConfirmTask` honours `isConfirmed`: `false` sets `uiStatus` back to `confirming`; omitted, it
+    confirms;
+  - a sketch that is not recognized (`SendInk`, `RecognizeNow`) still sends `InkProcessed`, about
+    10 s later;
+  - `JoinScenarioSession` and `GetScenarioContent` work after an undone add (STP-1083);
+  - `SendInk` without `strokePoints`, or with a malformed time, is announced with an `StpMessage`
+    (since STP-1088), no longer ignored.
+- Call-validation rules 1.0.1, checked against contract 0.9.2: the relationship methods and
+  `UpdateTask` expect their events again; no rule marks events unverifiable
+- `confirmTask`, `updateTask`, `undoLastOp` and the task org relationship methods say in their
+  doc comments what an engine before STP-1080 / STP-1089 does
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected

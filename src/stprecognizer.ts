@@ -927,7 +927,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Request that a Task Org Relationship be added by STP. The actual addition should only happen when STP responds with TaskOrgRelationshipAdded
+   * Request that a Task Org Relationship be added by STP. The actual addition should only happen when STP responds with TaskOrgRelationshipAdded.
+   * Engines before STP-1089 store the relationship but send no TaskOrgRelationshipAdded.
    * @param toRelationship Task Org Relationship to be added
    */
   addTaskOrgRelationship(toUnit: StpType.StpTaskOrgRelationship) {
@@ -937,7 +938,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Request that a Task Org Relationship be updated by STP. The actual update should only happen when STP responds with TaskOrgRelationshipModified
+   * Request that a Task Org Relationship be updated by STP. The actual update should only happen when STP responds with TaskOrgRelationshipModified.
+   * Engines before STP-1089 apply the change but send no TaskOrgRelationshipModified.
    * @param poid Unique identifier of the Task Org Relationship to update
    * @param toRelationship Task Org Relationship to be updated
    */
@@ -949,7 +951,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Request a Task Org Relationship deletion from STP. The actual removal should only happen when STP responds with TaskOrgRelationshipDeleted
+   * Request a Task Org Relationship deletion from STP. The actual removal should only happen when STP responds with TaskOrgRelationshipDeleted.
+   * Engines before STP-1089 apply the deletion but send no TaskOrgRelationshipDeleted.
    * @param poid Unique identifier of the Task Org Relationship to delete
    */
   deleteTaskOrgRelationship(poid: string) {
@@ -994,7 +997,9 @@ export class StpRecognizer{
   }
 
   /**
-   * Request that a task be updated by STP. The actual update should only happen when STP responds with TaskModified
+   * Request that a task be updated by STP. The actual update should only happen when STP responds with TaskModified.
+   * Send the alternates from the task's latest TaskAdded or TaskModified: alternates carrying an
+   * out-of-date dbVersion make the engine drop the update. Engines before STP-1080 send no TaskModified for it.
    * @param poid Unique identifier of the task to update
    * @param alternates Alternates of the task to update - normally only one of the alternates will have been modified 
    */
@@ -1017,10 +1022,11 @@ export class StpRecognizer{
 
   /**
    * Pick an alternate as the confirmed task. The STP runtime responds with a task update notification
-   * in which uiStatus is set to 'confirmed'
+   * in which uiStatus is set to 'confirmed' ('confirming' when isConfirmed is false).
+   * Engines before STP-1080 ignore isConfirmed and always confirm.
    * @param poid Unique identifier of the task for which an alternate is being confirmed
    * @param nBestIndex Index indicating which of the current alternates is selected for confirmation
-   * @param [isConfirmed=true] True (default) if swithing task to confirmed status, false back to confirming
+   * @param [isConfirmed=true] True (default) if switching task to confirmed status, false back to confirming
    */
   confirmTask(poid: string, nBestIndex: number, isConfirmed: boolean = true) {
     this.informStp('ConfirmTask', {
@@ -1194,7 +1200,7 @@ export class StpRecognizer{
   /**
    * Undo the last operation applied to an object. STP replays the effect as ordinary events
    * carrying isUndo = true, so a client that already handles the Added/Modified/Deleted events
-   * needs no extra handling. Fire and forget.
+   * needs no extra handling. Fire and forget. Engines before STP-1080 send no event for an undo.
    * @param poid - Unique id of the object whose last operation is to be undone.
    */
   undoLastOp(poid: string): void {
