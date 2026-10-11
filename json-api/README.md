@@ -304,7 +304,7 @@ it names exists in the contract.
     (`InkProcessed` before `SymbolAdded`);
   * `unverifiable` - `{ issue, reason }`: a filed engine issue, still listed in the method's
     `x-stpKnownIssues`, holds the expected events back. Their absence is then reported as
-    unverifiable with the ticket, never as "not done". No rule carries it as of rule file 1.0.1:
+    unverifiable with the ticket, never as "not done". No rule carries it since rule file 1.0.1:
     the task org relationship events (STP-1089) and `UpdateTask`'s `TaskModified` (STP-1080), which
     1.0.0 marked this way, are sent since those fixes, so a client of an older engine sees them
     reported as not done.

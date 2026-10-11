@@ -136,7 +136,7 @@
     second `planning_scenario`, as `ImportPlanData` does with the text;
   - `GetAllObjects`, `GetTaskOrgObjects` and `GetScenarioContent` no longer call the JSON forms
     large. `PrologTerm` stays out of the examples (STP-1085); the examples say so.
-- Call-validation rules checked against contract 0.9.3; no rule changed
+- Call-validation rules 1.0.2, checked against contract 0.9.3; no rule changed
 - The object-set methods say in their doc comments that `get*ObjectSet` output round-trips into
   the matching import, what is refused, that a load is not all-or-nothing, and what an engine
   before STP-1090 does
