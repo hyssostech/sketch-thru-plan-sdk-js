@@ -246,7 +246,9 @@ The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
 * `"examples": [ ... ]` - on every method (STP-1059): one OpenRPC example pairing taken from
   a live engine, not hand-written. `params` and `result` are what went over the wire; a
   fire-and-forget method's example has no `result`. Long values are abbreviated and the
-  example's `description` says so. Each example can carry:
+  example's `description` says so. `PrologTerm`, the STP text each object of an object-set
+  result carries, is left out of every example (STP-1085); the object-set examples' `description`
+  says so. Each example can carry:
   * `x-stpEventsObserved` - the events the call produced, as `{ event, params }`;
   * a name ending in `(captured, not completed)` - the capture could not complete the call
     (it needs an external server, or a known issue stops it); its `description` says what
@@ -302,7 +304,7 @@ it names exists in the contract.
     (`InkProcessed` before `SymbolAdded`);
   * `unverifiable` - `{ issue, reason }`: a filed engine issue, still listed in the method's
     `x-stpKnownIssues`, holds the expected events back. Their absence is then reported as
-    unverifiable with the ticket, never as "not done". No rule carries it as of rule file 1.0.1:
+    unverifiable with the ticket, never as "not done". No rule carries it since rule file 1.0.1:
     the task org relationship events (STP-1089) and `UpdateTask`'s `TaskModified` (STP-1080), which
     1.0.0 marked this way, are sent since those fixes, so a client of an older engine sees them
     reported as not done.

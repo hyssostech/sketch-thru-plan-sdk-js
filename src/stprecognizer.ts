@@ -612,7 +612,12 @@ export class StpRecognizer{
   }
 
   /**
-   * Load a new scenario from typed objects, replacing any previous content
+   * Load a new scenario from typed objects, replacing any previous content.
+   * Send the objects as getScenarioObjectSet returned them: each one's PrologTerm (its STP text) is its content,
+   * and an object without it is refused before anything is applied. The load is not all-or-nothing: if the
+   * engine rejects an object, it stops there and the call fails naming that object and those applied before it.
+   * Engines before STP-1090 cannot read getScenarioObjectSet output back; use loadNewScenario with
+   * getScenarioContent text there.
    * @param objects - Array of STP objects to load as the new scenario
    * @param timeout - Optional timeout in seconds
    */
@@ -623,7 +628,11 @@ export class StpRecognizer{
   }
 
   /**
-   * Import typed objects into the current scenario (merge, no clear)
+   * Import typed objects into the current scenario (merge, no clear).
+   * Send the objects as getScenarioObjectSet returned them, PrologTerm included; an object without it is refused
+   * before anything is applied. The load is not all-or-nothing: if the engine rejects an object, it stops there
+   * and the call fails naming that object and those applied before it. Engines before STP-1090 cannot read
+   * getScenarioObjectSet output back; use importPlanData with getScenarioContent text there.
    * @param objects - Array of STP objects to merge into the active scenario
    * @param timeout - Optional timeout in seconds
    */
@@ -634,7 +643,10 @@ export class StpRecognizer{
   }
 
   /**
-   * Get the current scenario content as an array of typed objects
+   * Get the current scenario content as an array of typed objects. Each object carries its content in PrologTerm,
+   * a string holding the object's STP text (the text getScenarioContent returns), and the array can be passed as
+   * it is to loadNewScenarioFromObjectSet, syncScenarioSessionFromObjectSet or importPlanDataFromObjectSet.
+   * Engines before STP-1090 return PrologTerm as a nested array that no import reads back.
    * @param timeout - Optional timeout in seconds
    * @returns Array of STP objects in the current scenario
    */
@@ -645,7 +657,11 @@ export class StpRecognizer{
   }
 
   /**
-   * Sync a session using typed objects, updating with detected differences
+   * Sync a session using typed objects, updating with detected differences.
+   * Send the objects as getScenarioObjectSet returned them, PrologTerm included; an object without it is refused
+   * before anything is applied. The load is not all-or-nothing: if the engine rejects an object, it stops there
+   * and the call fails naming that object and those applied before it. Engines before STP-1090 cannot read
+   * getScenarioObjectSet output back; use syncScenarioSession with getScenarioContent text there.
    * @param objects - Array of local STP objects to sync against the server state
    * @param timeout - Optional timeout in seconds
    */
@@ -656,7 +672,11 @@ export class StpRecognizer{
   }
 
   /**
-   * Import a Task Org from typed objects
+   * Import a Task Org from typed objects.
+   * Send the objects as getTaskOrgObjectSet returned them, PrologTerm included; an object without it is refused
+   * before anything is applied. The load is not all-or-nothing: if the engine rejects an object, it stops there
+   * and the call fails naming that object and those applied before it. Engines before STP-1090 cannot read
+   * getTaskOrgObjectSet output back; use importTaskOrgContent with getTaskOrgContent text there.
    * @param objects - Array of task org objects (StpTaskOrg, StpTaskOrgUnit, StpTaskOrgRelationship)
    * @param timeout - Optional timeout in seconds
    * @returns TO's unique id
@@ -668,7 +688,9 @@ export class StpRecognizer{
   }
 
   /**
-   * Get Task Org content as an array of typed objects
+   * Get Task Org content as an array of typed objects. Each object carries its content in PrologTerm, a string
+   * holding the object's STP text, and the array can be passed as it is to importTaskOrgFromObjectSet.
+   * Engines before STP-1090 return PrologTerm as a nested array that no import reads back.
    * @param poid - TO's unique id
    * @param timeout - Optional timeout in seconds
    * @returns Array of task org objects
@@ -680,8 +702,12 @@ export class StpRecognizer{
   }
 
   /**
-   * Import a COA from typed objects
-   * Unique ids (poids) are kept exactly as they are in the objects
+   * Import a COA from typed objects.
+   * Unique ids (poids) are kept exactly as they are in the objects.
+   * Send the objects as getCoaObjectSet returned them, PrologTerm included; an object without it is refused
+   * before anything is applied. The load is not all-or-nothing: if the engine rejects an object, it stops there
+   * and the call fails naming that object and those applied before it. Engines before STP-1090 cannot read
+   * getCoaObjectSet output back; use importCoaContent with getCoaContent text there.
    * @param objects - Array of COA objects (StpCoa + symbols)
    * @param timeout - Optional timeout in seconds
    * @returns Imported COA's unique id
@@ -693,7 +719,9 @@ export class StpRecognizer{
   }
 
   /**
-   * Get COA content as an array of typed objects
+   * Get COA content as an array of typed objects. Each object carries its content in PrologTerm, a string
+   * holding the object's STP text, and the array can be passed as it is to importCoaFromObjectSet.
+   * Engines before STP-1090 return PrologTerm as a nested array that no import reads back.
    * @param poid - COA's unique id
    * @param timeout - Optional timeout in seconds
    * @returns Array of COA objects
