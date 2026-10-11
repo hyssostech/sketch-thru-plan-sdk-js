@@ -2,8 +2,8 @@
   "$schema": "./sketch-thru-plan-validations.schema.json",
   "title": "Sketch-thru-Plan call validations",
   "description": "Data-driven checks a client runs around a state-changing STP call (STP-1064): before the call, the preconditions, the params the engine silently ignores a call without, and the poids that must name existing objects; after the call, the events that prove it did what it asked (intent). Every write and destructive method of the contract has an entry. See README.md, 'Call validations'.",
-  "version": "1.0.0",
-  "contractVersion": "0.9.1",
+  "version": "1.0.1",
+  "contractVersion": "0.9.2",
   "refusalMessage": {
     "event": "StpMessage",
     "contains": "'{method}'"
@@ -482,11 +482,7 @@
               }
             }
           }
-        ],
-        "unverifiable": {
-          "issue": "STP-1089",
-          "reason": "the engine applies a task org relationship add, update or delete but sends no event for it"
-        }
+        ]
       }
     },
     "UpdateTaskOrgRelationship": {
@@ -513,11 +509,7 @@
               }
             }
           }
-        ],
-        "unverifiable": {
-          "issue": "STP-1089",
-          "reason": "the engine applies a task org relationship add, update or delete but sends no event for it"
-        }
+        ]
       }
     },
     "DeleteTaskOrgRelationship": {
@@ -541,11 +533,7 @@
               }
             }
           }
-        ],
-        "unverifiable": {
-          "issue": "STP-1089",
-          "reason": "the engine applies a task org relationship add, update or delete but sends no event for it"
-        }
+        ]
       },
       "confirm": "Deletes the task org relationship {poid}."
     },
@@ -651,11 +639,7 @@
               }
             }
           }
-        ],
-        "unverifiable": {
-          "issue": "STP-1080",
-          "reason": "the engine applies a task update but does not yet send TaskModified for it"
-        }
+        ]
       }
     },
     "DeleteTask": {

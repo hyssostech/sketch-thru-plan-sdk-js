@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.1"
+    "version": "0.9.2"
   },
   "methods": [
     {
@@ -66,7 +66,7 @@
     },
     {
       "name": "SendInk",
-      "description": "Send one sketched stroke for recognition, when the pen lifts (after SendPenDown). Use it to turn what a user draws, alone or with speech sent at about the same time (SendSpeechRecognition or SendSimulatedSpeechRecognition), into symbols, tasks, edits or commands; to place a fully specified symbol without recognition, use AddSymbol instead. List in intersectedPoids the symbols the stroke crosses, so the gesture can move, edit or delete them. Recognition starts when the segmentation timeout expires (see ChangeTimeOut) or on RecognizeNow. Fire and forget: the engine sends no reply; the outcome arrives only as the events listed - InkProcessed when the sketch is finished, then SymbolAdded, TaskAdded and so on if it was recognized, or nothing more if it was not. A missing strokePoints or a malformed time is silently ignored. Known issue STP-1080: a discarded sketch may not send InkProcessed.",
+      "description": "Send one sketched stroke for recognition, when the pen lifts (after SendPenDown). Use it to turn what a user draws, alone or with speech sent at about the same time (SendSpeechRecognition or SendSimulatedSpeechRecognition), into symbols, tasks, edits or commands; to place a fully specified symbol without recognition, use AddSymbol instead. List in intersectedPoids the symbols the stroke crosses, so the gesture can move, edit or delete them. Recognition starts when the segmentation timeout expires (see ChangeTimeOut) or on RecognizeNow. Fire and forget: the engine sends no reply; the outcome arrives only as the events listed - InkProcessed when the sketch is finished, then SymbolAdded, TaskAdded and so on if it was recognized, or nothing more if it was not. A sketch that is not recognized is discarded and still sends InkProcessed, which can come several seconds later (about 10 s in the capture); engines before STP-1080 send none for it. A missing strokePoints or a malformed time is refused with an StpMessage (engines before STP-1088 ignore it silently).",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -131,9 +131,6 @@
           "to": "session"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1080"
-      ],
       "params": [
         {
           "name": "pixelBoundsWindow",
@@ -196,17 +193,29 @@
       "x-stpEdgeCases": [
         {
           "when": "missing strokePoints",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "'SendInk' failed: Error creating ink term - invalid parameters?"
         },
         {
           "when": "malformed timeStrokeStart",
-          "outcome": "ignored"
+          "outcome": "announced",
+          "message": "Could not read 'SendInk': Could not convert string to DateTime: not-a-date. Path 'params.timeStrokeStart', line 1, position 152."
         },
         {
           "when": "sent through Request (missing strokePoints)",
           "outcome": "refused",
           "message": "Error creating ink term - invalid parameters?",
           "wire": "request"
+        },
+        {
+          "when": "a sketch that is not recognized, with unrelated speech (discarded)",
+          "outcome": "accepted",
+          "note": "events: SpeechParsed for the speech, then InkProcessed about 10 s after the stroke"
+        },
+        {
+          "when": "a sketch that is not recognized, without speech (discarded)",
+          "outcome": "accepted",
+          "note": "events: InkProcessed, about 10 s after the stroke"
         }
       ],
       "examples": [
@@ -1624,7 +1633,7 @@
     },
     {
       "name": "GetScenarioContent",
-      "description": "Return the whole current scenario as object_set([...]) text - the form to save a plan and later restore it with LoadNewScenario (replace) or ImportPlanData / SyncScenarioSession (merge). It holds the planning scenario, COAs, symbols, tasks and task orgs, plus deleted objects carrying the deletion version; session state such as viewports and ink is left out. Far smaller than the JSON forms (GetScenarioObjectSet, GetAllObjects), whose objects each carry a large engine term. Read-only; no event follows. A session with nothing loaded returns an empty object_set([]).",
+      "description": "Return the whole current scenario as object_set([...]) text - the form to save a plan and later restore it with LoadNewScenario (replace) or ImportPlanData / SyncScenarioSession (merge). It holds the planning scenario, COAs, symbols, tasks and task orgs, plus deleted objects carrying the deletion version; session state such as viewports and ink is left out. Far smaller than the JSON forms (GetScenarioObjectSet, GetAllObjects), whose objects each carry a large engine term. Read-only; no event follows. A session with nothing loaded returns an empty object_set([]). Engines before STP-1083 fail it after an UndoLastOp that undid an add.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -1639,6 +1648,11 @@
           "when": "no active scenario",
           "outcome": "accepted",
           "note": "success, result object_set([\n])\n"
+        },
+        {
+          "when": "after UndoLastOp undid an add",
+          "outcome": "accepted",
+          "note": "success"
         }
       ],
       "examples": [
@@ -1655,7 +1669,7 @@
     },
     {
       "name": "JoinScenarioSession",
-      "description": "Replay the current scenario to this client only, as if its objects had just arrived live (SymbolAdded, TaskAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, CoaAdded; deleted objects skipped), so a client can rebuild its local state. Task orgs themselves are not replayed (no TaskOrgAdded): list them with GetScenarioTaskOrgList. Changes nothing on the server. Call it after connecting to a session whose scenario already exists; to also merge content of your own, use SyncScenarioSession. Answers null; with no scenario it still succeeds.",
+      "description": "Replay the current scenario to this client only, as if its objects had just arrived live (SymbolAdded, TaskAdded, TaskOrgUnitAdded, TaskOrgRelationshipAdded, CoaAdded; deleted objects skipped), so a client can rebuild its local state. Task orgs themselves are not replayed (no TaskOrgAdded): list them with GetScenarioTaskOrgList. Changes nothing on the server. Call it after connecting to a session whose scenario already exists; to also merge content of your own, use SyncScenarioSession. Answers null; with no scenario it still succeeds. Engines before STP-1083 fail it after an UndoLastOp that undid an add.",
       "x-stpSafety": "read",
       "x-stpEmits": [
         {
@@ -1716,6 +1730,11 @@
         },
         {
           "when": "after ResetStpScenario",
+          "outcome": "accepted",
+          "note": "success"
+        },
+        {
+          "when": "after UndoLastOp undid an add",
           "outcome": "accepted",
           "note": "success"
         }
@@ -3509,7 +3528,7 @@
     },
     {
       "name": "AddTaskOrgRelationship",
-      "description": "Link two units of a Task Organization (for example organic, attached or opcon): send toRelationship with parent and child set to TO unit poids (from TaskOrgUnitAdded), the relationship kind, and parentTO set to the TO's poid. Fire and forget: the engine sends no reply. Engines before STP-1088 read the object only as taskOrgRelationship, and its TO as parentPoid, and silently drop toRelationship. Known issue STP-1080/STP-1089: even when the relationship is stored, no TaskOrgRelationshipAdded is sent - verify with GetTaskOrgContent for the TO.",
+      "description": "Link two units of a Task Organization (for example organic, attached or opcon): send toRelationship with parent and child set to TO unit poids (from TaskOrgUnitAdded), the relationship kind, and parentTO set to the TO's poid. Fire and forget: the engine sends no reply; TaskOrgRelationshipAdded, with the new poid, goes to every client in the session. The parent and child poids are not checked: a relationship between unknown units is stored and announced too. A missing toRelationship is silently ignored. Engines before STP-1088 read the object only as taskOrgRelationship, and its TO as parentPoid, and silently drop toRelationship. Engines before STP-1089 store the relationship but send no TaskOrgRelationshipAdded - verify with GetTaskOrgContent for the TO.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3518,10 +3537,6 @@
           "when": "always",
           "to": "session"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1080",
-        "STP-1089"
       ],
       "params": [
         {
@@ -3535,7 +3550,8 @@
       "x-stpEdgeCases": [
         {
           "when": "unknown parent/child poids",
-          "outcome": "ignored"
+          "outcome": "accepted",
+          "note": "events: TaskOrgRelationshipAdded"
         },
         {
           "when": "missing toRelationship",
@@ -3550,27 +3566,47 @@
       ],
       "examples": [
         {
-          "name": "AddTaskOrgRelationship (captured, not completed)",
+          "name": "AddTaskOrgRelationship (captured)",
           "params": [
             {
               "name": "toRelationship",
               "value": {
                 "fsTYPE": "task_org_relationship",
-                "parent": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
-                "child": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                "parent": "idY4XK46BBCTTP79L68KZ54VP68",
+                "child": "id14W3TF5HKC12EYKCBWUAASP7ZX",
                 "relationship": "organic",
                 "isMTOE": false,
-                "parentTO": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+                "parentTO": "idQNV68XNC1YWYLLVCY4A866807"
               }
             }
           ],
-          "description": "Captured from a live engine (STP-1059); the call could not be completed there (the call as shown): nothing came back."
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgRelationshipAdded",
+              "params": {
+                "poid": "id1AGSHXM2GJHYBUS6DC1D225PSX",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id1AGSHXM2GJHYBUS6DC1D225PSX",
+                  "parent": "idY4XK46BBCTTP79L68KZ54VP68",
+                  "child": "id14W3TF5HKC12EYKCBWUAASP7ZX",
+                  "relationship": "organic",
+                  "isMTOE": false,
+                  "dbTimestamp": "639273410033838448",
+                  "dbVersion": "v1ER8CQSYN87LW0DFNSYL0P039T",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1089), inform wire."
         }
       ]
     },
     {
       "name": "UpdateTaskOrgRelationship",
-      "description": "Change a relationship between two Task Organization units (for example from organic to attached), identified by poid (from GetTaskOrgContent), sending the new definition as toRelationship. Fire and forget: the engine sends no reply. An unknown poid is silently ignored. Engines before STP-1088 read the object only as taskOrgRelationship and silently drop toRelationship. Known issue STP-1080/STP-1089: no TaskOrgRelationshipModified is sent - verify with GetTaskOrgContent.",
+      "description": "Change a relationship between two Task Organization units (for example from organic to attached), identified by poid (from GetTaskOrgContent), sending the new definition as toRelationship. Fire and forget: the engine sends no reply; TaskOrgRelationshipModified goes to every client in the session. An unknown poid is silently ignored. Engines before STP-1088 read the object only as taskOrgRelationship and silently drop toRelationship. Engines before STP-1089 apply the change but send no TaskOrgRelationshipModified - verify with GetTaskOrgContent.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3579,10 +3615,6 @@
           "when": "always",
           "to": "session"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1080",
-        "STP-1089"
       ],
       "params": [
         {
@@ -3614,33 +3646,52 @@
       ],
       "examples": [
         {
-          "name": "UpdateTaskOrgRelationship (captured, not completed)",
+          "name": "UpdateTaskOrgRelationship (captured)",
           "params": [
             {
               "name": "poid",
-              "value": "id4U3UKR8R9FRUF6VQX8QR3TUC"
+              "value": "id1AGSHXM2GJHYBUS6DC1D225PSX"
             },
             {
               "name": "toRelationship",
               "value": {
                 "fsTYPE": "task_org_relationship",
-                "parent": "id10DQ7F3NNFXT0NQ255LJ2AALKF",
-                "child": "id3DH60XF1HWE4ZUPKX049S7Q2A",
+                "parent": "idY4XK46BBCTTP79L68KZ54VP68",
+                "child": "id14W3TF5HKC12EYKCBWUAASP7ZX",
                 "relationship": "attached",
                 "isMTOE": false,
-                "parentTO": "id15QMPSD13M7VGFUG8KBJ3Q2156",
-                "poid": "id4U3UKR8R9FRUF6VQX8QR3TUC",
-                "parentPoid": "id15QMPSD13M7VGFUG8KBJ3Q2156"
+                "parentTO": "idQNV68XNC1YWYLLVCY4A866807",
+                "poid": "id1AGSHXM2GJHYBUS6DC1D225PSX"
               }
             }
           ],
-          "description": "Captured from a live engine (STP-1059); the call could not be completed there (the call as shown): nothing came back."
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgRelationshipModified",
+              "params": {
+                "poid": "id1AGSHXM2GJHYBUS6DC1D225PSX",
+                "toRelationship": {
+                  "fsTYPE": "task_org_relationship",
+                  "poid": "id1AGSHXM2GJHYBUS6DC1D225PSX",
+                  "parent": "idY4XK46BBCTTP79L68KZ54VP68",
+                  "child": "id14W3TF5HKC12EYKCBWUAASP7ZX",
+                  "relationship": "attached",
+                  "isMTOE": false,
+                  "dbTimestamp": "639273410118716154",
+                  "dbVersion": "v185MLFH2ZPP1Q3FF74GBLFGVXC",
+                  "extensions": null
+                },
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1089), inform wire."
         }
       ]
     },
     {
       "name": "DeleteTaskOrgRelationship",
-      "description": "Delete a relationship between two Task Organization units, identified by poid (from GetTaskOrgContent, or TaskOrgRelationshipAdded after an import). Fire and forget: the engine sends no reply. An unknown poid is silently ignored. Known issue STP-1080/STP-1089: the deletion is applied - the relationship then appears in GetDeletedObjects - but no TaskOrgRelationshipDeleted is sent.",
+      "description": "Delete a relationship between two Task Organization units, identified by poid (from GetTaskOrgContent, or TaskOrgRelationshipAdded after an import). Fire and forget: the engine sends no reply; TaskOrgRelationshipDeleted goes to every client in the session, and the relationship then appears in GetDeletedObjects. An unknown poid is silently ignored. Engines before STP-1089 apply the deletion but send no TaskOrgRelationshipDeleted.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3649,10 +3700,6 @@
           "when": "always",
           "to": "session"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1080",
-        "STP-1089"
       ],
       "params": [
         {
@@ -3681,10 +3728,19 @@
           "params": [
             {
               "name": "poid",
-              "value": "id5H40GDVAGYULW3YBLF2FAB4WD"
+              "value": "id1MB7FATXLC5SS3GH06VE0Z7ZUM"
             }
           ],
-          "description": "Captured from a live engine (STP-1059), inform wire."
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskOrgRelationshipDeleted",
+              "params": {
+                "poid": "id1MB7FATXLC5SS3GH06VE0Z7ZUM",
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1089), inform wire."
         }
       ]
     },
@@ -3889,14 +3945,14 @@
     },
     {
       "name": "UpdateTask",
-      "description": "Change a task, identified by poid (from TaskAdded): send as alternates the task's alternates array from its latest TaskAdded or TaskModified, with the entries you changed (usually the first). Fire and forget: the engine sends no reply; TaskModified goes to every client. A missing alternates is silently ignored. Known issue STP-1080: today's engine may send no TaskModified - verify with GetPoidObject. Known issue STP-1091: an unknown poid is not refused; the engine stores a new task under it.",
+      "description": "Change a task, identified by poid (from TaskAdded): send as alternates the task's alternates array from its latest TaskAdded or TaskModified, with the entries you changed (usually the first). Fire and forget: the engine sends no reply; TaskModified goes to every client. Alternates taken from an earlier event carry an out-of-date dbVersion, and the update is then silently dropped; a missing alternates is silently ignored. Engines before STP-1080 apply the update but send no TaskModified, nor a TaskDeleted when the task is deleted later. Known issue STP-1091: an unknown poid is not refused; the engine stores a new task under it and sends no event.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
         {
           "event": "TaskModified",
           "when": "if",
-          "condition": "the poid names an existing task",
+          "condition": "the poid names an existing task and the alternates carry its current dbVersion",
           "to": "session"
         },
         {
@@ -3907,7 +3963,6 @@
         }
       ],
       "x-stpKnownIssues": [
-        "STP-1080",
         "STP-1091"
       ],
       "params": [
@@ -3943,6 +3998,10 @@
           "outcome": "accepted",
           "note": "success",
           "wire": "request"
+        },
+        {
+          "when": "alternates from an earlier event (out-of-date dbVersion)",
+          "outcome": "ignored"
         }
       ],
       "examples": [
@@ -3951,19 +4010,19 @@
           "params": [
             {
               "name": "poid",
-              "value": "idD9VBP3XV8UZVX3VZTL5R7UE8U"
+              "value": "idE6LP312RLRNBYN52L8BFW5RNV"
             },
             {
               "name": "alternates",
               "value": [
                 {
                   "fsTYPE": "task",
-                  "poid": "idD9VBP3XV8UZVX3VZTL5R7UE8U",
+                  "poid": "idE6LP312RLRNBYN52L8BFW5RNV",
                   "creatorRole": "S3",
                   "confidence": 0,
                   "alt": 0,
                   "description": "Area defense to block  (edited)",
-                  "who": "idWDSAZG5MZ3Y6UURF2N0N6W146",
+                  "who": "idK0NMCKQYTRSVJX3Q8E4E78CJU",
                   "supported": null,
                   "tgs": [],
                   "name": "BlockEnemy",
@@ -3976,17 +4035,85 @@
                   "speech": null,
                   "language": null,
                   "taskStatus": null,
-                  "uiStatus": null,
+                  "uiStatus": "confirmed",
                   "prob": 0,
                   "movementFeatures": null,
-                  "dbTimestamp": "639272661203862097",
-                  "dbVersion": "v14N05HHFD9KJDM9666Y1QFTY6F",
+                  "dbTimestamp": "639273409687715605",
+                  "dbVersion": "v1MH143M86G7CH68MB35KMZ97LZ",
                   "extensions": null
                 }
               ]
             }
           ],
-          "description": "Captured from a live engine (STP-1059), inform wire."
+          "x-stpEventsObserved": [
+            {
+              "event": "TaskModified",
+              "params": {
+                "poid": "idE6LP312RLRNBYN52L8BFW5RNV",
+                "alternates": [
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idE6LP312RLRNBYN52L8BFW5RNV",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "Area defense to block  (edited)",
+                    "who": "idK0NMCKQYTRSVJX3Q8E4E78CJU",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": "confirmed",
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639273409694966559",
+                    "dbVersion": "v1DZVW0Y2C640WNYDWR6EHBB6J1",
+                    "extensions": null
+                  },
+                  {
+                    "fsTYPE": "task",
+                    "poid": "idE6LP312RLRNBYN52L8BFW5RNV",
+                    "creatorRole": "S3",
+                    "confidence": 0,
+                    "alt": 0,
+                    "description": "Area defense to block  (edited)",
+                    "who": "idK0NMCKQYTRSVJX3Q8E4E78CJU",
+                    "supported": null,
+                    "tgs": [],
+                    "name": "BlockEnemy",
+                    "how": "AREA_DEFENSE",
+                    "what": "BLOCK",
+                    "why": "UNKNOWN",
+                    "roe": "NOT_SPECIFIED",
+                    "startTime": 0,
+                    "endTime": 0,
+                    "speech": null,
+                    "language": null,
+                    "taskStatus": null,
+                    "uiStatus": "confirmed",
+                    "prob": 0,
+                    "movementFeatures": null,
+                    "dbTimestamp": "639273409694966559",
+                    "dbVersion": "v1DZVW0Y2C640WNYDWR6EHBB6J1",
+                    "extensions": null
+                  }
+                ],
+                "taskPoids": [
+                  "idK0NMCKQYTRSVJX3Q8E4E78CJU"
+                ],
+                "isUndo": false
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1080), inform wire."
         }
       ]
     },
@@ -4047,7 +4174,7 @@
     },
     {
       "name": "ConfirmTask",
-      "description": "Confirm a task interpretation, identified by poid (from TaskAdded): nBestIndex 0 confirms the task's current interpretation; a higher index first switches to that alternate (as ChooseAlternate) and confirms it. A C2SIM Order export (GetC2SIMContent) needs confirmed tasks. Fire and forget: the engine sends no reply; TaskModified goes to every client (for an index above 0 only when the caller created the task), plus SymbolAdded for any tactical graphics the confirmed task needs. isConfirmed is ignored over this API: every call confirms, so it cannot unconfirm. An unknown poid or out-of-range index is silently ignored. Known issue STP-1080 affects task confirmation.",
+      "description": "Confirm a task interpretation, identified by poid (from TaskAdded): nBestIndex 0 confirms the task's current interpretation; a higher index first switches to that alternate (as ChooseAlternate) and confirms it. A C2SIM Order export (GetC2SIMContent) needs confirmed tasks. Fire and forget: the engine sends no reply; TaskModified goes to every client (for an index above 0 only when the caller created the task), plus SymbolAdded for any tactical graphics the confirmed task needs. isConfirmed false unconfirms instead: TaskModified then carries uiStatus confirming. Omitted, it defaults to true. Engines before STP-1080 ignore isConfirmed and always confirm. An unknown poid or out-of-range index is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -4063,9 +4190,6 @@
           "condition": "the confirmed alternate needs tactical graphics, which are created",
           "to": "session"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1080"
       ],
       "params": [
         {
@@ -4098,7 +4222,12 @@
         {
           "when": "isConfirmed:false on the confirmed alternate",
           "outcome": "accepted",
-          "note": "events: TaskModified"
+          "note": "events: TaskModified, uiStatus confirming"
+        },
+        {
+          "when": "isConfirmed omitted",
+          "outcome": "accepted",
+          "note": "events: TaskModified, uiStatus confirmed"
         },
         {
           "when": "unknown poid",
@@ -7215,7 +7344,7 @@
     },
     {
       "name": "RecognizeNow",
-      "description": "Recognize the strokes collected so far now, instead of waiting for the segmentation timeout to expire - useful when the timeout is long (ChangeTimeOut) and the user has finished drawing. Fire and forget: the engine sends no reply; the result arrives as the events listed (InkProcessed, then SymbolAdded and so on). With nothing pending it does nothing and sends nothing. Known issue STP-1080: a discarded sketch may not send InkProcessed.",
+      "description": "Recognize the strokes collected so far now, instead of waiting for the segmentation timeout to expire - useful when the timeout is long (ChangeTimeOut) and the user has finished drawing. Fire and forget: the engine sends no reply; the result arrives as the events listed (InkProcessed, then SymbolAdded and so on). Strokes that are not recognized are discarded and still send InkProcessed, which can come several seconds later (about 10 s in the capture); engines before STP-1080 send none for them. With nothing pending it does nothing and sends nothing.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -7280,9 +7409,6 @@
           "to": "session"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1080"
-      ],
       "params": [],
       "x-stpEdgeCases": [
         {
@@ -7294,6 +7420,11 @@
           "outcome": "accepted",
           "note": "success",
           "wire": "request"
+        },
+        {
+          "when": "pending strokes that are not recognized (discarded)",
+          "outcome": "accepted",
+          "note": "events: InkProcessed, about 10 s later"
         }
       ],
       "examples": [
@@ -7707,7 +7838,7 @@
     },
     {
       "name": "UndoLastOp",
-      "description": "Undo the last operation applied to one object - a symbol, task, task org unit or relationship - identified by poid. STP replays the effect as ordinary events carrying isUndo = true (for example SymbolDeleted for an undone add, SymbolAdded for an undone delete), so a client that already handles the Added/Modified/Deleted events needs no extra handling. Fire and forget. An unknown or missing poid is silently ignored. Known issue STP-1080: today's engine sends no event for an undo; read the object back with GetPoidObject.",
+      "description": "Undo the last operation applied to one object - a symbol, task, task org unit or relationship - identified by poid. STP replays the effect to every client in the session as ordinary events carrying isUndo = true - *Deleted for an undone add, *Modified with the previous state for an undone change, *Added for an undone delete - so a client that already handles the Added/Modified/Deleted events needs no extra handling. Each call undoes one operation; call it again to go further back. AddTask is followed at once by a change to the task, so undoing a task add takes two calls (TaskModified, then TaskDeleted). Fire and forget. An unknown or missing poid is silently ignored. Engines before STP-1080 send no event for an undo (read the object back with GetPoidObject), and engines before STP-1083 fail JoinScenarioSession and GetScenarioContent after an undone add.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -7784,9 +7915,6 @@
           "to": "session"
         }
       ],
-      "x-stpKnownIssues": [
-        "STP-1080"
-      ],
       "params": [
         {
           "name": "poid",
@@ -7812,10 +7940,80 @@
           "params": [
             {
               "name": "poid",
-              "value": "id14WQ2BKB63R8DS8Z0VM1DNGB6B"
+              "value": "id1LQ3Q9MD5VSJ1JJM2CE2J790P0"
             }
           ],
-          "description": "Captured from a live engine (STP-1059), inform wire."
+          "x-stpEventsObserved": [
+            {
+              "event": "SymbolModified",
+              "params": {
+                "poid": "id1LQ3Q9MD5VSJ1JJM2CE2J790P0",
+                "symbol": {
+                  "fsTYPE": "unit",
+                  "poid": "id1LQ3Q9MD5VSJ1JJM2CE2J790P0",
+                  "creatorRole": null,
+                  "confidence": 0.9,
+                  "placementConfidence": null,
+                  "alt": 0,
+                  "sidc": {
+                    "charlie": "SFGPUCI----E---",
+                    "delta": "10031000151211000000",
+                    "partA": "1003100015",
+                    "partB": "1211000000",
+                    "symbolSet": "10",
+                    "legacy": "SFGPUCI----E---"
+                  },
+                  "location": {
+                    "fsTYPE": "point",
+                    "shape": "point",
+                    "coords": [
+                      {
+                        "lat": 36.4,
+                        "lon": -115.9
+                      }
+                    ],
+                    "centroid": {
+                      "lat": 36.4,
+                      "lon": -115.9
+                    },
+                    "width": 0,
+                    "altitude": 0,
+                    "radius": 0,
+                    "candidatePoids": null
+                  },
+                  "shortDescription": "U",
+                  "description": "INFANTRY COMPANY",
+                  "fullDescription": "FRIENDLY INFANTRY COMPANY U",
+                  "affiliation": "friend",
+                  "echelon": "company",
+                  "parent": null,
+                  "designator1": "U",
+                  "designator2": null,
+                  "commonIdentifier": null,
+                  "specialC2Hq": null,
+                  "additionalInformation": null,
+                  "status": "present",
+                  "modifier": "none",
+                  "strength": "",
+                  "branch": "ground_unit",
+                  "timeFrom": null,
+                  "timeTo": null,
+                  "altitude": null,
+                  "minAltitude": null,
+                  "maxAltitude": null,
+                  "toUnitPoid": null,
+                  "federate": null,
+                  "disCode": null,
+                  "resources": [],
+                  "dbTimestamp": "639273408852783483",
+                  "dbVersion": "v29EDS7MTVS5J80JQQ3M4Z1L2C",
+                  "extensions": null
+                },
+                "isUndo": true
+              }
+            }
+          ],
+          "description": "Captured from a live engine (STP-1059; re-captured with STP-1080), inform wire."
         }
       ]
     },
