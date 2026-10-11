@@ -193,7 +193,8 @@ describe('validation rules file (STP-1064)', () => {
     const marked = ruleEntries().filter(([, r]) => r.intent.unverifiable);
     // STP-1089 (task org relationship events) and STP-1080 (UpdateTask's TaskModified) are fixed
     // in the engine (contract 0.9.2): their events are expected again, so nothing holds them back.
-    expect(marked.filter(([, r]) => ['STP-1080', 'STP-1089'].includes(r.intent.unverifiable.issue))).toEqual([]);
+    const fixedIssues = new Set(['STP-1080', 'STP-1089']);
+    expect(marked.filter(([, r]) => fixedIssues.has(r.intent.unverifiable.issue))).toEqual([]);
     for (const [name, rule] of marked) {
       expect(methodOf(name)['x-stpKnownIssues'] ?? [], name).toContain(rule.intent.unverifiable.issue);
       expect(rule.intent.expect.length, name).toBeGreaterThan(0);
