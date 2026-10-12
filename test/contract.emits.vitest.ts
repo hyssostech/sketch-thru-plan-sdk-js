@@ -116,8 +116,8 @@ describe('contract emitted events (STP-1059)', () => {
     // Fixed in the engine: STP-1078 (COA events), STP-1079 (COA and role switch waits), STP-1088
     // (task org unit and relationship param names), STP-1089 (relationship events), STP-1080
     // (undo, discarded ink, ConfirmTask isConfirmed and UpdateTask events), STP-1090 (the
-    // object-set round trip) and STP-1091 (write targets and values checked).
-    const fixed = new Set(['STP-1078', 'STP-1079', 'STP-1080', 'STP-1088', 'STP-1089', 'STP-1090', 'STP-1091']);
+    // object-set round trip), STP-1091 (write targets and values checked) and STP-1077 (per-COA task org).
+    const fixed = new Set(['STP-1077', 'STP-1078', 'STP-1079', 'STP-1080', 'STP-1088', 'STP-1089', 'STP-1090', 'STP-1091']);
     const stale = METHODS.filter((m) =>
       (m['x-stpKnownIssues'] ?? []).some((k: string) => fixed.has(k)),
     ).map((m) => m.name);

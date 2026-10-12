@@ -163,6 +163,18 @@
     `no active scenario` cases).
 - Call-validation rules 1.0.3, checked against contract 0.9.4; no rule changed. The engine now
   enforces the `references` of the methods above itself
+- OpenRPC contract raised to 0.9.5 (STP-943):
+  - STP-1077 is fixed in the engine: per-COA task orgs. `SetCoaTaskOrg` / `ResetCoaTaskOrg` with
+    `coaPoid` bind / clear a task org for one COA instead of being refused. The binding is stored on
+    the COA - the new `StpCoa` fields `friendTaskOrg` / `hostileTaskOrg` - so it is saved with the
+    scenario; `CoaModified` goes to every client and `TaskOrgSwitched` to each client whose current
+    COA it is. Deleting a bound task org clears the binding (`CoaModified` on `DeleteTaskOrg`). The
+    two methods no longer list STP-1077 in `x-stpKnownIssues`; edge cases re-captured live.
+  - STP-1095: the five `*FromObjectSet` imports refuse a missing `objects` naming the parameter,
+    and `ImportPlanDataFromObjectSet` / `ImportPlanData` leave the content's `planning_scenario` out
+    (a second one used to be added). Each description says what an engine before the fix does.
+- `StpCoa` gains `friendTaskOrg` and `hostileTaskOrg`
+- Call-validation rules 1.0.4, checked against contract 0.9.5; no rule changed
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
