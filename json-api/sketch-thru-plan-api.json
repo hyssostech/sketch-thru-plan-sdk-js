@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.4"
+    "version": "0.9.5"
   },
   "methods": [
     {
@@ -1391,7 +1391,7 @@
     },
     {
       "name": "ImportPlanData",
-      "description": "Merge object_set([...]) content into the current scenario without discarding it. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Replaced objects arrive as *Added events, never *Modified. Answers null; malformed or missing content is refused with the parse error. Needs an active scenario: with none the objects are still added, but HasActiveScenario stays false. To replace the scenario instead, use LoadNewScenario.",
+      "description": "Merge object_set([...]) content into the current scenario without discarding it. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. The content's planning_scenario is left out - the current scenario keeps its own (engines before STP-1095 add it as a second one). Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Replaced objects arrive as *Added events, never *Modified. Answers null; malformed or missing content is refused with the parse error. Needs an active scenario: with none the objects are still added, but HasActiveScenario stays false. To replace the scenario instead, use LoadNewScenario.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -3227,7 +3227,7 @@
     },
     {
       "name": "DeleteTaskOrg",
-      "description": "Delete a Task Organization, identified by poid (from TaskOrgAdded or GetScenarioTaskOrgList). Fire and forget: the engine sends no reply; TaskOrgDeleted goes to every client, and TaskOrgSwitched to the caller when it was the caller's current TO. An unknown poid is silently ignored - no event and no error.",
+      "description": "Delete a Task Organization, identified by poid (from TaskOrgAdded or GetScenarioTaskOrgList). Fire and forget: the engine sends no reply; TaskOrgDeleted goes to every client, and TaskOrgSwitched to the caller when it was the caller's current TO. A COA binding that names the TO (SetCoaTaskOrg with coaPoid) is cleared - CoaModified to every client - and the clients on that COA fall back to the default TO (engines before STP-1077 have no bindings). An unknown poid is silently ignored - no event and no error.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -3239,8 +3239,14 @@
         {
           "event": "TaskOrgSwitched",
           "when": "may",
-          "condition": "the deleted task org was the caller's current one",
+          "condition": "the deleted task org was the caller's current one (also through its current COA's binding)",
           "to": "caller"
+        },
+        {
+          "event": "CoaModified",
+          "when": "if",
+          "condition": "a COA binds the deleted task org: the binding is cleared",
+          "to": "session"
         }
       ],
       "params": [
@@ -3262,6 +3268,11 @@
         {
           "when": "unknown poid",
           "outcome": "ignored"
+        },
+        {
+          "when": "the TO bound to the caller's current COA",
+          "outcome": "accepted",
+          "note": "events: TaskOrgDeleted, CoaModified (binding cleared), TaskOrgSwitched (to the default TO)"
         }
       ],
       "examples": [
@@ -4403,13 +4414,19 @@
     },
     {
       "name": "SetCoaTaskOrg",
-      "description": "Choose the Task Organization (TO) used for COAs; take toPoid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing. Engines before STP-1091 answer success to an unknown toPoid and change nothing.",
+      "description": "Choose the Task Organization (TO) used for COAs; take toPoid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. The binding is stored on the COA (friendTaskOrg, or hostileTaskOrg for a hostile TO), so it is saved and loaded with the scenario and the COA's content; CoaModified goes to every client, and each client whose current COA it is gets TaskOrgSwitched when its task org changes. Deleting the TO clears the binding (CoaModified), and the COA falls back to the default. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing. Engines before STP-1091 answer success to an unknown toPoid and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
+          "event": "CoaModified",
+          "when": "if",
+          "condition": "coaPoid is sent: the COA's binding (friendTaskOrg / hostileTaskOrg) changed",
+          "to": "session"
+        },
+        {
           "event": "TaskOrgSwitched",
           "when": "if",
-          "condition": "the caller's current task org changes as a result",
+          "condition": "the caller's current task org changes as a result (with coaPoid: every client whose current COA it is hears its own)",
           "to": "caller"
         },
         {
@@ -4418,9 +4435,6 @@
           "condition": "the call is refused",
           "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1077"
       ],
       "params": [
         {
@@ -4446,9 +4460,24 @@
       },
       "x-stpEdgeCases": [
         {
-          "when": "with coaPoid (per-COA TO)",
+          "when": "with coaPoid, the COA being the caller's current COA",
+          "outcome": "accepted",
+          "note": "success; events: CoaModified (friendTaskOrg set), TaskOrgSwitched (to the bound TO)"
+        },
+        {
+          "when": "with coaPoid, then SetCurrentCoa to a COA without a binding and back",
+          "outcome": "accepted",
+          "note": "TaskOrgSwitched to the default TO, then back to the bound TO"
+        },
+        {
+          "when": "with coaPoid, unknown coaPoid",
           "outcome": "refused",
-          "message": "per-COA task org is not supported yet (STP-1058: needs an operator ruling)"
+          "message": "SetCoaTaskOrg: 'coaPoid' idNOSUCHCOA1077 names no object in this session - send the poid of an existing COA"
+        },
+        {
+          "when": "with coaPoid, toPoid of a unit symbol",
+          "outcome": "refused",
+          "message": "SetCoaTaskOrg: 'toPoid' id1HD0E81K2HPV3J9VWP10C8276A names a unit, not a task org"
         },
         {
           "when": "missing toPoid",
@@ -4502,13 +4531,19 @@
     },
     {
       "name": "ResetCoaTaskOrg",
-      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg (friend, hostile or any; another value is refused). With coaPoid: removes the TO tied to that COA for affiliation, or for every affiliation when affiliation is omitted, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. An unknown coaPoid is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
+      "description": "Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg (friend, hostile or any; another value is refused). With coaPoid: removes the TO tied to that COA for affiliation (friend, hostile or any), or for every affiliation when affiliation is omitted or any, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. CoaModified goes to every client, and each client whose current COA it is gets TaskOrgSwitched when its task org changes. An unknown coaPoid is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
+          "event": "CoaModified",
+          "when": "if",
+          "condition": "coaPoid is sent: the COA's binding (friendTaskOrg / hostileTaskOrg) changed",
+          "to": "session"
+        },
+        {
           "event": "TaskOrgSwitched",
           "when": "if",
-          "condition": "the caller's current task org changes as a result",
+          "condition": "the caller's current task org changes as a result (with coaPoid: every client whose current COA it is hears its own)",
           "to": "caller"
         },
         {
@@ -4517,9 +4552,6 @@
           "condition": "the call is refused",
           "to": "caller"
         }
-      ],
-      "x-stpKnownIssues": [
-        "STP-1077"
       ],
       "params": [
         {
@@ -4545,9 +4577,19 @@
       },
       "x-stpEdgeCases": [
         {
-          "when": "with coaPoid (per-COA TO)",
+          "when": "with coaPoid and no affiliation, the COA being the caller's current COA",
+          "outcome": "accepted",
+          "note": "success; events: CoaModified (binding cleared), TaskOrgSwitched (to the default TO)"
+        },
+        {
+          "when": "with coaPoid, a COA without a binding",
+          "outcome": "accepted",
+          "note": "success; events: CoaModified"
+        },
+        {
+          "when": "with coaPoid, unknown affiliation value",
           "outcome": "refused",
-          "message": "per-COA task org is not supported yet (STP-1058: needs an operator ruling)"
+          "message": "ResetCoaTaskOrg: unknown affiliation 'martian' - use friend, hostile or any, or omit it to clear both"
         },
         {
           "when": "missing affiliation",
@@ -5746,7 +5788,7 @@
     },
     {
       "name": "ImportCoaFromObjectSet",
-      "description": "Import a COA from a JSON array of STP objects; the object-set form of ImportCoaContent. Send the objects as GetCoaObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first coa object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetCoaObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportCoaContent with GetCoaContent text instead.",
+      "description": "Import a COA from a JSON array of STP objects; the object-set form of ImportCoaContent. Send the objects as GetCoaObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first coa object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetCoaObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportCoaContent with GetCoaContent text instead. A missing objects is refused up front, naming the parameter (engines before STP-1095 answer \"Object reference not set to an instance of an object.\").",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -5795,6 +5837,12 @@
           "event": "SpeechRecognized",
           "when": "may",
           "condition": "an imported symbol carries a speech phrase",
+          "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
           "to": "caller"
         }
       ],
@@ -5859,7 +5907,7 @@
         {
           "when": "missing objects",
           "outcome": "refused",
-          "message": "Object reference not set to an instance of an object."
+          "message": "ImportCoaFromObjectSet: missing 'objects' - send the objects to load, as a Get*ObjectSet call returns them"
         },
         {
           "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
@@ -5927,7 +5975,7 @@
     },
     {
       "name": "ImportPlanDataFromObjectSet",
-      "description": "Merge a JSON array of STP objects into the current scenario; the object-set form of ImportPlanData. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. A GetScenarioObjectSet output brings its planning_scenario object along, so the scenario then holds two planning_scenario objects (ImportPlanData does the same with GetScenarioContent text). Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm ('STP did not acknowledge ...'), after some were applied; with those, use ImportPlanData with GetScenarioContent text instead.",
+      "description": "Merge a JSON array of STP objects into the current scenario; the object-set form of ImportPlanData. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. The content's planning_scenario is left out - the current scenario keeps its own - so a GetScenarioObjectSet output from another scenario can be merged as it is; engines before STP-1095 add it as a second planning_scenario (ImportPlanData did the same with the text). Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm ('STP did not acknowledge ...'), after some were applied; with those, use ImportPlanData with GetScenarioContent text instead. A missing objects is refused up front, naming the parameter (engines before STP-1095 answer \"Object reference not set to an instance of an object.\").",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -6019,6 +6067,12 @@
           "when": "if",
           "condition": "the default task orgs re-selected afterwards change the caller's current task org",
           "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
       ],
       "params": [
@@ -6082,7 +6136,7 @@
         {
           "when": "missing objects",
           "outcome": "refused",
-          "message": "Object reference not set to an instance of an object."
+          "message": "ImportPlanDataFromObjectSet: missing 'objects' - send the objects to load, as a Get*ObjectSet call returns them"
         },
         {
           "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
@@ -6261,7 +6315,7 @@
     },
     {
       "name": "ImportTaskOrgFromObjectSet",
-      "description": "Import a Task Organization from a JSON array of STP objects; the object-set form of ImportTaskOrgContent. Send the objects as GetTaskOrgObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first task_org object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetTaskOrgObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportTaskOrgContent with GetTaskOrgContent text instead.",
+      "description": "Import a Task Organization from a JSON array of STP objects; the object-set form of ImportTaskOrgContent. Send the objects as GetTaskOrgObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first task_org object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetTaskOrgObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportTaskOrgContent with GetTaskOrgContent text instead. A missing objects is refused up front, naming the parameter (engines before STP-1095 answer \"Object reference not set to an instance of an object.\").",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -6335,6 +6389,12 @@
           "when": "may",
           "condition": "an imported symbol carries a speech phrase",
           "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
       ],
       "params": [
@@ -6398,7 +6458,7 @@
         {
           "when": "missing objects",
           "outcome": "refused",
-          "message": "Object reference not set to an instance of an object."
+          "message": "ImportTaskOrgFromObjectSet: missing 'objects' - send the objects to load, as a Get*ObjectSet call returns them"
         },
         {
           "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
@@ -6547,7 +6607,7 @@
     },
     {
       "name": "LoadNewScenarioFromObjectSet",
-      "description": "Replace the whole scenario with a JSON array of STP objects; the object-set form of LoadNewScenario. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. A deletion marker (dbVersion v0) needs no PrologTerm; one for a poid the new scenario never had is not an error and is announced as deleted. Everything the session held is discarded first; the content's planning_scenario becomes the scenario, and an empty array leaves a new, empty scenario. Other clients of the session receive NewScenario; the caller does not. Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. The reset comes first, so a load that stops leaves the scenario reset and holding only the objects before the one that stopped it. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm, leaving the scenario reset and partly loaded; with those, use LoadNewScenario with GetScenarioContent text instead.",
+      "description": "Replace the whole scenario with a JSON array of STP objects; the object-set form of LoadNewScenario. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. A deletion marker (dbVersion v0) needs no PrologTerm; one for a poid the new scenario never had is not an error and is announced as deleted. Everything the session held is discarded first; the content's planning_scenario becomes the scenario, and an empty array leaves a new, empty scenario. Other clients of the session receive NewScenario; the caller does not. Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. The reset comes first, so a load that stops leaves the scenario reset and holding only the objects before the one that stopped it. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm, leaving the scenario reset and partly loaded; with those, use LoadNewScenario with GetScenarioContent text instead. A missing objects is refused up front, naming the parameter (engines before STP-1095 answer \"Object reference not set to an instance of an object.\").",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -6657,6 +6717,12 @@
           "when": "may",
           "condition": "an imported symbol carries a speech phrase",
           "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
       ],
       "params": [
@@ -6720,7 +6786,7 @@
         {
           "when": "missing objects",
           "outcome": "refused",
-          "message": "Object reference not set to an instance of an object."
+          "message": "LoadNewScenarioFromObjectSet: missing 'objects' - send the objects to load, as a Get*ObjectSet call returns them"
         },
         {
           "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
@@ -7489,7 +7555,7 @@
     },
     {
       "name": "SyncScenarioSessionFromObjectSet",
-      "description": "Merge a JSON array of STP objects into the active session; the object-set form of SyncScenarioSession, with the same rules. It first replays the current scenario to the caller (as JoinScenarioSession), then imports the objects, leaving out infrastructure objects such as planning_scenario; an empty array only replays. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm, after some were applied; with those, use SyncScenarioSession with GetScenarioContent text instead.",
+      "description": "Merge a JSON array of STP objects into the active session; the object-set form of SyncScenarioSession, with the same rules. It first replays the current scenario to the caller (as JoinScenarioSession), then imports the objects, leaving out infrastructure objects such as planning_scenario; an empty array only replays. Send the objects as GetScenarioObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Afterwards the default friend and hostile task orgs are re-selected, preferring task orgs this content just loaded. Answers null. Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout ends without that report. Engines before STP-1090 refuse the verbatim GetScenarioObjectSet output as unreadable (engines before STP-1088 never answer) and stop part way through objects without PrologTerm, after some were applied; with those, use SyncScenarioSession with GetScenarioContent text instead. A missing objects is refused up front, naming the parameter (engines before STP-1095 answer \"Object reference not set to an instance of an object.\").",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -7611,6 +7677,12 @@
           "when": "if",
           "condition": "the default task orgs re-selected afterwards change the caller's current task org",
           "to": "caller"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "the call is refused",
+          "to": "caller"
         }
       ],
       "params": [
@@ -7674,7 +7746,7 @@
         {
           "when": "missing objects",
           "outcome": "refused",
-          "message": "Object reference not set to an instance of an object."
+          "message": "SyncScenarioSessionFromObjectSet: missing 'objects' - send the objects to load, as a Get*ObjectSet call returns them"
         },
         {
           "when": "a deletion marker (dbVersion v0, no PrologTerm) for an object the scenario never had",
@@ -9752,6 +9824,14 @@
           "state": {
             "$ref": "#/components/schemas/TaskOrgState",
             "description": "State details associated with this COA."
+          },
+          "friendTaskOrg": {
+            "type": "string",
+            "description": "Poid of the friendly task org this COA uses instead of the friend default while it is current (STP-1077; set with SetCoaTaskOrg). Absent when there is no binding."
+          },
+          "hostileTaskOrg": {
+            "type": "string",
+            "description": "Poid of the hostile task org this COA uses instead of the hostile default while it is current (STP-1077; set with SetCoaTaskOrg). Absent when there is no binding."
           }
         }
       },

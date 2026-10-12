@@ -695,6 +695,16 @@ export class StpCoa {
    * State details
    */
   state: TaskOrgState | undefined;
+  /**
+   * Poid of the friendly task org this COA uses instead of the friend default while it is current
+   * (set with setCoaTaskOrg); undefined when there is no binding. Engines before STP-1077 never set it.
+   */
+  friendTaskOrg?: string;
+  /**
+   * Poid of the hostile task org this COA uses instead of the hostile default while it is current
+   * (set with setCoaTaskOrg); undefined when there is no binding. Engines before STP-1077 never set it.
+   */
+  hostileTaskOrg?: string;
 }
 
 export class TaskOrgState
