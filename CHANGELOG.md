@@ -175,6 +175,13 @@
     (a second one used to be added). Each description says what an engine before the fix does.
 - `StpCoa` gains `friendTaskOrg` and `hostileTaskOrg`
 - Call-validation rules 1.0.4, checked against contract 0.9.5; no rule changed
+- OpenRPC contract raised to 0.9.6 (STP-943): STP-1095 - a `*FromObjectSet` load cut off by the
+  request timeout answers `success: false` with a report like that of a load that stops: the objects
+  applied, any skipped, the object in flight (sent with no reply yet; the engine may still apply it) and
+  those not sent. The report is also announced as `StpMessage`, which is all a client whose own timeout
+  fired first receives. Before, the answer was "The operation was canceled.", naming nothing. New edge
+  case on `ImportPlanDataFromObjectSet`, captured live
+- Call-validation rules 1.0.5, checked against contract 0.9.6; no rule changed
 
 ## Version 0.6.16
 - Fixed `connect()` opening a second WebSocket when called on an already-connected
