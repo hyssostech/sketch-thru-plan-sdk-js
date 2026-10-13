@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.6"
+    "version": "0.9.7"
   },
   "methods": [
     {
@@ -5410,6 +5410,10 @@
                 "type": "boolean",
                 "description": "Include the full Task Org, including entities not placed on the map. When false, only placed elements and their subordinates."
               },
+              "refuseUnconfirmedPlaceholders": {
+                "type": "boolean",
+                "description": "Refuse the document while a task graphic is still an unconfirmed rung-5 placeholder that COARenderer drew from no evidence (not moved, its confidence not set, by staff); the call then fails with the graphics named. Otherwise every unconfirmed estimate is only warned, in the engine log. Default false."
+              },
               "schemaVersion": {
                 "type": "string",
                 "description": "Schema version hint (1.0.0 / 1.0.1 / 1.0.2). All inputs generate 1.0.2 unified output."
@@ -7014,6 +7018,10 @@
                 "type": "boolean",
                 "description": "Include the full Task Org, including entities not placed on the map. When false, only placed elements and their subordinates."
               },
+              "refuseUnconfirmedPlaceholders": {
+                "type": "boolean",
+                "description": "Accepted for symmetry with the other C2SIM calls; it has no effect on a pull."
+              },
               "schemaVersion": {
                 "type": "string",
                 "description": "Schema version hint (1.0.0 / 1.0.1 / 1.0.2). All inputs generate 1.0.2 unified output."
@@ -7212,6 +7220,10 @@
               "fullTO": {
                 "type": "boolean",
                 "description": "Include the full Task Org, including entities not placed on the map. When false, only placed elements and their subordinates."
+              },
+              "refuseUnconfirmedPlaceholders": {
+                "type": "boolean",
+                "description": "Accepted for symmetry with the other C2SIM calls; it has no effect here - the document pushed is already built (the gate applies where the engine builds one: GetC2SIMContent)."
               },
               "schemaVersion": {
                 "type": "string",

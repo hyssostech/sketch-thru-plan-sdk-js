@@ -175,6 +175,12 @@
     (a second one used to be added). Each description says what an engine before the fix does.
 - `StpCoa` gains `friendTaskOrg` and `hostileTaskOrg`
 - Call-validation rules 1.0.4, checked against contract 0.9.5; no rule changed
+- OpenRPC contract raised to 0.9.7 (STP-973): new C2SIM option `refuseUnconfirmedPlaceholders` (boolean, default
+  false) on `GetC2SIMContent`, `PullC2SIMInitialization` and `PushC2SIMContent`, and on `StpC2SIMOptions`. The engine
+  now reads the placement grade COARenderer stamps on each graphic and warns, per task, about every estimate staff have
+  not confirmed; with this option a rung-5 placeholder refuses the document instead. It has an effect only where the
+  engine builds the document (`GetC2SIMContent`); a pull or a push of a ready document accepts and ignores it
+- Call-validation rules 1.0.6, checked against contract 0.9.7; no rule changed
 - OpenRPC contract raised to 0.9.6 (STP-943): STP-1095 - a `*FromObjectSet` load cut off by the
   request timeout answers `success: false` with a report like that of a load that stops: the objects
   applied, any skipped, the object in flight (sent with no reply yet; the engine may still apply it) and
