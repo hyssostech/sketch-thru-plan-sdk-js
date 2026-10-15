@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.7"
+    "version": "0.9.8"
   },
   "methods": [
     {
@@ -5172,7 +5172,7 @@
     },
     {
       "name": "SetRole",
-      "description": "Switch this client's role: S2, S3, S4, FSO or ENG, or 'none' to clear it (as ResetRole does). S2 works on the hostile side and the other roles on the friendly side; the client's current COA and task org may change with the role (CoaSwitched, TaskOrgSwitched). Answers null once the engine confirms with RoleSwitched (role in lower case); a switch to the role the client already has answers at once with no event, and one not confirmed within 10 s is refused. createIfNone is ignored over this API: no COA is created. A missing or unknown role is refused (engines before STP-1091 accept any value and confirm it with RoleSwitched).",
+      "description": "Switch this client's role: S2, S3, S4, FSO or ENGINEER (ENG is accepted as an alias and confirmed as engineer), or 'none' to clear it (as ResetRole does). S2 works on the hostile side and the other roles on the friendly side; the client's current COA and task org may change with the role (CoaSwitched, TaskOrgSwitched). Answers null once the engine confirms with RoleSwitched (role in lower case); a switch to the role the client already has answers at once with no event, and one not confirmed within 10 s is refused. createIfNone is ignored over this API: no COA is created. A missing or unknown role is refused (engines before STP-1091 accept any value and confirm it with RoleSwitched). Engines before STP-1159 confirm ENG as eng, but the task recognizer does not know eng and keeps the client's previous role, so the client's tasks are stamped and described for that role; use ENGINEER with those engines.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -5231,12 +5231,17 @@
         {
           "when": "missing role",
           "outcome": "refused",
-          "message": "SetRole: missing 'role' - name the role to switch to (s2, s3, s4, fso, eng, or none)"
+          "message": "SetRole: missing 'role' - name the role to switch to (s2, s3, s4, fso, engineer, or none)"
         },
         {
           "when": "unknown role value",
           "outcome": "refused",
-          "message": "SetRole: unknown role 'XO' - use s2, s3, s4, fso, eng, or none"
+          "message": "SetRole: unknown role 'XO' - use s2, s3, s4, fso, engineer, or none"
+        },
+        {
+          "when": "role 'eng' (the ENG alias)",
+          "outcome": "accepted",
+          "note": "success; events: RoleSwitched with role engineer; the task recognizer takes engineer at the next symbol or task change"
         }
       ],
       "examples": [
@@ -9376,7 +9381,7 @@
           },
           "creatorRole": {
             "type": "string",
-            "description": "Role that created the symbol (S2, S3, S4, FSO, ENG)."
+            "description": "Role that created the symbol (s2, s3, s4, fso, engineer)."
           },
           "interval": {
             "description": "Time interval of symbol validity.",
@@ -9719,7 +9724,7 @@
           },
           "creatorRole": {
             "type": "string",
-            "description": "Role that created the task (S2, S3, S4, FSO, ENG)."
+            "description": "Role that created the task (s2, s3, s4, fso, engineer)."
           },
           "interval": {
             "type": "object",
@@ -9837,7 +9842,7 @@
           },
           "creatorRole": {
             "type": "string",
-            "description": "Role that created the COA (S2, S3, S4, FSO, ENG)."
+            "description": "Role that created the COA (s2, s3, s4, fso, engineer)."
           },
           "state": {
             "$ref": "#/components/schemas/TaskOrgState",
@@ -9881,9 +9886,10 @@
           "S3",
           "S4",
           "FSO",
+          "ENGINEER",
           "ENG"
         ],
-        "description": "STP roles."
+        "description": "STP roles, sent in any case. ENGINEER is the engineer role; ENG is accepted as an alias of it and is sent to the engine as engineer (STP-1159; engines before STP-1159 pass eng through, and the task recognizer ignores it, keeping the client's previous role)."
       },
       "Affiliation": {
         "type": "string",
@@ -9911,7 +9917,7 @@
           },
           "creator_role": {
             "type": "string",
-            "description": "Role that created the task (S2, S3, S4, FSO, ENG)."
+            "description": "Role that created the task (s2, s3, s4, fso, engineer)."
           },
           "confidence": {
             "type": "number",
@@ -10019,7 +10025,7 @@
           },
           "creatorRole": {
             "type": "string",
-            "description": "Role that created the unit (S2, S3, S4, FSO, ENG)."
+            "description": "Role that created the unit (s2, s3, s4, fso, engineer)."
           },
           "confidence": {
             "type": "number",
@@ -10767,7 +10773,7 @@
       "params": [
         {
           "name": "role",
-          "description": "Newly active role.",
+          "description": "Newly active role, in lower case as the engine names it: s2, s3, s4, fso or engineer (an ENG switch reports engineer); null when the role was cleared.",
           "schema": {
             "type": "string"
           }

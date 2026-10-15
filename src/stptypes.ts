@@ -61,6 +61,12 @@ export enum StpRole {
   s3 = 'S3',
   s4 = 'S4',
   fso = 'FSO',
+  engineer = 'ENGINEER',
+  /**
+   * @deprecated Use {@link StpRole.engineer}. The engine names the role `engineer`: engines from
+   * STP-1159 accept `ENG` as an alias and confirm it as `engineer`; older engines confirm `eng` but
+   * their task recognizer ignores it (STP-1159).
+   */
   eng = 'ENG'
 }
 
@@ -101,7 +107,7 @@ export class StpItem {
    */
   parentCoa: string | undefined;
   /**
-   * Role that created the symbol: S2, S3, S4, Eng, FSO
+   * Role that created the symbol: s2, s3, s4, fso, engineer
    */
   creatorRole: string | undefined;
   /**
@@ -688,7 +694,7 @@ export class StpCoa {
    */
   affiliation: string | undefined;
   /**
-   * Role that created the symbol: S2, S3, S4, Eng, FSO
+   * Role that created the symbol: s2, s3, s4, fso, engineer
    */
   creatorRole: string | undefined;
   /**
@@ -718,7 +724,7 @@ export class TaskOrgState
    */
   date: string | undefined;
   /**
-   * Role : S2, S3, S4, Eng, FSO
+   * Role : s2, s3, s4, fso, engineer
    */
   userRole: string | undefined;
 }

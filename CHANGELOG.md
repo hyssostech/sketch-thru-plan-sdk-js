@@ -181,6 +181,13 @@
   not confirmed; with this option a rung-5 placeholder refuses the document instead. It has an effect only where the
   engine builds the document (`GetC2SIMContent`); a pull or a push of a ready document accepts and ignores it
 - Call-validation rules 1.0.6, checked against contract 0.9.7; no rule changed
+- OpenRPC contract raised to 0.9.8 (STP-1159): the engineer role is `ENGINEER`; `ENG` stays in
+  `StpRole` as an alias. The engine names the role `engineer`, and from STP-1159 it sends `eng` as
+  `engineer`, so `RoleSwitched` reports `engineer` for either. Engines before STP-1159 confirm `eng`,
+  but their task recognizer does not know it and keeps the client's previous role. The SetRole
+  refusals name `engineer`; `creatorRole` descriptions list the lower-case names the engine sends
+- Added `StpRole.engineer` (`'ENGINEER'`); `StpRole.eng` is deprecated
+- Call-validation rules 1.0.7, checked against contract 0.9.8; no rule changed
 - OpenRPC contract raised to 0.9.6 (STP-943): STP-1095 - a `*FromObjectSet` load cut off by the
   request timeout answers `success: false` with a report like that of a load that stops: the objects
   applied, any skipped, the object in flight (sent with no reply yet; the engine may still apply it) and
