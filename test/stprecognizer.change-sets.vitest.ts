@@ -12,34 +12,37 @@ import * as StpType from '../src/stptypes';
  * unaffected.
  */
 
-class MockConnector implements IStpConnector {
-  baseName?: string;
-  name: string | undefined;
-  isConnected = false;
-  onInform: ((message: string) => void) | undefined;
-  onRequest: ((message: string) => string[]) | undefined;
-  onError: ((error: string) => void) | undefined;
-  lastSolvables: string[] = [];
-  async connect(serviceName: string, solvables: string[]): Promise<string | undefined> {
-    this.name = serviceName;
-    this.isConnected = true;
-    this.lastSolvables = solvables;
-    return 'CHANGESET-SESSION';
-  }
-  async disconnect(): Promise<void> { this.isConnected = false; }
-  async inform(): Promise<void> {}
-  async request(): Promise<any> { return { ok: true }; }
-}
+type Wire = IStpConnector & { lastSolvables: string[] };
 
-async function connected(setup: (r: StpRecognizer) => void): Promise<{ r: StpRecognizer; c: MockConnector }> {
-  const c = new MockConnector();
+// A connector that only records what connect() was given and lets a test push informs.
+const wire = (): Wire => {
+  const w: Wire = {
+    name: undefined,
+    isConnected: false,
+    lastSolvables: [],
+    onInform: undefined,
+    onRequest: undefined,
+    onError: undefined,
+    connect: async (serviceName, solvables) => {
+      Object.assign(w, { name: serviceName, isConnected: true, lastSolvables: solvables });
+      return 'S';
+    },
+    disconnect: async () => { w.isConnected = false; },
+    inform: async () => undefined,
+    request: async () => ({}),
+  };
+  return w;
+};
+
+async function connected(setup: (r: StpRecognizer) => void): Promise<{ r: StpRecognizer; c: Wire }> {
+  const c = wire();
   const r = new StpRecognizer(c);
   setup(r);
   await r.connect('Svc', 1);
   return { r, c };
 }
 
-const send = (c: MockConnector, method: string, params: object) => c.onInform?.(JSON.stringify({ method, params }));
+const send = (c: Wire, method: string, params: object) => c.onInform?.(JSON.stringify({ method, params }));
 
 describe('change sets (STP-1265)', () => {
   it('BatchStarted reaches onBatchStarted with the batch', async () => {
