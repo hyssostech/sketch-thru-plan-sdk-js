@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.7"
+    "version": "0.9.8"
   },
   "methods": [
     {
@@ -10188,6 +10188,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10216,6 +10226,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10236,6 +10256,16 @@
           "description": "True if this event is the result of an undo operation.",
           "schema": {
             "type": "boolean"
+          }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       ]
@@ -10286,6 +10316,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10314,6 +10354,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10334,6 +10384,16 @@
           "description": "True if this event is the result of an undo operation.",
           "schema": {
             "type": "boolean"
+          }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       ]
@@ -10363,6 +10423,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10391,6 +10461,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10411,6 +10491,16 @@
           "description": "True if this event is the result of an undo operation.",
           "schema": {
             "type": "boolean"
+          }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       ]
@@ -10440,6 +10530,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10468,6 +10568,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10488,6 +10598,16 @@
           "description": "True if this event is the result of an undo operation.",
           "schema": {
             "type": "boolean"
+          }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       ]
@@ -10544,6 +10664,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10585,6 +10715,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10605,6 +10745,16 @@
           "description": "True if this event is the result of an undo operation.",
           "schema": {
             "type": "boolean"
+          }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       ]
@@ -10696,6 +10846,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10723,6 +10883,16 @@
           "schema": {
             "type": "boolean"
           }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
         }
       ]
     },
@@ -10742,6 +10912,16 @@
           "description": "True if this event is the result of an undo operation.",
           "schema": {
             "type": "boolean"
+          }
+        },
+        {
+          "name": "batchId",
+          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       ]
@@ -10770,6 +10950,110 @@
           "description": "Newly active role.",
           "schema": {
             "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "BatchStarted",
+      "description": "Emitted when a change set begins (STP-1265): one client's bulk operation (a load, an import, a reconcile with its stray deletes, a Confirm all, a multi-delete) or a join's local replay. Every object event it produces carries its batchId; a client can therefore tell a bulk arrival from a lone add without timing. Sent to every client of the session, the one that opened it included. Do not wait for it before handling objects: an engine that predates change sets sends none.",
+      "params": [
+        {
+          "name": "batchId",
+          "description": "The id every object event of the batch carries as its trailing batchId.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "kind",
+          "description": "What the batch is: load, import, reconcile, sync, join, approve_all, unapprove_all, delete, or the kind a client's explicit scope gave.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "expected",
+          "description": "How many objects the requester expected to write; -1 when it did not say. An upper bound, not a promise.",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "isOwn",
+          "description": "True when this client's connection opened the batch.",
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "origin",
+          "description": "'replay' for a join replaying the session's resident objects locally (nothing changed in the engine), else 'live'.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "live",
+              "replay"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BatchEnded",
+      "description": "Emitted when a change set ends (STP-1265), after its last object event. A client that held work for the batch (a pane refresh, a selection) runs it now. The engine ends a batch itself when its requester disconnects (abandoned) or it goes idle too long (expired).",
+      "params": [
+        {
+          "name": "batchId",
+          "description": "The id every object event of the batch carries as its trailing batchId.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "kind",
+          "description": "What the batch is: load, import, reconcile, sync, join, approve_all, unapprove_all, delete, or the kind a client's explicit scope gave.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "status",
+          "description": "How it ended: completed, cancelled or failed (sent by the requester), or abandoned or expired (decided by the engine).",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "cancelled",
+              "failed",
+              "abandoned",
+              "expired"
+            ]
+          }
+        },
+        {
+          "name": "informs",
+          "description": "How many object events the engine stamped with the batch; 0 when unknown (a local replay).",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "isOwn",
+          "description": "True when this client's connection opened the batch.",
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "origin",
+          "description": "'replay' for a join replaying the session's resident objects locally (nothing changed in the engine), else 'live'.",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "live",
+              "replay"
+            ]
           }
         }
       ]

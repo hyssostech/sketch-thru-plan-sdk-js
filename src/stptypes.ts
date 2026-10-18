@@ -15,6 +15,33 @@ export interface StpMessage {
 }
 
 /**
+ * A change set (STP-1265): one client's bulk operation, or a join's replay, as BatchStarted reports it
+ */
+export interface StpBatchStarted {
+  /** The id every object event of the batch carries as its trailing `batchId` */
+  batchId: string;
+  /** What the batch is: 'load', 'import', 'reconcile', 'sync', 'join', 'approve_all', 'delete', ... */
+  kind: string;
+  /** How many objects the requester expected to write; -1 when it did not say. An upper bound, not a promise */
+  expected: number;
+  /** True when this client's engine connection opened it */
+  isOwn: boolean;
+  /** 'replay' for a join's local replay, else 'live' */
+  origin: 'live' | 'replay';
+}
+
+/**
+ * A change set's end (STP-1265), as BatchEnded reports it
+ */
+export interface StpBatchEnded extends StpBatchStarted {
+  /** How it ended: the client's 'completed', 'cancelled' or 'failed', or the engine's 'abandoned' (the requester
+   * disconnected) or 'expired' (idle too long) */
+  status: 'completed' | 'cancelled' | 'failed' | 'abandoned' | 'expired';
+  /** How many object events the engine stamped with the batch; 0 when unknown */
+  informs: number;
+}
+
+/**
  * Parameters received along a SymbolAdded event
  */
 export interface SymbolAddedEvent {
