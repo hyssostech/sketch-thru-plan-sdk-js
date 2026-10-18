@@ -175,6 +175,15 @@
     (a second one used to be added). Each description says what an engine before the fix does.
 - `StpCoa` gains `friendTaskOrg` and `hostileTaskOrg`
 - Call-validation rules 1.0.4, checked against contract 0.9.5; no rule changed
+- Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
+  bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
+  a change set, and every object handler (`onSymbolAdded` ... `onCoaDeleted`) receives the change set's id as a new
+  optional trailing `batchId` argument, `undefined` outside one. Existing handlers are unaffected. A client can tell a
+  bulk arrival from a lone add without timing; do not wait for `onBatchStarted`, an older engine sends none.
+  New types `StpBatchStarted` and `StpBatchEnded`
+- OpenRPC contract raised to 0.9.8 (STP-1265): events `BatchStarted` and `BatchEnded`, and a trailing nullable
+  `batchId` param on the 18 object events
+- Call-validation rules 1.0.7, checked against contract 0.9.8; no rule changed
 - OpenRPC contract raised to 0.9.7 (STP-973): new C2SIM option `refuseUnconfirmedPlaceholders` (boolean, default
   false) on `GetC2SIMContent`, `PullC2SIMInitialization` and `PushC2SIMContent`, and on `StpC2SIMOptions`. The engine
   now reads the placement grade COARenderer stamps on each graphic and warns, per task, about every estimate staff have
