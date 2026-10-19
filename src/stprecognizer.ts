@@ -295,14 +295,14 @@ export class StpRecognizer{
       this.onBatchStarted(msg.params as StpType.StpBatchStarted);
     } else if (msg.method === 'BatchEnded' && this.onBatchEnded) {
       this.onBatchEnded(msg.params as StpType.StpBatchEnded);
-    } else if (msg.method === 'TaskEventAdded' && this.onTaskEventAdded || msg.method === 'TaskEventModified' && this.onTaskEventModified) {
-      // STP-1260: a task history entry, and a comment's edit or delete
-      const pp = msg.params as { poid: string; entry: StpType.StpTaskHistoryEntry };
-      if (msg.method === 'TaskEventAdded' && this.onTaskEventAdded) {
-        this.onTaskEventAdded(pp.poid, pp.entry, batchOf(msg.params));
-      } else if (msg.method === 'TaskEventModified' && this.onTaskEventModified) {
-        this.onTaskEventModified(pp.poid, pp.entry, batchOf(msg.params));
-      }
+    } else if (msg.method === 'TaskEventAdded' && this.onTaskEventAdded) {
+      // STP-1260: a task history entry
+      const pp = msg.params as StpType.StpTaskHistoryItem;
+      this.onTaskEventAdded(pp.poid, pp.entry, batchOf(msg.params));
+    } else if (msg.method === 'TaskEventModified' && this.onTaskEventModified) {
+      // STP-1260: a comment's edit or delete
+      const pp = msg.params as StpType.StpTaskHistoryItem;
+      this.onTaskEventModified(pp.poid, pp.entry, batchOf(msg.params));
     } else if (msg.method === 'NewScenario' && this.onNewScenario) {
       this.onNewScenario();
     } else if (msg.method === 'InkProcessed' && this.onInkProcessed) {

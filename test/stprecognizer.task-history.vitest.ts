@@ -105,7 +105,7 @@ describe('task history (STP-1261)', () => {
 
 describe('the registered user (STP-1260)', () => {
   // The Register message the WebSockets connector sends, captured instead of opened on a socket.
-  const registerOf = (user: string | undefined): Record<string, unknown> => {
+  const registerOf = async (user: string | undefined): Promise<Record<string, unknown>> => {
     const c = new StpWebSocketsConnector('ws://localhost:0');
     c.user = user;
     c.serviceName = 'Svc';
@@ -113,16 +113,16 @@ describe('the registered user (STP-1260)', () => {
     let sent = '';
     Object.defineProperty(c, 'isConnected', { get: () => true }); // register() refuses a closed socket
     (c as unknown as { request: (m: string) => Promise<unknown> }).request = async (m: string) => { sent = m; return 'S'; };
-    (c as unknown as { register: (t?: number) => Promise<unknown> }).register(1);
+    await (c as unknown as { register: (t?: number) => Promise<unknown> }).register(1);
     return JSON.parse(sent).params;
   };
 
-  it('Register carries the user, trimmed, when one is set', () => {
-    expect(registerOf('  Pat  ').user).toBe('Pat');
+  it('Register carries the user, trimmed, when one is set', async () => {
+    expect((await registerOf('  Pat  ')).user).toBe('Pat');
   });
 
-  it('Register carries no user key when none is set, as before', () => {
-    expect(registerOf(undefined)).not.toHaveProperty('user');
-    expect(registerOf('   ')).not.toHaveProperty('user');
+  it('Register carries no user key when none is set, as before', async () => {
+    expect(await registerOf(undefined)).not.toHaveProperty('user');
+    expect(await registerOf('   ')).not.toHaveProperty('user');
   });
 });
