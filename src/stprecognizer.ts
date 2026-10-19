@@ -295,6 +295,14 @@ export class StpRecognizer{
       this.onBatchStarted(msg.params as StpType.StpBatchStarted);
     } else if (msg.method === 'BatchEnded' && this.onBatchEnded) {
       this.onBatchEnded(msg.params as StpType.StpBatchEnded);
+    } else if (msg.method === 'TaskEventAdded' && this.onTaskEventAdded) {
+      // STP-1260: a task history entry
+      const pp = msg.params as StpType.StpTaskHistoryItem;
+      this.onTaskEventAdded(pp.poid, pp.entry, batchOf(msg.params));
+    } else if (msg.method === 'TaskEventModified' && this.onTaskEventModified) {
+      // STP-1260: a comment's edit or delete
+      const pp = msg.params as StpType.StpTaskHistoryItem;
+      this.onTaskEventModified(pp.poid, pp.entry, batchOf(msg.params));
     } else if (msg.method === 'NewScenario' && this.onNewScenario) {
       this.onNewScenario();
     } else if (msg.method === 'InkProcessed' && this.onInkProcessed) {
@@ -1019,6 +1027,52 @@ export class StpRecognizer{
   }
   //#endregion
 
+  //#region Task history (STP-1250, STP-1260)
+  /**
+   * Return a task's history, newest first: what was done to it, by whom and from where, and the comments on it.
+   * Entries outlive a deleted task. A task with no history, or an unknown poid, returns [].
+   * @param taskPoid - The task's unique id (from onTaskAdded)
+   * @param timeout - Optional timeout in seconds
+   * @returns Each entry with its poid
+   */
+  async getTaskHistory(taskPoid: string, timeout?: number): Promise<StpType.StpTaskHistoryItem[]> {
+    return this.requestStp('GetTaskHistory', { taskPoid }, timeout);
+  }
+
+  /**
+   * Add a comment to a task's history. The engine stamps the author (the connector's `user`), role, time and kind.
+   * Rejects when the client registered without a user, or with no task or no text.
+   * @param taskPoid - The task's unique id
+   * @param text - The comment
+   * @param timeout - Optional timeout in seconds
+   * @returns The new entry's poid
+   */
+  async addTaskComment(taskPoid: string, text: string, timeout?: number): Promise<string> {
+    return this.requestStp('AddTaskComment', { taskPoid, text }, timeout);
+  }
+
+  /**
+   * Change the text of this client's own comment; the earlier text is kept in the entry's revisions.
+   * Rejects for a system entry, someone else's comment, a deleted comment or blank text.
+   * @param entryPoid - The comment's entry poid (from getTaskHistory or onTaskEventAdded)
+   * @param text - The new text
+   * @param timeout - Optional timeout in seconds
+   */
+  async editTaskComment(entryPoid: string, text: string, timeout?: number): Promise<boolean> {
+    return this.requestStp('EditTaskComment', { entryPoid, text }, timeout);
+  }
+
+  /**
+   * Delete this client's own comment. It stays as a tombstone (deleted set, no text), so the history shows that a
+   * comment was deleted and by whom. Rejects for a system entry or someone else's comment.
+   * @param entryPoid - The comment's entry poid
+   * @param timeout - Optional timeout in seconds
+   */
+  async deleteTaskComment(entryPoid: string, timeout?: number): Promise<boolean> {
+    return this.requestStp('DeleteTaskComment', { entryPoid }, timeout);
+  }
+  //#endregion
+
   //#region Task commands
   /**
    * Request that a task be added by STP. The actual addition should only happen when STP responds with TaskAdded
@@ -1523,6 +1577,24 @@ export class StpRecognizer{
    * and 'expired') and how many object events the engine stamped with it
    */
   onBatchEnded: ((batch: StpType.StpBatchEnded) => void) | undefined;
+  //#endregion
+
+  //#region Handlers - Task history (STP-1250, STP-1260)
+  /**
+   * A task's history gained an entry: a change by any client through any path, or a comment
+   * @param poid - The entry's unique id (what editTaskComment / deleteTaskComment name)
+   * @param entry - The entry; entry.task names the task
+   * @param batchId - The change set the change arrived in; undefined outside one
+   */
+  onTaskEventAdded: ((poid: string, entry: StpType.StpTaskHistoryEntry, batchId?: string) => void) | undefined;
+  /**
+   * A comment was edited or deleted by its author. The entry is sent whole: a deleted comment arrives as its
+   * tombstone (deleted set, no text)
+   * @param poid - The entry's unique id
+   * @param entry - The entry as it now stands
+   * @param batchId - The change set the change arrived in; undefined outside one
+   */
+  onTaskEventModified: ((poid: string, entry: StpType.StpTaskHistoryEntry, batchId?: string) => void) | undefined;
   //#endregion
 
   //#region Stp raised notifications
