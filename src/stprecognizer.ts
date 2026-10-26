@@ -143,6 +143,8 @@ export class StpRecognizer{
 
   //#region Handler dispatching
   private handleInform(msg: StpType.StpMessage) {
+    // STP-1265: the change set an object event arrived in; null on the wire outside one, absent from an older engine
+    const batchOf = (params: object): string | undefined => (params as { batchId?: string | null })?.batchId ?? undefined;
     // Invoke a handler
     if (msg.method === 'SymbolAdded' && this.onSymbolAdded) {
       const pp = msg.params as {
@@ -157,7 +159,7 @@ export class StpRecognizer{
         if (symbol.sidc) symbol.sidc = StpType.Sidc.fromPlain(symbol.sidc);
         alts.push(symbol);
       }
-      this.onSymbolAdded(alts, pp.isUndo);
+      this.onSymbolAdded(alts, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'SymbolModified' && this.onSymbolModified) {
       const pp = msg.params as {
         poid: string;
@@ -166,13 +168,13 @@ export class StpRecognizer{
       };
       const symbol = Object.assign(new StpType.StpSymbol(), pp.symbol);
       if (symbol.sidc) symbol.sidc = StpType.Sidc.fromPlain(symbol.sidc);
-      this.onSymbolModified(pp.poid, symbol, pp.isUndo);
+      this.onSymbolModified(pp.poid, symbol, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'SymbolDeleted' && this.onSymbolDeleted) {
       const pp = msg.params as {
         poid: string;
         isUndo: boolean;
       };
-      this.onSymbolDeleted(pp.poid, pp.isUndo);
+      this.onSymbolDeleted(pp.poid, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'SymbolReport' && this.onSymbolReport) {
       const pp = msg.params as {
         poid: string;
@@ -189,14 +191,14 @@ export class StpRecognizer{
       };
       const taskOrg = Object.assign(new StpType.StpTaskOrg(), pp.taskOrg);
       if (msg.method === 'TaskOrgAdded' && this.onTaskOrgAdded) {
-        this.onTaskOrgAdded(taskOrg, pp.isUndo);
+        this.onTaskOrgAdded(taskOrg, pp.isUndo, batchOf(msg.params));
       }
       else if (msg.method === 'TaskOrgModified' && this.onTaskOrgModified) {
-        this.onTaskOrgModified(pp.poid, taskOrg, pp.isUndo);
+        this.onTaskOrgModified(pp.poid, taskOrg, pp.isUndo, batchOf(msg.params));
       }
     } else if (msg.method === 'TaskOrgDeleted' && this.onTaskOrgDeleted) {
       const pp = msg.params as { poid: string; isUndo: boolean };
-      this.onTaskOrgDeleted(pp.poid, pp.isUndo);
+      this.onTaskOrgDeleted(pp.poid, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'TaskOrgUnitAdded' && this.onTaskOrgUnitAdded || msg.method === 'TaskOrgUnitModified' && this.onTaskOrgUnitModified) {
       const pp = msg.params as {
         poid: string;
@@ -206,17 +208,17 @@ export class StpRecognizer{
       const unit = Object.assign(new StpType.StpTaskOrgUnit(), pp.toUnit);
       if (unit.sidc) unit.sidc = StpType.Sidc.fromPlain(unit.sidc);
       if (msg.method === 'TaskOrgUnitAdded' && this.onTaskOrgUnitAdded) {
-        this.onTaskOrgUnitAdded(unit, pp.isUndo);
+        this.onTaskOrgUnitAdded(unit, pp.isUndo, batchOf(msg.params));
       }
       else if (msg.method === 'TaskOrgUnitModified' && this.onTaskOrgUnitModified) {
-        this.onTaskOrgUnitModified(pp.poid, unit, pp.isUndo);
+        this.onTaskOrgUnitModified(pp.poid, unit, pp.isUndo, batchOf(msg.params));
       }
     } else if (msg.method === 'TaskOrgUnitDeleted' && this.onTaskOrgUnitDeleted) {
       const pp = msg.params as {
         poid: string;
         isUndo: boolean;
       };
-      this.onTaskOrgUnitDeleted(pp.poid, pp.isUndo);
+      this.onTaskOrgUnitDeleted(pp.poid, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'TaskOrgRelationshipAdded' && this.onTaskOrgRelationshipAdded || msg.method === 'TaskOrgRelationshipModified' && this.onTaskOrgRelationshipModified) {
       const pp = msg.params as {
         poid: string;
@@ -225,14 +227,14 @@ export class StpRecognizer{
       };
       const unit = Object.assign(new StpType.StpTaskOrgRelationship(), pp.toRelationship);
       if (msg.method === 'TaskOrgRelationshipAdded' && this.onTaskOrgRelationshipAdded) {
-        this.onTaskOrgRelationshipAdded(unit, pp.isUndo);
+        this.onTaskOrgRelationshipAdded(unit, pp.isUndo, batchOf(msg.params));
       }
       else if (msg.method === 'TaskOrgRelationshipModified' && this.onTaskOrgRelationshipModified) {
-        this.onTaskOrgRelationshipModified(pp.poid, unit, pp.isUndo);
+        this.onTaskOrgRelationshipModified(pp.poid, unit, pp.isUndo, batchOf(msg.params));
       }
     } else if (msg.method === 'TaskOrgRelationshipDeleted' && this.onTaskOrgRelationshipDeleted) {
       const pp = msg.params as { poid: string; isUndo: boolean };
-      this.onTaskOrgRelationshipDeleted(pp.poid, pp.isUndo);
+      this.onTaskOrgRelationshipDeleted(pp.poid, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'TaskAdded' && this.onTaskAdded || msg.method === 'TaskModified' && this.onTaskModified) {
       const pp = msg.params as {
         poid: string,
@@ -247,17 +249,17 @@ export class StpRecognizer{
         alts.push(task);
       }
       if (msg.method === 'TaskAdded' && this.onTaskAdded) {
-        this.onTaskAdded(pp.poid, alts, pp.taskPoids, pp.isUndo);
+        this.onTaskAdded(pp.poid, alts, pp.taskPoids, pp.isUndo, batchOf(msg.params));
       }
       else if (msg.method === 'TaskModified' && this.onTaskModified) {
-        this.onTaskModified(pp.poid, alts, pp.taskPoids, pp.isUndo);
+        this.onTaskModified(pp.poid, alts, pp.taskPoids, pp.isUndo, batchOf(msg.params));
       }
     } else if (msg.method === 'TaskDeleted' && this.onTaskDeleted) {
       const pp = msg.params as {
         poid: string
         isUndo: boolean;
       };
-      this.onTaskDeleted(pp.poid, pp.isUndo);
+      this.onTaskDeleted(pp.poid, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'TaskOrgSwitched' && this.onTaskOrgSwitched) {
       const pp = msg.params as {
         taskOrg: StpType.StpTaskOrg;
@@ -271,14 +273,14 @@ export class StpRecognizer{
       };
       const unit = Object.assign(new StpType.StpCoa(), pp.coa);
       if (msg.method === 'CoaAdded' && this.onCoaAdded) {
-        this.onCoaAdded(pp.poid, pp.coa, pp.isUndo);
+        this.onCoaAdded(pp.poid, pp.coa, pp.isUndo, batchOf(msg.params));
       }
       else if (msg.method === 'CoaModified' && this.onCoaModified) {
-        this.onCoaModified(pp.poid, unit, pp.isUndo);
+        this.onCoaModified(pp.poid, unit, pp.isUndo, batchOf(msg.params));
       }
     } else if (msg.method === 'CoaDeleted' && this.onCoaDeleted) {
       const pp = msg.params as { poid: string; isUndo: boolean };
-      this.onCoaDeleted(pp.poid, pp.isUndo);
+      this.onCoaDeleted(pp.poid, pp.isUndo, batchOf(msg.params));
     } else if (msg.method === 'CoaSwitched' && this.onCoaSwitched) {
       const pp = msg.params as {
         coa: StpType.StpCoa;
@@ -289,6 +291,18 @@ export class StpRecognizer{
         role: StpType.StpRole;
       };
       this.onRoleSwitched(pp.role);
+    } else if (msg.method === 'BatchStarted' && this.onBatchStarted) {
+      this.onBatchStarted(msg.params as StpType.StpBatchStarted);
+    } else if (msg.method === 'BatchEnded' && this.onBatchEnded) {
+      this.onBatchEnded(msg.params as StpType.StpBatchEnded);
+    } else if (msg.method === 'TaskEventAdded' && this.onTaskEventAdded) {
+      // STP-1260: a task history entry
+      const pp = msg.params as StpType.StpTaskHistoryItem;
+      this.onTaskEventAdded(pp.poid, pp.entry, batchOf(msg.params));
+    } else if (msg.method === 'TaskEventModified' && this.onTaskEventModified) {
+      // STP-1260: a comment's edit or delete
+      const pp = msg.params as StpType.StpTaskHistoryItem;
+      this.onTaskEventModified(pp.poid, pp.entry, batchOf(msg.params));
     } else if (msg.method === 'NewScenario' && this.onNewScenario) {
       this.onNewScenario();
     } else if (msg.method === 'InkProcessed' && this.onInkProcessed) {
@@ -1013,6 +1027,52 @@ export class StpRecognizer{
   }
   //#endregion
 
+  //#region Task history (STP-1250, STP-1260)
+  /**
+   * Return a task's history, newest first: what was done to it, by whom and from where, and the comments on it.
+   * Entries outlive a deleted task. A task with no history, or an unknown poid, returns [].
+   * @param taskPoid - The task's unique id (from onTaskAdded)
+   * @param timeout - Optional timeout in seconds
+   * @returns Each entry with its poid
+   */
+  async getTaskHistory(taskPoid: string, timeout?: number): Promise<StpType.StpTaskHistoryItem[]> {
+    return this.requestStp('GetTaskHistory', { taskPoid }, timeout);
+  }
+
+  /**
+   * Add a comment to a task's history. The engine stamps the author (the connector's `user`), role, time and kind.
+   * Rejects when the client registered without a user, or with no task or no text.
+   * @param taskPoid - The task's unique id
+   * @param text - The comment
+   * @param timeout - Optional timeout in seconds
+   * @returns The new entry's poid
+   */
+  async addTaskComment(taskPoid: string, text: string, timeout?: number): Promise<string> {
+    return this.requestStp('AddTaskComment', { taskPoid, text }, timeout);
+  }
+
+  /**
+   * Change the text of this client's own comment; the earlier text is kept in the entry's revisions.
+   * Rejects for a system entry, someone else's comment, a deleted comment or blank text.
+   * @param entryPoid - The comment's entry poid (from getTaskHistory or onTaskEventAdded)
+   * @param text - The new text
+   * @param timeout - Optional timeout in seconds
+   */
+  async editTaskComment(entryPoid: string, text: string, timeout?: number): Promise<boolean> {
+    return this.requestStp('EditTaskComment', { entryPoid, text }, timeout);
+  }
+
+  /**
+   * Delete this client's own comment. It stays as a tombstone (deleted set, no text), so the history shows that a
+   * comment was deleted and by whom. Rejects for a system entry or someone else's comment.
+   * @param entryPoid - The comment's entry poid
+   * @param timeout - Optional timeout in seconds
+   */
+  async deleteTaskComment(entryPoid: string, timeout?: number): Promise<boolean> {
+    return this.requestStp('DeleteTaskComment', { entryPoid }, timeout);
+  }
+  //#endregion
+
   //#region Task commands
   /**
    * Request that a task be added by STP. The actual addition should only happen when STP responds with TaskAdded
@@ -1282,25 +1342,28 @@ export class StpRecognizer{
    * A new symbol has been added
    * @param alternates - One or more symbol interpretations, ranked by likelihood
    * @param isUndo - True if this is the result of an undo operation (of a symbol delete)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onSymbolAdded:
-    | ((alternates: StpType.StpSymbol[], isUndo: boolean) => void)
+    | ((alternates: StpType.StpSymbol[], isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A symbol has been modified
    * @param poid - Unique symbol identifier of the modified symbol
    * @param symbol - Symbol added
    * @param isUndo - True if this is the result of an undo operation (of a symbol modify)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onSymbolModified:
-    | ((poid: string, symbol: StpType.StpSymbol, isUndo: boolean) => void)
+    | ((poid: string, symbol: StpType.StpSymbol, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A symbol has been deleted
    * @param poid - Unique symbol identifier of the deleted symbol
    * @param isUndo - True if this is the result of an undo operation (of a symbol add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
-  onSymbolDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
+  onSymbolDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
   /**
    * An update report for a symbol has been received, e.g from C2SIM
    * @param poid - Unique symbol identifier of the updated symbol
@@ -1316,73 +1379,82 @@ export class StpRecognizer{
    * A new task org  has been added
    * @param  -  Added TO
    * @param isUndo - True if this is the result of an undo operation (of a TO delete)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgAdded:
-    | ((taskOrg: StpType.StpTaskOrg, isUndo: boolean) => void)
+    | ((taskOrg: StpType.StpTaskOrg, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task org  has been modified
    * @param poid - Unique symbol identifier of the modified symbol
    * @param taskOrg - Modified TO
    * @param isUndo - True if this is the result of an undo operation (of a TO modify)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgModified:
-    | ((poid: string, taskOrg : StpType.StpTaskOrg, isUndo: boolean) => void)
+    | ((poid: string, taskOrg : StpType.StpTaskOrg, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task org  has been deleted
    * @param poid - Unique identifier of the deleted TO 
    * @param isUndo - True if this is the result of an undo operation (of a TO add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
-  onTaskOrgDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
+  onTaskOrgDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
 
   /**
    * A new task org unit has been added
    * @param unit - Unit added
    * @param isUndo - True if this is the result of an undo operation (of a to unit delete)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgUnitAdded:
-    | ((unit: StpType.StpTaskOrgUnit, isUndo: boolean) => void)
+    | ((unit: StpType.StpTaskOrgUnit, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task org unit has been modified
    * @param poid - Unique symbol identifier of the modified symbol
    * @param unit - Unit added
    * @param isUndo - True if this is the result of an undo operation (of a to unit modify)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgUnitModified:
-    | ((poid: string, unit: StpType.StpTaskOrgUnit, isUndo: boolean) => void)
+    | ((poid: string, unit: StpType.StpTaskOrgUnit, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task org unit has been deleted
    * @param poid - Unique identifier of the deleted to unit
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
-  onTaskOrgUnitDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
+  onTaskOrgUnitDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
 
   /**
    * A new task org relationship has been added
    * @param rel - Relationship added
    * @param isUndo - True if this is the result of an undo operation (of a to unit delete)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgRelationshipAdded:
-    | ((rel: StpType.StpTaskOrgRelationship, isUndo: boolean) => void)
+    | ((rel: StpType.StpTaskOrgRelationship, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task org relationship has been modified
    * @param poid - Unique identifier of the modified to relationship
    * @param rel - Relationship added
    * @param isUndo - True if this is the result of an undo operation (of a to unit modify)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgRelationshipModified:
-    | ((poid: string, rel: StpType.StpTaskOrgRelationship, isUndo: boolean) => void)
+    | ((poid: string, rel: StpType.StpTaskOrgRelationship, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task org relationship has been deleted
    * @param poid - Unique identifier of the deleted to relationship
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
-  onTaskOrgRelationshipDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
+  onTaskOrgRelationshipDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
 
   /**
    * A new task org has become current/active
@@ -1397,25 +1469,28 @@ export class StpRecognizer{
    * @param poid - Unique identifier of the added task
    * @param alternates - Ranked collection of alternate task interpretations
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskAdded:
-    | ((poid: string, alternates: StpType.StpTask[], taskPoids: string[], isUndo: boolean) => void)
+    | ((poid: string, alternates: StpType.StpTask[], taskPoids: string[], isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task has been modified
    * @param poid - Unique identifier of the modified task
    * @param alternates - Ranked collection of alternate task interpretations
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskModified:
-    | ((poid: string, alternates: StpType.StpTask[], taskPoids: string[], isUndo: boolean) => void)
+    | ((poid: string, alternates: StpType.StpTask[], taskPoids: string[], isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A task has been deleted
    * @param poid - Unique identifier of the deleted task
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
-  onTaskDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
+  onTaskDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
   //#endregion
 
   //#region Handlers - COA operations
@@ -1424,25 +1499,28 @@ export class StpRecognizer{
    * @param poid - Unique identifier of the added COA
    * @param coa - Definition of COA to add
    * @param isUndo - True if this is the result of an undo operation (of a to COA delete)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onCoaAdded:
-    | ((poid: string, coa: StpType.StpCoa, isUndo: boolean) => void)
+    | ((poid: string, coa: StpType.StpCoa, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A COA has been modified
    * @param poid - Unique identifier of the added COA
    * @param coa - Modified COA definition
    * @param isUndo - True if this is the result of an undo operation (of a to COA modify)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onCoaModified:
-    | ((poid: string, coa: StpType.StpCoa, isUndo: boolean) => void)
+    | ((poid: string, coa: StpType.StpCoa, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
    * A COA has been deleted
    * @param poid - Unique identifier of the added COA
    * @param isUndo - True if this is the result of an undo operation (of a to COA add)
+   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
-  onCoaDeleted: ((poid: string, isUndo: boolean) => void) | undefined;
+  onCoaDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
   /**
    * A new COA has become current/active
    * @param coa
@@ -1483,6 +1561,41 @@ export class StpRecognizer{
   onCommand: ((operation: string, location: StpType.Location) => void) | undefined;
   //#endregion
 
+
+  //#region Handlers - Change sets (STP-1265)
+  /**
+   * A change set began: one client's bulk operation (a load, an import, a reconcile, an approve all, ...) or a join's
+   * replay. The object events that follow carry its `batchId`. Do not wait for it before handling objects: an engine
+   * that predates change sets sends none, and an object may arrive first.
+   * @param batch - The batch: its id, kind, how many objects it expects (-1 when unknown), whether this client opened
+   * it, and its origin ('live' or 'replay')
+   */
+  onBatchStarted: ((batch: StpType.StpBatchStarted) => void) | undefined;
+  /**
+   * A change set ended. Its last object event has been sent before this.
+   * @param batch - As BatchStarted, plus how it ended ('completed', 'cancelled', 'failed', or the engine's 'abandoned'
+   * and 'expired') and how many object events the engine stamped with it
+   */
+  onBatchEnded: ((batch: StpType.StpBatchEnded) => void) | undefined;
+  //#endregion
+
+  //#region Handlers - Task history (STP-1250, STP-1260)
+  /**
+   * A task's history gained an entry: a change by any client through any path, or a comment
+   * @param poid - The entry's unique id (what editTaskComment / deleteTaskComment name)
+   * @param entry - The entry; entry.task names the task
+   * @param batchId - The change set the change arrived in; undefined outside one
+   */
+  onTaskEventAdded: ((poid: string, entry: StpType.StpTaskHistoryEntry, batchId?: string) => void) | undefined;
+  /**
+   * A comment was edited or deleted by its author. The entry is sent whole: a deleted comment arrives as its
+   * tombstone (deleted set, no text)
+   * @param poid - The entry's unique id
+   * @param entry - The entry as it now stands
+   * @param batchId - The change set the change arrived in; undefined outside one
+   */
+  onTaskEventModified: ((poid: string, entry: StpType.StpTaskHistoryEntry, batchId?: string) => void) | undefined;
+  //#endregion
 
   //#region Stp raised notifications
   /**

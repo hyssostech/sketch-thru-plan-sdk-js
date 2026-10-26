@@ -2,8 +2,8 @@
   "$schema": "./sketch-thru-plan-validations.schema.json",
   "title": "Sketch-thru-Plan call validations",
   "description": "Data-driven checks a client runs around a state-changing STP call (STP-1064): before the call, the preconditions, the params the engine silently ignores a call without, and the poids that must name existing objects; after the call, the events that prove it did what it asked (intent). Every write and destructive method of the contract has an entry. See README.md, 'Call validations'.",
-  "version": "1.0.5",
-  "contractVersion": "0.9.6",
+  "version": "1.0.8",
+  "contractVersion": "0.9.9",
   "refusalMessage": {
     "event": "StpMessage",
     "contains": "'{method}'"
@@ -1791,6 +1791,79 @@
         "expect": []
       },
       "confirm": "Discards the session's current scenario and every object in it."
+    },
+    "AddTaskComment": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "taskPoid",
+          "kind": "task",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskEventAdded",
+            "match": {
+              "entry.task": {
+                "param": "taskPoid"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "EditTaskComment": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "entryPoid",
+          "kind": "any",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskEventModified",
+            "match": {
+              "poid": {
+                "param": "entryPoid"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "DeleteTaskComment": {
+      "preconditions": [
+        "activeScenario"
+      ],
+      "references": [
+        {
+          "param": "entryPoid",
+          "kind": "any",
+          "required": true
+        }
+      ],
+      "intent": {
+        "expect": [
+          {
+            "event": "TaskEventModified",
+            "match": {
+              "poid": {
+                "param": "entryPoid"
+              }
+            }
+          }
+        ]
+      },
+      "confirm": "Deletes the comment {entryPoid}; a note that it was deleted stays."
     }
   }
 }
