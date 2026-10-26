@@ -15,6 +15,72 @@ export interface StpMessage {
 }
 
 /**
+ * A change set (STP-1265): one client's bulk operation, or a join's replay, as BatchStarted reports it
+ */
+export interface StpBatchStarted {
+  /** The id every object event of the batch carries as its trailing `batchId` */
+  batchId: string;
+  /** What the batch is: 'load', 'import', 'reconcile', 'sync', 'join', 'approve_all', 'delete', ... */
+  kind: string;
+  /** How many objects the requester expected to write; -1 when it did not say. An upper bound, not a promise */
+  expected: number;
+  /** True when this client's engine connection opened it */
+  isOwn: boolean;
+  /** 'replay' for a join's local replay, else 'live' */
+  origin: 'live' | 'replay';
+}
+
+/**
+ * One entry of a task's history (STP-1250; engine fsTYPE task_event): what was done to the task, by whom and from
+ * where, or a comment on it. Written by the engine; a client only adds, edits and deletes its own comments.
+ */
+export interface StpTaskHistoryEntry {
+  /** The poid of the task the entry is about; entries outlive a deleted task */
+  task: string;
+  /** When it happened, ISO 8601 UTC */
+  utc: string;
+  /** created, edited, retasked, confidence, confirmed, unconfirmed, alternate_chosen, deleted, undone or comment. Open:
+   * later engines add kinds - show an unknown one as text */
+  kind: string;
+  /** 'system' for an entry the engine recorded from a change, 'user' for a comment */
+  origin: 'system' | 'user';
+  /** The person (the user their client registered with), or empty - never a device id */
+  author: string | null;
+  /** The role the author's client had (s2, s3, ...), or empty */
+  role: string | null;
+  /** The component that made the change (STP Agent, RESTConnector, WebSocketsBridge, ...) */
+  source: string | null;
+  /** A readable line ("start_time 1 -> 2", a comment's text); empty for a deleted comment */
+  text: string | null;
+  /** A JSON object as a string with the specifics (an edit's fields; an edited comment's revisions) */
+  detail: string | null;
+  /** When a comment was last edited, ISO 8601 UTC; null if never */
+  edited: string | null;
+  /** When a comment was deleted, ISO 8601 UTC; null if it stands. A deleted comment stays as a tombstone */
+  deleted: string | null;
+}
+
+/**
+ * A task history entry with its poid, as getTaskHistory returns it: the poid is what editTaskComment and
+ * deleteTaskComment name
+ */
+export interface StpTaskHistoryItem {
+  poid: string;
+  entry: StpTaskHistoryEntry;
+}
+
+/**
+ * A change set's end (STP-1265), as BatchEnded reports it
+ */
+export interface StpBatchEnded extends StpBatchStarted {
+  /** How it ended: the client's 'completed', 'cancelled' or 'failed', or the engine's 'abandoned' (the requester
+   * disconnected) or 'expired' (idle too long) */
+  status: 'completed' | 'cancelled' | 'failed' | 'abandoned' | 'expired';
+  /** How many object events the engine stamped with the batch; 0 when unknown */
+  informs: number;
+}
+
+/**
  * Parameters received along a SymbolAdded event
  */
 export interface SymbolAddedEvent {

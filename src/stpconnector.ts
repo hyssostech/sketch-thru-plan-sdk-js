@@ -44,6 +44,12 @@ export class StpWebSocketsConnector implements IStpConnector {
   timeout: number | undefined;
   machineId: string | undefined;
   sessionId: string | undefined;
+  /**
+   * The person using this client, as a display name (STP-1260): the task history names them as the author of the
+   * changes this client makes and the comments it adds. Set it before connect; leave it unset in a service. A client
+   * that registers without one cannot add comments.
+   */
+  user: string | undefined;
   //#endregion
 
   //#region Connection status accesssors
@@ -271,7 +277,9 @@ export class StpWebSocketsConnector implements IStpConnector {
         language: 'javascript',
         solvables: this.solvables,
         machineId: this.machineId || null,
-        sessionId: this.sessionId
+        sessionId: this.sessionId,
+        // STP-1260: only when set - an engine before it ignores the key, and a service sends none
+        ...(this.user?.trim() ? { user: this.user.trim() } : {})
       }
     };
 
