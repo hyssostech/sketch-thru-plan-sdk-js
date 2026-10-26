@@ -1,4 +1,5 @@
 import { IStpConnector } from './interfaces/IStpConnector';
+import { SymbolSearch, symbolIndexUrlFor } from './symbolsearch';
 
 /**
  * Implements a connector to STP's native OAA pub/sub service via WebSockets
@@ -65,6 +66,11 @@ export class StpWebSocketsConnector implements IStpConnector {
     return this.socket ? this.socket.readyState.toString() : '';
   }
   //#endregion
+
+  /** STP-1383: where this connection's STP serves the installed symbol index (same host and port, http/https). */
+  get symbolIndexUrl(): string | undefined {
+    return symbolIndexUrlFor(this.connstring);
+  }
 
   //#region Constants
   readonly DEFAULT_TIMEOUT: number = 30;
@@ -172,6 +178,8 @@ export class StpWebSocketsConnector implements IStpConnector {
         reject(new Error('Failed to connect: ' + (e as Error).message));
         return;
       }
+      // STP-1383: SymbolSearch.load() with no URL uses the index this bridge serves.
+      SymbolSearch.connectedIndexUrl = this.symbolIndexUrl;
 
       // Setup the client event handlers that propagate the socket state
       this.socket!.onmessage = (ev) => {

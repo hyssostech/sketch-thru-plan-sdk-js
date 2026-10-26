@@ -59,6 +59,41 @@ export class SymbolIndexUnavailableError extends Error {
 /** The `schema` value this SDK reads. */
 export const SYMBOL_INDEX_SCHEMA = 'stp.symbol-index.v1';
 
+/** The path STP serves the installed index at, on its WebSocket bridge port (STP-1383). */
+export const SYMBOL_INDEX_PATH = '/symbol-index.json';
+
+/** The default when no connector has connected: STP's local bridge on its default port (STP-1383). */
+export const DEFAULT_SYMBOL_INDEX_URL =
+  'http://localhost:9599' + SYMBOL_INDEX_PATH;
+
+/**
+ * The symbol index URL for a bridge connection string: `ws:` becomes `http:`, `wss:` becomes `https:`, same host and
+ * port; any path (e.g. a session suffix) is dropped. Undefined when `connstring` is not a ws/wss URL.
+ */
+export function symbolIndexUrlFor(connstring: string): string | undefined {
+  let u: URL;
+  try {
+    u = new URL(connstring.trim());
+  } catch {
+    return undefined;
+  }
+  const scheme =
+    u.protocol === 'ws:'
+      ? 'http:'
+      : u.protocol === 'wss:'
+        ? 'https:'
+        : undefined;
+  return scheme === undefined
+    ? undefined
+    : `${scheme}//${u.host}${SYMBOL_INDEX_PATH}`;
+}
+
+/** What an STP that does not serve the index (older than the route) looks like to the caller. */
+const OLDER_STP =
+  'this STP does not serve the symbol index; STP 5.11.2 or later serves it at ' +
+  SYMBOL_INDEX_PATH +
+  ' on its WebSocket port, or pass the URL of a symbol-index.json';
+
 /** Reads an index from its JSON (text or parsed); `source` names it in errors. Entries come back ordered by key. */
 export function parseSymbolIndex(
   json: unknown,
@@ -209,9 +244,14 @@ export class SymbolSearch {
     return new SymbolSearch(parseSymbolIndex(json, source));
   }
 
+  /** The index URL of the most recently connected StpWebSocketsConnector, if any (set by the connector). */
+  static connectedIndexUrl: string | undefined;
+
   /**
-   * Fetches the index at `url` and indexes it. Any failure is a {@link SymbolIndexUnavailableError}; so is a
-   * missing URL, until STP serves a default (STP-1383).
+   * Fetches the index at `url` and indexes it. With no `url` (STP-1383): the index served by the bridge the most
+   * recently connected {@link StpWebSocketsConnector} uses, else {@link DEFAULT_SYMBOL_INDEX_URL}. Any failure is a
+   * {@link SymbolIndexUnavailableError} that names its reason - an older STP, a missing install, a bad file - never an
+   * empty answer.
    */
   static async load(
     url?: string,
@@ -221,27 +261,51 @@ export class SymbolSearch {
       u
     ) => fetch(u)
   ): Promise<SymbolSearch> {
-    // The URL is optional so that a default - the index served by STP's local bridge (STP-1383) - can
-    // be added without changing callers. Until then a URL is required.
-    if (url === undefined || url.trim().length === 0)
-      throw new SymbolIndexUnavailableError(
-        '(no URL)',
-        'no URL given and no default yet'
-      );
+    const fromStp = url === undefined || url.trim().length === 0;
+    const target = fromStp
+      ? (SymbolSearch.connectedIndexUrl ?? DEFAULT_SYMBOL_INDEX_URL)
+      : url!;
+    // A URL on STP's route gets the "older STP" explanation; any other URL just its HTTP status.
+    const stpRoute =
+      fromStp || target.split(/[?#]/)[0].endsWith(SYMBOL_INDEX_PATH);
     let text: string;
     try {
-      const response = await fetchFn(url);
+      const response = await fetchFn(target);
       if (!response.ok)
-        throw new SymbolIndexUnavailableError(url, `HTTP ${response.status}`);
+        throw new SymbolIndexUnavailableError(
+          target,
+          await SymbolSearch.failureReason(response, stpRoute)
+        );
       text = await response.text();
     } catch (e) {
       if (e instanceof SymbolIndexUnavailableError) throw e;
+      const message = (e as Error).message || String(e);
       throw new SymbolIndexUnavailableError(
-        url,
-        (e as Error).message || String(e)
+        target,
+        stpRoute ? `${message}; ${OLDER_STP}` : message
       );
     }
-    return SymbolSearch.fromIndex(text, url);
+    return SymbolSearch.fromIndex(text, target);
+  }
+
+  /** Why a non-2xx answer failed: STP's own "not installed" body when it sent one, else the status (explained on STP's route). */
+  private static async failureReason(
+    response: { status: number; text(): Promise<string> },
+    stpRoute: boolean
+  ): Promise<string> {
+    let body: { error?: unknown; expected?: unknown } | undefined;
+    try {
+      body = JSON.parse(await response.text());
+    } catch {
+      body = undefined;
+    }
+    if (body && typeof body.error === 'string')
+      return typeof body.expected === 'string'
+        ? `HTTP ${response.status}: ${body.error} (expected at ${body.expected})`
+        : `HTTP ${response.status}: ${body.error}`;
+    return stpRoute
+      ? `HTTP ${response.status}; ${OLDER_STP}`
+      : `HTTP ${response.status}`;
   }
 
   /** The symbols matching `text`, best first, at most `maxResults`; empty for spaces or only stop words, or no match. */
