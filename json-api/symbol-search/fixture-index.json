@@ -75,6 +75,32 @@
       ],
       "gesture": "point",
       "defaultAffiliation": "friend"
+    },
+    {
+      "key": "Q600",
+      "deltaSidc": "10031000001213000000",
+      "charlieSidc": "",
+      "symbolType": "UNIT",
+      "name": "Quill Sparrow",
+      "phrases": [
+        "QUILL SPARROW"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "friend"
+    },
+    {
+      "key": "Q610",
+      "deltaSidc": "10031000001213010000",
+      "charlieSidc": "",
+      "symbolType": "UNIT",
+      "name": "Night Quill Sparrow",
+      "phrases": [
+        "NIGHT QUILL SPARROW",
+        "NIGHT SPARROW QUILL",
+        "QUILL SPARROW NIGHT"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "friend"
     }
   ]
 }

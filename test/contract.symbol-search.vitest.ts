@@ -152,6 +152,10 @@ describe('the symbol index format and the shared fixture (STP-1373)', () => {
     );
     for (const text of ['zeph', 'zepyhr', 'marble'])
       expect(byText.get(text)?.expectSet).toBeDefined();
+    // The one rule beyond STP's own scoring: the exact phrase first (it is what tells the
+    // ruled design from a plain port of STP's search).
+    expect(byText.get('quill sparrow')?.expectTop?.[0]).toBe('Q600');
+    expect(method().description).toMatch(/exactly the text .* ranks first/);
     expect(CASES.description).toMatch(/expectSet/);
   });
 });

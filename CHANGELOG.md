@@ -197,6 +197,9 @@
   score over the phrases (the classic Lucene similarity STP uses), equal scores by key - no longer coverage-then-length.
   The conformance cases gain `expectSet` (these keys, any order) where the order is a scoring detail: a prefix, a typo
   and a shared stem
+- `SearchSymbol`: an entry whose phrase is exactly the text ranks first (STP-1373, operator's ruling 2026-10-26: the
+  hybrid ranker). STP's own search can put a longer entry first when its phrasings repeat the words; the SDKs
+  answer the exact phrase. New fixture entries Q600 / Q610 and the case that holds it
 - Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into

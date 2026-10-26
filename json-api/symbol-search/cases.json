@@ -11,6 +11,14 @@
       ]
     },
     {
+      "name": "an entry whose phrase is exactly the text ranks first",
+      "text": "quill sparrow",
+      "expectTop": [
+        "Q600",
+        "Q610"
+      ]
+    },
+    {
       "name": "case is ignored",
       "text": "ZePhYr",
       "expectTop": [
