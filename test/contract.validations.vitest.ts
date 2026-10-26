@@ -29,10 +29,13 @@ const ruleOf = (name: string): Json => RULES.methods[name];
 const methodOf = (name: string): Json => METHODS.find((m) => m.name === name)!;
 const ruleEntries = (): [string, Json][] => Object.entries(RULES.methods as Json);
 
-/** Dispatched, non-transport methods that change state: the ones the rule file must cover. */
+/** Dispatched, non-transport, non-client methods that change state: the ones the rule file must cover. */
 const STATE_CHANGING = METHODS.filter(
   (m) =>
-    m['x-stpSafety'] !== 'read' && m['x-layer'] !== 'transport' && m['x-engineDispatch'] !== 'none',
+    m['x-stpSafety'] !== 'read' &&
+    m['x-layer'] !== 'transport' &&
+    m['x-layer'] !== 'client' &&
+    m['x-engineDispatch'] !== 'none',
 ).map((m) => m.name);
 
 /** Whether `segments` lead somewhere inside `schema` (component refs, allOf and array items followed). */

@@ -1,0 +1,130 @@
+{
+  "description": "SearchSymbol conformance (STP-1373): every SDK, loading fixture-index.json, answers these. expectTop: the results begin with these keys, in order. expectAll: the results are exactly these keys, in order. expectSet: the results are exactly these keys, in any order (where the order is a scoring detail, not a rule). expectFirst: fields of the first result. maxResults is passed when given.",
+  "index": "fixture-index.json",
+  "cases": [
+    {
+      "name": "a word that is a whole phrase ranks that entry first",
+      "text": "zephyr",
+      "expectTop": [
+        "F100",
+        "F110"
+      ]
+    },
+    {
+      "name": "an entry whose phrase is exactly the text ranks first",
+      "text": "quill sparrow",
+      "expectTop": [
+        "Q600",
+        "Q610"
+      ]
+    },
+    {
+      "name": "case is ignored",
+      "text": "ZePhYr",
+      "expectTop": [
+        "F100",
+        "F110"
+      ]
+    },
+    {
+      "name": "a prefix finds the words it begins",
+      "text": "zeph",
+      "expectSet": [
+        "F100",
+        "F110"
+      ]
+    },
+    {
+      "name": "a typo within edits finds the word",
+      "text": "zepyhr",
+      "expectSet": [
+        "F100",
+        "F110"
+      ]
+    },
+    {
+      "name": "every word must match, in any order",
+      "text": "gate marble",
+      "expectTop": [
+        "G200"
+      ]
+    },
+    {
+      "name": "a word finds the words that share its stem",
+      "text": "marble",
+      "expectSet": [
+        "G200",
+        "G210"
+      ]
+    },
+    {
+      "name": "equal scores rank by key",
+      "text": "marb",
+      "expectTop": [
+        "G200",
+        "G210"
+      ]
+    },
+    {
+      "name": "a plural finds its stem",
+      "text": "lanterns",
+      "expectTop": [
+        "L500"
+      ]
+    },
+    {
+      "name": "words that find nothing together are searched one by one",
+      "text": "zephyr xylograph",
+      "expectTop": [
+        "F100"
+      ]
+    },
+    {
+      "name": "no match answers empty",
+      "text": "xylograph",
+      "expectAll": []
+    },
+    {
+      "name": "only stop words answers empty",
+      "text": "the brigade",
+      "expectAll": []
+    },
+    {
+      "name": "spaces answer empty",
+      "text": "   ",
+      "expectAll": []
+    },
+    {
+      "name": "maxResults caps the answer",
+      "text": "zephyr",
+      "maxResults": 1,
+      "expectAll": [
+        "F100"
+      ]
+    },
+    {
+      "name": "a result carries its default affiliation",
+      "text": "rook",
+      "expectTop": [
+        "H300"
+      ],
+      "expectFirst": {
+        "defaultAffiliation": "hostile",
+        "gesture": "point",
+        "speech": "ROOK SNARE"
+      }
+    },
+    {
+      "name": "a tactical graphic carries its gesture",
+      "text": "marble gate",
+      "expectTop": [
+        "G200"
+      ],
+      "expectFirst": {
+        "gesture": "area",
+        "name": "Marble Gate",
+        "deltaSidc": "10032500001513000000"
+      }
+    }
+  ]
+}

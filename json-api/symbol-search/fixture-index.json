@@ -1,0 +1,106 @@
+{
+  "schema": "stp.symbol-index.v1",
+  "sets": "fixture",
+  "entries": [
+    {
+      "key": "F100",
+      "deltaSidc": "10031000001211000000",
+      "charlieSidc": "SFGPUCI--------",
+      "symbolType": "UNIT",
+      "name": "Zephyr",
+      "phrases": [
+        "ZEPHYR"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "friend"
+    },
+    {
+      "key": "F110",
+      "deltaSidc": "10031000001211020000",
+      "charlieSidc": "",
+      "symbolType": "UNIT",
+      "name": "Zephyr Lance",
+      "phrases": [
+        "ZEPHYR LANCE"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "friend"
+    },
+    {
+      "key": "G200",
+      "deltaSidc": "10032500001513000000",
+      "charlieSidc": "",
+      "symbolType": "TG",
+      "name": "Marble Gate",
+      "phrases": [
+        "MARBLE GATE"
+      ],
+      "gesture": "area",
+      "defaultAffiliation": "friend"
+    },
+    {
+      "key": "G210",
+      "deltaSidc": "10032500001401000000",
+      "charlieSidc": "",
+      "symbolType": "TG",
+      "name": "Marbled Causeway",
+      "phrases": [
+        "MARBLED CAUSEWAY"
+      ],
+      "gesture": "line",
+      "defaultAffiliation": "friend"
+    },
+    {
+      "key": "H300",
+      "deltaSidc": "10031500002104000000",
+      "charlieSidc": "",
+      "symbolType": "EQUIP",
+      "name": "Rook Snare",
+      "phrases": [
+        "ROOK SNARE",
+        "SNARE"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "hostile"
+    },
+    {
+      "key": "L500",
+      "deltaSidc": "10031000001212000000",
+      "charlieSidc": "",
+      "symbolType": "UNIT",
+      "name": "Lantern",
+      "phrases": [
+        "LANTERN",
+        "LANTERN TENDER"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "friend"
+    },
+    {
+      "key": "Q600",
+      "deltaSidc": "10031000001213000000",
+      "charlieSidc": "",
+      "symbolType": "UNIT",
+      "name": "Quill Sparrow",
+      "phrases": [
+        "QUILL SPARROW"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "friend"
+    },
+    {
+      "key": "Q610",
+      "deltaSidc": "10031000001213010000",
+      "charlieSidc": "",
+      "symbolType": "UNIT",
+      "name": "Night Quill Sparrow",
+      "phrases": [
+        "NIGHT QUILL SPARROW",
+        "NIGHT SPARROW QUILL",
+        "QUILL SPARROW NIGHT"
+      ],
+      "gesture": "point",
+      "defaultAffiliation": "friend"
+    }
+  ]
+}

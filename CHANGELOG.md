@@ -187,6 +187,20 @@
   `DeleteTaskComment`, events `TaskEventAdded` and `TaskEventModified`, schema `TaskHistoryEntry` (engine fsTYPE
   task_event; not `StpTaskEvent`, which is the wire shape of a task), and an optional `user` param on `Register`
 - Call-validation rules 1.0.8, checked against contract 0.9.9: rules for the three comment methods
+- OpenRPC contract raised to 0.9.10 (STP-1373): method `SearchSymbol` (find symbols by typed text, best first)
+  and schema `SymbolSearchResult`. It carries the new `"x-layer": "client"`: the SDK answers it from a symbol
+  index it loads, and the engine never receives it. New `json-api/sketch-thru-plan-symbol-index.schema.json`
+  (the index format, `stp.symbol-index.v1`) and `json-api/symbol-search/` (an invented index and the cases
+  every SDK's ranker must answer). The real index ships with STP, not here. This SDK does not implement
+  `SearchSymbol` yet
+- `SearchSymbol` ranking stated as STP's own symbol search (STP-1373): passes in order, then a tf-idf relevance
+  score over the phrases (the classic Lucene similarity STP uses), equal scores by key - no longer coverage-then-length.
+  The conformance cases gain `expectSet` (these keys, any order) where the order is a scoring detail: a prefix, a typo
+  and a shared stem
+- `SearchSymbol`: an entry whose phrase is exactly the text ranks first (STP-1373, operator's ruling 2026-10-26: the
+  hybrid ranker). STP's own search can put a longer entry first when its phrasings repeat the words; the SDKs
+  answer the exact phrase. New fixture entries Q600 / Q610 and the case that holds it
+- Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
   a change set, and every object handler (`onSymbolAdded` ... `onCoaDeleted`) receives the change set's id as a new
