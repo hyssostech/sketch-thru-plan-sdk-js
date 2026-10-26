@@ -10,6 +10,6 @@
 # Written by build/model_artifacts.py --write-stamp after a deploy;
 # checked by build/model_artifacts.py --check.
 # Do not hand-edit - rebuild or redeploy the models instead.
-model.vosk-model-la-domain 8355cc1aafdadc23a8cf592226ab1a6b88e51e3b3c1865eed91117bac9e616b6
-model.vosk-model-ls-domain 2e808ec5bf55b8e508df466d06cab7baa4efeab07778a6be8a96dc01ce64fd6a
-zip 35b74eeca1d376512981aff49ca0890b40162f3eeec36ec58806ba81a2fa2193
+model.vosk-model-la-domain 42436f25536411608b6d66b3e549425e49f3cd7ea64c9efb1ddf06b372c71816
+model.vosk-model-ls-domain 05603e50ab284221e23eb21c34e0944431ca0633bf2502f965e08c31edc78618
+zip 50c740e0f393004bdbb572a87c20833e4a1615927b71592b562b2fd0e6eb28b5
