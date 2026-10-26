@@ -204,6 +204,13 @@ The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
   three, which is why they stay documented here. **Generators, reference pages and
   tool listings that present a public API should skip this layer**; anything
   describing the wire itself must keep it.
+* `"x-layer": "client"` - marks a method the SDK answers ITSELF, without sending
+  anything to the engine (STP-1373). One carries it: `SearchSymbol`, answered from
+  the symbol index the SDK loads (see [Symbol search](#symbol-search)). It is part of
+  the application surface - present it like any method - but it is not a wire
+  message: a client written without an SDK implements it locally or does without,
+  and the engine answers it, if sent, as any unknown method. The STP repository's
+  surface gate refuses this layer on a method the engine dispatches.
 * `"x-stpSafety": "read" | "write" | "destructive"` - on every method (STP-1059). What a
   call can do to state, so a client knows which calls are safe to make without asking:
   * `read` changes nothing on the server (queries, conversions, replaying the scenario to
@@ -264,6 +271,25 @@ The contract uses these `x-`prefixed extensions beyond the base OpenRPC spec:
 
   These record behaviour, not intent: an `ignored` or surprising `accepted` case is often a
   filed defect, and the method then lists it in `x-stpKnownIssues`.
+
+## Symbol search
+
+`SearchSymbol` (STP-1373, `"x-layer": "client"`) lists the symbols whose names or spoken
+phrases match a typed text, best first, from a **symbol index** the SDK loads - no engine
+round trip. The index format is
+[`sketch-thru-plan-symbol-index.schema.json`](sketch-thru-plan-symbol-index.schema.json)
+(`stp.symbol-index.v1`): one entry per symbol with its 2525D and 2525C codes, name, spoken
+phrases, placing gesture and default affiliation.
+
+* **The index is not in this repository.** STP generates it from its symbol tables and
+  ships it with STP; an SDK loads it from a path it is given, by default from STP's
+  installation directory. Without one, `SearchSymbol` is an **error** naming the path,
+  never an empty result.
+* **Every SDK ranks alike.** The method's description states the ranking; the invented
+  index [`symbol-search/fixture-index.json`](symbol-search/fixture-index.json) and the cases
+  in [`symbol-search/cases.json`](symbol-search/cases.json) are what each SDK's tests run,
+  and the reference ranking - STP's own Presenter search - is held to them in the STP
+  repository.
 
 ## Call validations
 

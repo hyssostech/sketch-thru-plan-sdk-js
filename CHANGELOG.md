@@ -187,6 +187,13 @@
   `DeleteTaskComment`, events `TaskEventAdded` and `TaskEventModified`, schema `TaskHistoryEntry` (engine fsTYPE
   task_event; not `StpTaskEvent`, which is the wire shape of a task), and an optional `user` param on `Register`
 - Call-validation rules 1.0.8, checked against contract 0.9.9: rules for the three comment methods
+- OpenRPC contract raised to 0.9.10 (STP-1373): method `SearchSymbol` (find symbols by typed text, best first)
+  and schema `SymbolSearchResult`. It carries the new `"x-layer": "client"`: the SDK answers it from a symbol
+  index it loads, and the engine never receives it. New `json-api/sketch-thru-plan-symbol-index.schema.json`
+  (the index format, `stp.symbol-index.v1`) and `json-api/symbol-search/` (an invented index and the cases
+  every SDK's ranker must answer). The real index ships with STP, not here. This SDK does not implement
+  `SearchSymbol` yet
+- Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
   a change set, and every object handler (`onSymbolAdded` ... `onCoaDeleted`) receives the change set's id as a new

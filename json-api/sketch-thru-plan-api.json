@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.9"
+    "version": "0.9.10"
   },
   "methods": [
     {
@@ -9544,6 +9544,101 @@
           "description": "Captured from a live engine (STP-1059), request wire, answered in 49 ms; result abbreviated from the capture."
         }
       ]
+    },
+    {
+      "name": "SearchSymbol",
+      "description": "Find the symbols whose names or spoken phrases match a typed text (STP-1373), best first: what a symbol editor's search box or a type-and-sketch flow lists. Answered by the SDK itself from the symbol index it loads (sketch-thru-plan-symbol-index.schema.json; the index ships with STP, by default in its installation directory) - the engine never receives it, so it works offline and costs no round trip. Ranking, the same in every SDK: the text's words (case ignored, stop words dropped) are matched against each symbol's phrases exactly, then as prefixes, then by stem, then by stem prefix, then within one or two edits, and the first of those passes that finds anything answers; a text whose words find nothing together is searched word by word and the results merged. Within a pass, a phrase the text covers more of ranks higher, then a shorter phrase, then the key. Each result names the gesture that places the symbol (a point, or a tactical graphic's line, area, arrow ...) and its default affiliation (hostile for the symbols users place as enemy by default); `speech` is the phrase that matched. No match, or a text of only stop words or spaces, answers []. Read-only.",
+      "x-layer": "client",
+      "x-stpSafety": "read",
+      "x-stpEmits": [],
+      "params": [
+        {
+          "name": "text",
+          "description": "What the user typed, e.g. \"recon platoon\".",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "maxResults",
+          "description": "At most this many results; default 20.",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 20
+          }
+        }
+      ],
+      "result": {
+        "name": "results",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/SymbolSearchResult"
+          }
+        }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "the SDK has no symbol index (not installed, or the configured path does not exist or does not parse)",
+          "outcome": "refused",
+          "message": "symbol index not available: <path> (<reason>)",
+          "note": "an error, never an empty result - [] would read as 'nothing matches'"
+        },
+        {
+          "when": "empty text, spaces, or only stop words",
+          "outcome": "accepted",
+          "note": "success, result []"
+        },
+        {
+          "when": "no symbol matches",
+          "outcome": "accepted",
+          "note": "success, result []"
+        }
+      ],
+      "examples": [
+        {
+          "name": "SearchSymbol (illustrative)",
+          "description": "An SDK-local call: the first two results for a typed word, from an invented index (json-api/symbol-search/fixture-index.json).",
+          "params": [
+            {
+              "name": "text",
+              "value": "zephyr"
+            },
+            {
+              "name": "maxResults",
+              "value": 2
+            }
+          ],
+          "result": {
+            "name": "results",
+            "value": [
+              {
+                "key": "F100",
+                "deltaSidc": "10031000001211000000",
+                "charlieSidc": "SFGPUCI--------",
+                "name": "Zephyr",
+                "speech": "ZEPHYR",
+                "gesture": "point",
+                "defaultAffiliation": "friend",
+                "score": 1.0
+              },
+              {
+                "key": "F110",
+                "deltaSidc": "10031000001211020000",
+                "charlieSidc": "",
+                "name": "Zephyr Lance",
+                "speech": "ZEPHYR LANCE",
+                "gesture": "point",
+                "defaultAffiliation": "friend",
+                "score": 0.5
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "components": {
@@ -10566,6 +10661,59 @@
           }
         },
         "additionalProperties": true
+      },
+      "SymbolSearchResult": {
+        "type": "object",
+        "description": "One SearchSymbol result (STP-1373): a symbol of the SDK's symbol index, as a picker shows it.",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The symbol's index key (its 2525D symbol-table row key): stable, unique within an index."
+          },
+          "deltaSidc": {
+            "type": "string",
+            "description": "The symbol's 20-digit MIL-STD-2525D SIDC (affiliation and status as the index stores them; set the affiliation before placing)."
+          },
+          "charlieSidc": {
+            "type": "string",
+            "description": "The symbol's 15-character MIL-STD-2525C SIDC, or \"\" for a 2525D-only symbol."
+          },
+          "name": {
+            "type": "string",
+            "description": "A display name: the 2525D entity name."
+          },
+          "speech": {
+            "type": "string",
+            "description": "The phrase that matched - also what to say, or to send with SendSpeech after the sketch (type-and-sketch)."
+          },
+          "gesture": {
+            "type": "string",
+            "description": "How the symbol is placed: \"point\" (units, equipment, installations, point graphics), or a tactical graphic's geometry, e.g. \"line\", \"area\", \"arrowfat\", \"arrowthin\", \"vee\", \"opencircle\", \"multipoint\"."
+          },
+          "defaultAffiliation": {
+            "type": "string",
+            "enum": [
+              "friend",
+              "hostile"
+            ],
+            "description": "The affiliation to place it with unless the user says otherwise."
+          },
+          "score": {
+            "type": "number",
+            "description": "The ranking score, higher first; comparable only within one answer."
+          }
+        },
+        "required": [
+          "key",
+          "deltaSidc",
+          "charlieSidc",
+          "name",
+          "speech",
+          "gesture",
+          "defaultAffiliation",
+          "score"
+        ],
+        "additionalProperties": false
       }
     }
   },

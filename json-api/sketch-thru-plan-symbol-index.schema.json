@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hyssostech/sketch-thru-plan-sdk-js/json-api/sketch-thru-plan-symbol-index.schema.json",
+  "title": "STP symbol index (SearchSymbol)",
+  "description": "The index an SDK's SearchSymbol searches (STP-1373): one entry per symbol, ordered by key. STP generates the real index from its symbol tables (SearchIndexGen --json-out) and ships it with STP; it is not public material and is not in this repository. json-api/symbol-search/fixture-index.json is an invented index in this format, for tests.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "stp.symbol-index.v1",
+      "description": "A reader refuses a schema it does not know."
+    },
+    "sets": {
+      "type": "string",
+      "description": "The symbol-table profile the index was built under, e.g. \"dgy2\"."
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The 2525D symbol-table row key; unique."
+          },
+          "deltaSidc": {
+            "type": "string",
+            "pattern": "^[0-9]{20}$"
+          },
+          "charlieSidc": {
+            "type": "string",
+            "pattern": "^([A-Z-]{15})?$",
+            "description": "\"\" for a 2525D-only symbol."
+          },
+          "symbolType": {
+            "type": "string",
+            "enum": [
+              "UNIT",
+              "TG",
+              "HQ",
+              "EQUIP",
+              "MOOTW",
+              "INSTALLATION",
+              "EDIT",
+              "MACRO",
+              "NONE"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phrases": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "The spoken phrases, upper case, words separated by single spaces."
+          },
+          "gesture": {
+            "type": "string",
+            "minLength": 1
+          },
+          "defaultAffiliation": {
+            "enum": [
+              "friend",
+              "hostile"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "deltaSidc",
+          "charlieSidc",
+          "symbolType",
+          "name",
+          "phrases",
+          "gesture",
+          "defaultAffiliation"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "entries"
+  ],
+  "additionalProperties": false
+}
