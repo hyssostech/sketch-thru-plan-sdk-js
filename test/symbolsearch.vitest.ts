@@ -177,8 +177,8 @@ describe('the index', () => {
   it('derives the index URL from a bridge connection string', () => {
     expect(symbolIndexUrlFor('ws://localhost:9599')).toBe('http://localhost:9599/symbol-index.json');
     expect(symbolIndexUrlFor('wss://h.example:443/abc?x=1')).toBe('https://h.example/symbol-index.json');
-    expect(symbolIndexUrlFor('ws://10.0.0.5:19599/')).toBe('http://10.0.0.5:19599/symbol-index.json');
-    expect(symbolIndexUrlFor('http://not-a-bridge')).toBeUndefined();
+    expect(symbolIndexUrlFor('ws://127.0.0.1:19599/')).toBe('http://127.0.0.1:19599/symbol-index.json');
+    expect(symbolIndexUrlFor('https://not-a-bridge.example')).toBeUndefined();
     expect(symbolIndexUrlFor('nonsense')).toBeUndefined();
   });
 

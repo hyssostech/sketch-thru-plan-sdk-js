@@ -12,11 +12,11 @@ const WS_URL = 'ws://localhost:22361';
 /** STP-1383: a connected connector tells SymbolSearch.load() where its STP serves the symbol index. */
 describe('StpWebSocketsConnector symbol index URL (STP-1383)', () => {
   it('derives the index URL from the connection string, session suffix dropped', () => {
-    expect(new StpWebSocketsConnector('ws://stp.local:9599/my-session').symbolIndexUrl).toBe(
-      'http://stp.local:9599/symbol-index.json'
+    expect(new StpWebSocketsConnector('ws://localhost:9599/my-session').symbolIndexUrl).toBe(
+      'http://localhost:9599/symbol-index.json'
     );
-    expect(new StpWebSocketsConnector('wss://stp.local:19599').symbolIndexUrl).toBe(
-      'https://stp.local:19599/symbol-index.json'
+    expect(new StpWebSocketsConnector('wss://stp.example:19599').symbolIndexUrl).toBe(
+      'https://stp.example:19599/symbol-index.json'
     );
   });
 
