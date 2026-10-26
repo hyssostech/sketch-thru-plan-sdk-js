@@ -11,6 +11,9 @@ import * as path from 'node:path';
  */
 
 type Json = Record<string, any>;
+const byName = (a: string, b: string) => a.localeCompare(b);
+// The generator orders entries by key with an ordinal (code unit) comparison.
+const ordinal = (a: string, b: string) => (a < b ? -1 : Number(a > b));
 const dir = path.join(process.cwd(), 'json-api');
 const read = (...p: string[]): Json =>
   JSON.parse(fs.readFileSync(path.join(dir, ...p), 'utf8'));
@@ -59,10 +62,12 @@ describe('SearchSymbol in the contract (STP-1373)', () => {
       '#/components/schemas/SymbolSearchResult'
     );
     const schema = CONTRACT.components.schemas.SymbolSearchResult;
-    expect(Object.keys(schema.properties).sort()).toEqual(
-      [...RESULT_FIELDS].sort()
+    expect(Object.keys(schema.properties).sort(byName)).toEqual(
+      [...RESULT_FIELDS].sort(byName)
     );
-    expect(schema.required.sort()).toEqual([...RESULT_FIELDS].sort());
+    expect([...schema.required].sort(byName)).toEqual(
+      [...RESULT_FIELDS].sort(byName)
+    );
     expect(schema.properties.defaultAffiliation.enum).toEqual([
       'friend',
       'hostile'
@@ -97,17 +102,21 @@ describe('the symbol index format and the shared fixture (STP-1373)', () => {
   it('pins schema stp.symbol-index.v1 and the entry fields', () => {
     expect(INDEX_SCHEMA.properties.schema.const).toBe('stp.symbol-index.v1');
     const entry = INDEX_SCHEMA.properties.entries.items;
-    expect(entry.required.sort()).toEqual([...ENTRY_FIELDS].sort());
+    expect([...entry.required].sort(byName)).toEqual(
+      [...ENTRY_FIELDS].sort(byName)
+    );
     expect(entry.additionalProperties).toBe(false);
   });
 
   it('has a fixture index that is valid against it', () => {
     expect(FIXTURE.schema).toBe('stp.symbol-index.v1');
     const keys: string[] = FIXTURE.entries.map((e: Json) => e.key);
-    expect([...keys].sort()).toEqual(keys); // ordered by key, as the generator writes it
+    expect([...keys].sort(ordinal)).toEqual(keys); // ordered by key, as the generator writes it
     expect(new Set(keys).size).toBe(keys.length);
     for (const e of FIXTURE.entries as Json[]) {
-      expect(Object.keys(e).sort()).toEqual([...ENTRY_FIELDS].sort());
+      expect(Object.keys(e).sort(byName)).toEqual(
+        [...ENTRY_FIELDS].sort(byName)
+      );
       expect(e.deltaSidc).toMatch(/^\d{20}$/);
       expect(e.charlieSidc === '' || /^[A-Z-]{15}$/.test(e.charlieSidc)).toBe(
         true
