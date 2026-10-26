@@ -1,9 +1,9 @@
 {
-  "description": "SearchSymbol conformance (STP-1373): every SDK, loading fixture-index.json, answers these. expectTop: the results begin with these keys, in order. expectAll: the results are exactly these keys, in order. expectFirst: fields of the first result. maxResults is passed when given.",
+  "description": "SearchSymbol conformance (STP-1373): every SDK, loading fixture-index.json, answers these. expectTop: the results begin with these keys, in order. expectAll: the results are exactly these keys, in order. expectSet: the results are exactly these keys, in any order (where the order is a scoring detail, not a rule). expectFirst: fields of the first result. maxResults is passed when given.",
   "index": "fixture-index.json",
   "cases": [
     {
-      "name": "an exact word ranks the phrase it covers fully first",
+      "name": "a word that is a whole phrase ranks that entry first",
       "text": "zephyr",
       "expectTop": [
         "F100",
@@ -21,16 +21,17 @@
     {
       "name": "a prefix finds the words it begins",
       "text": "zeph",
-      "expectTop": [
+      "expectSet": [
         "F100",
         "F110"
       ]
     },
     {
-      "name": "a typo within an edit or two finds the word",
+      "name": "a typo within edits finds the word",
       "text": "zepyhr",
-      "expectTop": [
-        "F100"
+      "expectSet": [
+        "F100",
+        "F110"
       ]
     },
     {
@@ -41,14 +42,15 @@
       ]
     },
     {
-      "name": "an exact pass that finds something answers alone",
+      "name": "a word finds the words that share its stem",
       "text": "marble",
-      "expectAll": [
-        "G200"
+      "expectSet": [
+        "G200",
+        "G210"
       ]
     },
     {
-      "name": "equal coverage and length rank by key",
+      "name": "equal scores rank by key",
       "text": "marb",
       "expectTop": [
         "G200",

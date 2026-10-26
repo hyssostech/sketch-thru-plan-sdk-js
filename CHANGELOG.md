@@ -193,6 +193,10 @@
   (the index format, `stp.symbol-index.v1`) and `json-api/symbol-search/` (an invented index and the cases
   every SDK's ranker must answer). The real index ships with STP, not here. This SDK does not implement
   `SearchSymbol` yet
+- `SearchSymbol` ranking stated as STP's own symbol search (STP-1373): passes in order, then a tf-idf relevance
+  score over the phrases (the classic Lucene similarity STP uses), equal scores by key - no longer coverage-then-length.
+  The conformance cases gain `expectSet` (these keys, any order) where the order is a scoring detail: a prefix, a typo
+  and a shared stem
 - Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into

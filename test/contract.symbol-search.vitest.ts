@@ -132,8 +132,26 @@ describe('the symbol index format and the shared fixture (STP-1373)', () => {
     for (const c of CASES.cases as Json[]) {
       expect(typeof c.name).toBe('string');
       expect(typeof c.text).toBe('string');
-      for (const k of [...(c.expectTop ?? []), ...(c.expectAll ?? [])])
+      expect(
+        ['expectTop', 'expectAll', 'expectSet'].some((x) => Array.isArray(c[x]))
+      ).toBe(true);
+      for (const k of [
+        ...(c.expectTop ?? []),
+        ...(c.expectAll ?? []),
+        ...(c.expectSet ?? [])
+      ])
         expect(keys.has(k)).toBe(true);
     }
+  });
+
+  it('pins an order only where the ranking rule decides it', () => {
+    // A prefix, a typo or a shared stem finds these entries; which comes first is a scoring detail
+    // (expectSet), not a rule the SDKs could each state alike.
+    const byText = new Map<string, Json>(
+      (CASES.cases as Json[]).map((c) => [c.text, c])
+    );
+    for (const text of ['zeph', 'zepyhr', 'marble'])
+      expect(byText.get(text)?.expectSet).toBeDefined();
+    expect(CASES.description).toMatch(/expectSet/);
   });
 });
