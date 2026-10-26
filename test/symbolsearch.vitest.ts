@@ -25,6 +25,7 @@ const fixtureText = fs.readFileSync(
 const CASES: Json = JSON.parse(
   fs.readFileSync(path.join(dir, 'cases.json'), 'utf8')
 );
+const byKey = (a: string, b: string): number => a.localeCompare(b);
 const fixture = (): SymbolSearch =>
   SymbolSearch.fromIndex(fixtureText, 'fixture-index.json');
 
@@ -40,7 +41,7 @@ describe('SearchSymbol conformance (json-api/symbol-search/cases.json)', () => {
         expect(keys.slice(0, c.expectTop.length)).toEqual(c.expectTop);
       if (c.expectAll) expect(keys).toEqual(c.expectAll);
       if (c.expectSet)
-        expect([...keys].sort()).toEqual([...c.expectSet].sort());
+        expect([...keys].sort(byKey)).toEqual([...c.expectSet].sort(byKey));
       if (c.expectFirst)
         for (const [field, value] of Object.entries(c.expectFirst))
           expect((results[0] as Json)[field]).toBe(value);
