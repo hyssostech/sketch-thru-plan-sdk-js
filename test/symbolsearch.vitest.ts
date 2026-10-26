@@ -142,6 +142,15 @@ describe('the index', () => {
     );
   });
 
+  it('refuses a load without a URL until there is a default (STP-1383)', async () => {
+    await expect(SymbolSearch.load()).rejects.toThrow(
+      'symbol index not available: (no URL) (no URL given and no default yet)'
+    );
+    await expect(SymbolSearch.load('  ')).rejects.toBeInstanceOf(
+      SymbolIndexUnavailableError
+    );
+  });
+
   it('loads over HTTP, and refuses a failed fetch with the contract message', async () => {
     const ok = await SymbolSearch.load('https://host/index.json', async () => ({
       ok: true,

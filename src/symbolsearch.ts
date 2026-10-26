@@ -209,15 +209,25 @@ export class SymbolSearch {
     return new SymbolSearch(parseSymbolIndex(json, source));
   }
 
-  /** Fetches the index at `url` and indexes it. Any failure is a {@link SymbolIndexUnavailableError}. */
+  /**
+   * Fetches the index at `url` and indexes it. Any failure is a {@link SymbolIndexUnavailableError}; so is a
+   * missing URL, until STP serves a default (STP-1383).
+   */
   static async load(
-    url: string,
+    url?: string,
     fetchFn: (
       url: string
     ) => Promise<{ ok: boolean; status: number; text(): Promise<string> }> = (
       u
     ) => fetch(u)
   ): Promise<SymbolSearch> {
+    // The URL is optional so that a default - the index served by STP's local bridge (STP-1383) - can
+    // be added without changing callers. Until then a URL is required.
+    if (url === undefined || url.trim().length === 0)
+      throw new SymbolIndexUnavailableError(
+        '(no URL)',
+        'no URL given and no default yet'
+      );
     let text: string;
     try {
       const response = await fetchFn(url);
