@@ -191,8 +191,7 @@
   and schema `SymbolSearchResult`. It carries the new `"x-layer": "client"`: the SDK answers it from a symbol
   index it loads, and the engine never receives it. New `json-api/sketch-thru-plan-symbol-index.schema.json`
   (the index format, `stp.symbol-index.v1`) and `json-api/symbol-search/` (an invented index and the cases
-  every SDK's ranker must answer). The real index ships with STP, not here. This SDK does not implement
-  `SearchSymbol` yet
+  every SDK's ranker must answer). The real index ships with STP, not here
 - `SearchSymbol` ranking stated as STP's own symbol search (STP-1373): passes in order, then a tf-idf relevance
   score over the phrases (the classic Lucene similarity STP uses), equal scores by key - no longer coverage-then-length.
   The conformance cases gain `expectSet` (these keys, any order) where the order is a scoring detail: a prefix, a typo
@@ -200,6 +199,11 @@
 - `SearchSymbol`: an entry whose phrase is exactly the text ranks first (STP-1373, operator's ruling 2026-10-26: the
   hybrid ranker). STP's own search can put a longer entry first when its phrasings repeat the words; the SDKs
   answer the exact phrase. New fixture entries Q600 / Q610 and the case that holds it
+- `SymbolSearch` (STP-1373): this SDK answers `SearchSymbol` itself. `SymbolSearch.fromIndex(json)` takes an index the
+  app supplies and `SymbolSearch.load(url)` fetches one; `search(text, maxResults = 20)` returns `SymbolSearchResult[]`
+  best first. The ranking is the .NET SDK's, number for number. A missing or unreadable index throws
+  `SymbolIndexUnavailableError` with the contract's message, never an empty answer. The contract's conformance cases
+  run as tests
 - Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into

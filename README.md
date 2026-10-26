@@ -95,6 +95,20 @@ The [samples](samples) folder contains examples covering particular aspects of t
 
 Describes the [JSON API](json-api) that is wrapped by the SDK.
 
+### Symbol search
+
+`SymbolSearch` answers the contract's `SearchSymbol` in the SDK itself - the engine is not asked. It searches a
+symbol index ([format](json-api/sketch-thru-plan-symbol-index.schema.json)) that ships with STP, not with this SDK,
+so the app provides it:
+
+```javascript
+const symbols = await StpSDK.SymbolSearch.load('<url of symbol-index.json>');
+const results = symbols.search('lantern');   // best first: key, codes, name, speech, gesture, defaultAffiliation, score
+```
+
+`SymbolSearch.fromIndex(json)` takes an index the app already has. Without a readable index both throw
+`SymbolIndexUnavailableError` ("symbol index not available: ..."), never an empty answer.
+
 ## Plugins and reusable components
 
 Components that can be swapped and/or reused are described in [plugins](plugins):
