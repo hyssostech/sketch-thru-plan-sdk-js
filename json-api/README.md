@@ -295,7 +295,8 @@ phrases, placing gesture and default affiliation.
   `{"error":"symbol index not installed","expected":"<path>"}`. The JS SDK derives the URL
   from the connection string: `ws://host:port` becomes `http://host:port/symbol-index.json`,
   and `wss:` becomes `https:`. `SymbolSearch.load()` with no URL uses the most recently
-  connected connector's bridge, else `http://localhost:9599/symbol-index.json`. An older STP
+  connected connector's bridge; with none connected it refuses ("connect first or pass a URL")
+  rather than guess a host. An older STP
   that does not serve the route is an error that says so, never an empty result.
 * **Every SDK ranks alike.** The method's description states the ranking; the invented
   index [`symbol-search/fixture-index.json`](symbol-search/fixture-index.json) and the cases

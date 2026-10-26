@@ -8,7 +8,6 @@ import {
   SymbolIndexUnavailableError,
   SymbolSearch,
   tokenize,
-  DEFAULT_SYMBOL_INDEX_URL,
   symbolIndexUrlFor,
 } from '../src/symbolsearch.ts';
 import { Porter2Stemmer } from '../src/porter2stemmer.ts';
@@ -151,15 +150,17 @@ describe('the index', () => {
     return { ok: true, status: 200, text: async () => fixtureText };
   };
 
-  it('with no URL loads from the local bridge by default (STP-1383)', async () => {
+  it('with no URL and no connected STP refuses, fetching nothing (STP-1383)', async () => {
     SymbolSearch.connectedIndexUrl = undefined;
     const urls: string[] = [];
-    const search = await SymbolSearch.load(undefined, served(urls));
-    expect(urls).toEqual(['http://localhost:9599/symbol-index.json']);
-    expect(urls[0]).toBe(DEFAULT_SYMBOL_INDEX_URL);
-    expect(search.search('zephyr')[0].key).toBe('F100');
-    await SymbolSearch.load('  ', served(urls));
-    expect(urls[1]).toBe(DEFAULT_SYMBOL_INDEX_URL);
+    for (const none of [undefined, '  ']) {
+      const err = await SymbolSearch.load(none, served(urls)).catch((e) => e);
+      expect(err).toBeInstanceOf(SymbolIndexUnavailableError);
+      expect(err.message).toBe(
+        'symbol index not available: (no URL) (no URL given and no STP connected; connect first or pass a URL)'
+      );
+    }
+    expect(urls).toEqual([]);
   });
 
   it('with no URL uses the bridge of the last connected connector; an explicit URL wins', async () => {
@@ -183,7 +184,7 @@ describe('the index', () => {
   });
 
   it('explains an STP that does not serve the index, never answering empty', async () => {
-    SymbolSearch.connectedIndexUrl = undefined;
+    SymbolSearch.connectedIndexUrl = symbolIndexUrlFor('ws://localhost:9599');
     // an older bridge drops a plain HTTP request
     await expect(
       SymbolSearch.load(undefined, async () => {
@@ -196,6 +197,7 @@ describe('the index', () => {
     await expect(
       SymbolSearch.load(undefined, async () => ({ ok: false, status: 426, text: async () => '' }))
     ).rejects.toThrow('(HTTP 426; this STP does not serve the symbol index;');
+    SymbolSearch.connectedIndexUrl = undefined;
   });
 
   it("reports STP's own 'not installed' answer with where it looked", async () => {

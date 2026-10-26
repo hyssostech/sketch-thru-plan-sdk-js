@@ -62,9 +62,8 @@ export const SYMBOL_INDEX_SCHEMA = 'stp.symbol-index.v1';
 /** The path STP serves the installed index at, on its WebSocket bridge port (STP-1383). */
 export const SYMBOL_INDEX_PATH = '/symbol-index.json';
 
-/** The default when no connector has connected: STP's local bridge on its default port (STP-1383). */
-export const DEFAULT_SYMBOL_INDEX_URL =
-  'http://localhost:9599' + SYMBOL_INDEX_PATH;
+/** The refusal's reason when `load()` has no URL and no connector has connected (STP-1383). */
+const NO_URL = 'no URL given and no STP connected; connect first or pass a URL';
 
 /**
  * The symbol index URL for a bridge connection string: `ws:` becomes `http:`, `wss:` becomes `https:`, same host and
@@ -249,7 +248,8 @@ export class SymbolSearch {
 
   /**
    * Fetches the index at `url` and indexes it. With no `url` (STP-1383): the index served by the bridge the most
-   * recently connected {@link StpWebSocketsConnector} uses, else {@link DEFAULT_SYMBOL_INDEX_URL}. Any failure is a
+   * recently connected {@link StpWebSocketsConnector} uses; with none connected, a refusal ("connect first or pass a
+   * URL") - there is no guessed default. Any failure is a
    * {@link SymbolIndexUnavailableError} that names its reason - an older STP, a missing install, a bad file - never an
    * empty answer.
    */
@@ -262,9 +262,9 @@ export class SymbolSearch {
     ) => fetch(u)
   ): Promise<SymbolSearch> {
     const fromStp = url === undefined || url.trim().length === 0;
-    const target = fromStp
-      ? (SymbolSearch.connectedIndexUrl ?? DEFAULT_SYMBOL_INDEX_URL)
-      : url!;
+    if (fromStp && SymbolSearch.connectedIndexUrl === undefined)
+      throw new SymbolIndexUnavailableError('(no URL)', NO_URL);
+    const target = fromStp ? SymbolSearch.connectedIndexUrl! : url!;
     // A URL on STP's route gets the "older STP" explanation; any other URL just its HTTP status.
     const stpRoute =
       fromStp || target.split(/[?#]/)[0].endsWith(SYMBOL_INDEX_PATH);

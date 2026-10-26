@@ -206,8 +206,9 @@
   run as tests
 - `SymbolSearch.load()` with no URL (STP-1383): loads the index STP serves at `/symbol-index.json` on its WebSocket
   bridge port (STP 5.11.2 and later). It uses the most recently connected `StpWebSocketsConnector`'s host and port,
-  else `http://localhost:9599/symbol-index.json`; an explicit URL still wins. New `StpWebSocketsConnector.symbolIndexUrl`,
-  `symbolIndexUrlFor(connstring)`, `DEFAULT_SYMBOL_INDEX_URL` and `SYMBOL_INDEX_PATH`. An STP that does not serve the
+  and with none connected refuses with `SymbolIndexUnavailableError` ("connect first or pass a URL") - there is no
+  localhost default; an explicit URL still wins. New `StpWebSocketsConnector.symbolIndexUrl`,
+  `symbolIndexUrlFor(connstring)` and `SYMBOL_INDEX_PATH`. An STP that does not serve the
   route, or has no index installed, is a `SymbolIndexUnavailableError` that says so, never an empty answer
 - Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
