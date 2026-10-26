@@ -58,6 +58,13 @@ export class StpC2SIMOptions {
     fullTO: boolean | undefined;
 
     /**
+     * Refuse a C2SIM document while a task graphic is still an unconfirmed rung-5 placeholder - drawn by COARenderer
+     * from no evidence and not moved, nor its confidence set, by staff (STP-973). Otherwise every unconfirmed estimate
+     * is only warned, in the engine log. Default false
+     */
+    refuseUnconfirmedPlaceholders: boolean | undefined;
+
+    /**
      * Use the older version of the C2SIM schema - v1.0.0 - for compatibility with existing tooling
      */
     schemaVersion: string | undefined;

@@ -19,6 +19,12 @@ export interface IStpConnector {
   isConnected: boolean;
 
   /**
+   * Optional (STP-1260): the person using this client, as a display name, sent when it registers. The task history
+   * names them as the author of this client's changes and comments. A connector that does not support it leaves it out.
+   */
+  user?: string;
+
+  /**
    * Connect and register the service, informing of the subscriptions it handles / consumes
    * @param serviceName - Name of the service that is connecting
    * @param solvables - Array of messages that this service handles

@@ -175,6 +175,33 @@
     (a second one used to be added). Each description says what an engine before the fix does.
 - `StpCoa` gains `friendTaskOrg` and `hostileTaskOrg`
 - Call-validation rules 1.0.4, checked against contract 0.9.5; no rule changed
+- Task history (STP-1261, with the WebSockets bridge in STP-1260): new `onTaskEventAdded(poid, entry, batchId)` and
+  `onTaskEventModified(poid, entry, batchId)` handlers - every entry of a task's history (an edit, a retask, a confirm,
+  a delete, an undo, by any client through any path, or a comment), and a comment's edit or delete (a deleted comment
+  arrives as its tombstone). New `getTaskHistory(taskPoid)` (newest first, each entry with its poid),
+  `addTaskComment(taskPoid, text)` (returns the entry poid), `editTaskComment(entryPoid, text)` and
+  `deleteTaskComment(entryPoid)`; only a comment's author may change it. New types `StpTaskHistoryEntry` and
+  `StpTaskHistoryItem`. Set `StpWebSocketsConnector.user` (a display name) before `connect` so the history names the
+  person; a client that registers without one cannot add comments
+- OpenRPC contract raised to 0.9.9 (STP-1261): methods `GetTaskHistory`, `AddTaskComment`, `EditTaskComment` and
+  `DeleteTaskComment`, events `TaskEventAdded` and `TaskEventModified`, schema `TaskHistoryEntry` (engine fsTYPE
+  task_event; not `StpTaskEvent`, which is the wire shape of a task), and an optional `user` param on `Register`
+- Call-validation rules 1.0.8, checked against contract 0.9.9: rules for the three comment methods
+- Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
+  bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
+  a change set, and every object handler (`onSymbolAdded` ... `onCoaDeleted`) receives the change set's id as a new
+  optional trailing `batchId` argument, `undefined` outside one. Existing handlers are unaffected. A client can tell a
+  bulk arrival from a lone add without timing; do not wait for `onBatchStarted`, an older engine sends none.
+  New types `StpBatchStarted` and `StpBatchEnded`
+- OpenRPC contract raised to 0.9.8 (STP-1265): events `BatchStarted` and `BatchEnded`, and a trailing nullable
+  `batchId` param on the 18 object events
+- Call-validation rules 1.0.7, checked against contract 0.9.8; no rule changed
+- OpenRPC contract raised to 0.9.7 (STP-973): new C2SIM option `refuseUnconfirmedPlaceholders` (boolean, default
+  false) on `GetC2SIMContent`, `PullC2SIMInitialization` and `PushC2SIMContent`, and on `StpC2SIMOptions`. The engine
+  now reads the placement grade COARenderer stamps on each graphic and warns, per task, about every estimate staff have
+  not confirmed; with this option a rung-5 placeholder refuses the document instead. It has an effect only where the
+  engine builds the document (`GetC2SIMContent`); a pull or a push of a ready document accepts and ignores it
+- Call-validation rules 1.0.6, checked against contract 0.9.7; no rule changed
 - OpenRPC contract raised to 0.9.6 (STP-943): STP-1095 - a `*FromObjectSet` load cut off by the
   request timeout answers `success: false` with a report like that of a load that stops: the objects
   applied, any skipped, the object in flight (sent with no reply yet; the engine may still apply it) and
