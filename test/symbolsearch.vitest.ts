@@ -7,7 +7,8 @@ import {
   parseSymbolIndex,
   SymbolIndexUnavailableError,
   SymbolSearch,
-  tokenize
+  tokenize,
+  symbolIndexUrlFor,
 } from '../src/symbolsearch.ts';
 import { Porter2Stemmer } from '../src/porter2stemmer.ts';
 
@@ -143,12 +144,72 @@ describe('the index', () => {
     );
   });
 
-  it('refuses a load without a URL until there is a default (STP-1383)', async () => {
-    await expect(SymbolSearch.load()).rejects.toThrow(
-      'symbol index not available: (no URL) (no URL given and no default yet)'
+  // STP-1383: with no URL, load() reads the index the STP bridge serves on its own port.
+  const served = (urls: string[]) => async (u: string) => {
+    urls.push(u);
+    return { ok: true, status: 200, text: async () => fixtureText };
+  };
+
+  it('with no URL and no connected STP refuses, fetching nothing (STP-1383)', async () => {
+    SymbolSearch.connectedIndexUrl = undefined;
+    const urls: string[] = [];
+    for (const none of [undefined, '  ']) {
+      const err = await SymbolSearch.load(none, served(urls)).catch((e) => e);
+      expect(err).toBeInstanceOf(SymbolIndexUnavailableError);
+      expect(err.message).toBe(
+        'symbol index not available: (no URL) (no URL given and no STP connected; connect first or pass a URL)'
+      );
+    }
+    expect(urls).toEqual([]);
+  });
+
+  it('with no URL uses the bridge of the last connected connector; an explicit URL wins', async () => {
+    SymbolSearch.connectedIndexUrl = symbolIndexUrlFor('wss://stp.example:19599/session-7');
+    const urls: string[] = [];
+    await SymbolSearch.load(undefined, served(urls));
+    await SymbolSearch.load('https://host/index.json', served(urls));
+    expect(urls).toEqual([
+      'https://stp.example:19599/symbol-index.json',
+      'https://host/index.json'
+    ]);
+    SymbolSearch.connectedIndexUrl = undefined;
+  });
+
+  it('derives the index URL from a bridge connection string', () => {
+    expect(symbolIndexUrlFor('ws://localhost:9599')).toBe('http://localhost:9599/symbol-index.json');
+    expect(symbolIndexUrlFor('wss://h.example:443/abc?x=1')).toBe('https://h.example/symbol-index.json');
+    expect(symbolIndexUrlFor('ws://127.0.0.1:19599/')).toBe('http://127.0.0.1:19599/symbol-index.json');
+    expect(symbolIndexUrlFor('https://not-a-bridge.example')).toBeUndefined();
+    expect(symbolIndexUrlFor('nonsense')).toBeUndefined();
+  });
+
+  it('explains an STP that does not serve the index, never answering empty', async () => {
+    SymbolSearch.connectedIndexUrl = symbolIndexUrlFor('ws://localhost:9599');
+    // an older bridge drops a plain HTTP request
+    await expect(
+      SymbolSearch.load(undefined, async () => {
+        throw new Error('fetch failed');
+      })
+    ).rejects.toThrow(
+      'symbol index not available: http://localhost:9599/symbol-index.json (fetch failed; this STP does not serve the symbol index; STP 5.11.2 or later serves it at /symbol-index.json on its WebSocket port, or pass the URL of a symbol-index.json)'
     );
-    await expect(SymbolSearch.load('  ')).rejects.toBeInstanceOf(
-      SymbolIndexUnavailableError
+    // or answers the non-upgrade request with an error status
+    await expect(
+      SymbolSearch.load(undefined, async () => ({ ok: false, status: 426, text: async () => '' }))
+    ).rejects.toThrow('(HTTP 426; this STP does not serve the symbol index;');
+    SymbolSearch.connectedIndexUrl = undefined;
+  });
+
+  it("reports STP's own 'not installed' answer with where it looked", async () => {
+    await expect(
+      SymbolSearch.load('http://localhost:9599/symbol-index.json', async () => ({
+        ok: false,
+        status: 404,
+        text: async () =>
+          '{"error":"symbol index not installed","expected":"/opt/stp/Presenter/Tools/SicListIndex/symbol-index.json"}'
+      }))
+    ).rejects.toThrow(
+      '(HTTP 404: symbol index not installed (expected at /opt/stp/Presenter/Tools/SicListIndex/symbol-index.json))'
     );
   });
 

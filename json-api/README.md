@@ -285,6 +285,19 @@ phrases, placing gesture and default affiliation.
   ships it with STP; an SDK loads it from a path it is given, by default from STP's
   installation directory. Without one, `SearchSymbol` is an **error** naming the path,
   never an empty result.
+* **STP serves it (STP-1383).** STP 5.11.2 and later answer `GET /symbol-index.json` on the
+  WebSocket bridge's own port with the installed index. The response carries:
+  - `ETag` (`If-None-Match` gets 304) and `Cache-Control: no-cache`;
+  - `X-STP-Version` and `X-STP-Symbol-Index: stp.symbol-index.v1`;
+  - CORS on this route only (STP setting `WebSocket:SymbolIndexCors`, default `*`).
+
+  An STP with no index installed answers 404 with
+  `{"error":"symbol index not installed","expected":"<path>"}`. The JS SDK derives the URL
+  from the connection string: `ws://host:port` becomes `http://host:port/symbol-index.json`,
+  and `wss:` becomes `https:`. `SymbolSearch.load()` with no URL uses the most recently
+  connected connector's bridge; with none connected it refuses ("connect first or pass a URL")
+  rather than guess a host. An older STP
+  that does not serve the route is an error that says so, never an empty result.
 * **Every SDK ranks alike.** The method's description states the ranking; the invented
   index [`symbol-search/fixture-index.json`](symbol-search/fixture-index.json) and the cases
   in [`symbol-search/cases.json`](symbol-search/cases.json) are what each SDK's tests run,

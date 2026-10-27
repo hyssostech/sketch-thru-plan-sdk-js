@@ -204,6 +204,12 @@
   best first. The ranking is the .NET SDK's, number for number. A missing or unreadable index throws
   `SymbolIndexUnavailableError` with the contract's message, never an empty answer. The contract's conformance cases
   run as tests
+- `SymbolSearch.load()` with no URL (STP-1383): loads the index STP serves at `/symbol-index.json` on its WebSocket
+  bridge port (STP 5.11.2 and later). It uses the most recently connected `StpWebSocketsConnector`'s host and port,
+  and with none connected refuses with `SymbolIndexUnavailableError` ("connect first or pass a URL") - there is no
+  localhost default; an explicit URL still wins. New `StpWebSocketsConnector.symbolIndexUrl`,
+  `symbolIndexUrlFor(connstring)` and `SYMBOL_INDEX_PATH`. An STP that does not serve the
+  route, or has no index installed, is a `SymbolIndexUnavailableError` that says so, never an empty answer
 - Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
