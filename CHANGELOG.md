@@ -211,6 +211,13 @@
   `symbolIndexUrlFor(connstring)` and `SYMBOL_INDEX_PATH`. An STP that does not serve the
   route, or has no index installed, is a `SymbolIndexUnavailableError` that says so, never an empty answer
 - Call-validation rules 1.0.9, checked against contract 0.9.10; no rule changed (`SearchSymbol` is a read)
+- OpenRPC contract raised to 0.9.11 (STP-1159): the engineer role is `ENGINEER`; `ENG` stays in
+  `StpRole` as an alias. The engine names the role `engineer`, and from STP-1159 it sends `eng` as
+  `engineer`, so `RoleSwitched` reports `engineer` for either. Engines before STP-1159 confirm `eng`,
+  but their task recognizer does not know it and keeps the client's previous role. The SetRole
+  refusals name `engineer`; `creatorRole` descriptions list the lower-case names the engine sends
+- Added `StpRole.engineer` (`'ENGINEER'`); `StpRole.eng` is deprecated
+- Call-validation rules 1.0.10, checked against contract 0.9.11; no rule changed
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
   a change set, and every object handler (`onSymbolAdded` ... `onCoaDeleted`) receives the change set's id as a new
