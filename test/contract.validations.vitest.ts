@@ -128,9 +128,9 @@ describe('validation rules file (STP-1064)', () => {
   it('requires an active scenario for every call except the ones that create one and PublishNaming', () => {
     // PublishNaming: the engine itself refuses a plan or both publish with no active scenario (with a
     // message, checkOnly included) and a global publish needs none (operator ruling 283(a)).
-    const exempt = ['CreateNewScenario', 'LoadNewScenario', 'LoadNewScenarioFromObjectSet', 'PublishNaming'];
+    const exempt = new Set(['CreateNewScenario', 'LoadNewScenario', 'LoadNewScenarioFromObjectSet', 'PublishNaming']);
     for (const [name, rule] of ruleEntries()) {
-      expect(rule.preconditions, name).toEqual(exempt.includes(name) ? [] : ['activeScenario']);
+      expect(rule.preconditions, name).toEqual(exempt.has(name) ? [] : ['activeScenario']);
     }
   });
 
