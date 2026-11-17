@@ -9621,7 +9621,7 @@
     },
     {
       "name": "PublishNaming",
-      "description": "Publish a naming customization layer (STP-1706): target global (the server's layer, every session of this engine), plan (this session's scenario, saved and replicated with its plan data) or both. layer replaces the target layer whole. baseStamp is the target layer's stamp the edit started from (from GetNaming's or NamingChanged's layers; for both, the global and plan stamps joined by a comma; empty for a layer that did not exist): if someone published in between, nothing is stored and the answer is status stale_base with the current notice - reload, re-apply the edits and publish again. With checkOnly nothing is stored and effects say what would change (for global, how many sessions it reaches): show that to the author before a global publish. Blocked items are left out and listed in the notice's issues; the rest applies. Answers a NamingPublishResult; success is true for applied and check_only, false for stale_base and refused (the result still carries the status, message and notice). An applied publish that changes a session's effective convention sends NamingChanged to that session's clients - for global, to every session it reaches. Engines before STP-1706 answer No handler (success=false).",
+      "description": "Publish a naming customization layer (STP-1706): target global (the server's layer, every session of this engine), plan (this session's scenario, saved and replicated with its plan data) or both. layer replaces the target layer whole. baseStamp is the target layer's stamp the edit started from (from GetNaming's or NamingChanged's layers; for both, the global and plan stamps joined by a comma; empty for a layer that did not exist): if someone published in between, nothing is stored and the answer is status stale_base with the current notice - reload, re-apply the edits and publish again. With checkOnly nothing is stored and effects say what would change (for global, how many sessions it reaches): show that to the author before a global publish. Blocked items are left out and listed in the notice's issues; the rest applies. A plan or both publish needs an active scenario in the session (one created or loaded): without one it is refused, checkOnly included, and nothing is stored; a global publish needs no scenario. Answers a NamingPublishResult; success is true for applied and check_only, false for stale_base and refused (the result still carries the status, message and notice). An applied publish that changes a session's effective convention sends NamingChanged to that session's clients - for global, to every session it reaches. Engines before STP-1706 answer No handler (success=false).",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -9712,6 +9712,18 @@
           "outcome": "refused",
           "message": "LAYER is not a naming customization (...) - nothing published",
           "note": "result status refused; from the engine source, not a live capture"
+        },
+        {
+          "when": "target plan or both from a connection with no session",
+          "outcome": "refused",
+          "message": "a plan publish needs the session whose scenario holds the plan (AUTH has none)",
+          "note": "result status refused, effects empty, nothing stored; checked before the active-scenario and baseStamp checks; checkOnly gives the same refusal; from the engine source (STP-1706 P2), not a live capture"
+        },
+        {
+          "when": "target plan or both with no active scenario in the session (none created or loaded)",
+          "outcome": "refused",
+          "message": "a plan publish needs an active scenario in this session (none is created or loaded) - nothing published; create or load a scenario, or publish to global",
+          "note": "result status refused with the current notice, effects empty, nothing stored (operator ruling 283(a): the next scenario create or load would otherwise wipe it); checked after the no-session check and before baseStamp; checkOnly gives the same refusal; target global needs no scenario and applies. From the engine source and its tests (STP-1706 P2), not a live capture"
         }
       ],
       "examples": [
@@ -9844,6 +9856,58 @@
               }
             }
           ]
+        },
+        {
+          "name": "PublishNaming refused with no active scenario (illustrative)",
+          "description": "A plan publish in a session that has not created or loaded a scenario: refused, nothing stored, success false; checkOnly true answers the same. The notice is the session's current one (here the baseline, no layers). Stamps invented.",
+          "params": [
+            {
+              "name": "target",
+              "value": "plan"
+            },
+            {
+              "name": "baseStamp",
+              "value": ""
+            },
+            {
+              "name": "checkOnly",
+              "value": false
+            },
+            {
+              "name": "layer",
+              "value": {
+                "word_lists": [
+                  {
+                    "name": "MISCELLANEOUSDESIGNATORS",
+                    "mode": "extend",
+                    "entries": [
+                      "CAT"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "result": {
+            "name": "publishResult",
+            "value": {
+              "status": "refused",
+              "target": "plan",
+              "message": "a plan publish needs an active scenario in this session (none is created or loaded) - nothing published; create or load a scenario, or publish to global",
+              "notice": {
+                "schema": 1,
+                "scope": "S1",
+                "stamp": "9a0364b9e99bb480",
+                "baseline_stamp": "9a0364b9e99bb480",
+                "layers": [],
+                "word_lists": [],
+                "naming_rows": [],
+                "registrations": [],
+                "issues": []
+              },
+              "effects": []
+            }
+          }
         }
       ]
     },

@@ -2,7 +2,7 @@
   "$schema": "./sketch-thru-plan-validations.schema.json",
   "title": "Sketch-thru-Plan call validations",
   "description": "Data-driven checks a client runs around a state-changing STP call (STP-1064): before the call, the preconditions, the params the engine silently ignores a call without, and the poids that must name existing objects; after the call, the events that prove it did what it asked (intent). Every write and destructive method of the contract has an entry. See README.md, 'Call validations'.",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "contractVersion": "0.9.12",
   "refusalMessage": {
     "event": "StpMessage",
@@ -1866,9 +1866,7 @@
       "confirm": "Deletes the comment {entryPoid}; a note that it was deleted stays."
     },
     "PublishNaming": {
-      "preconditions": [
-        "activeScenario"
-      ],
+      "preconditions": [],
       "intent": {
         "expect": []
       },
