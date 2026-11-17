@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.11"
+    "version": "0.9.12"
   },
   "methods": [
     {
@@ -9551,6 +9551,303 @@
       ]
     },
     {
+      "name": "GetNaming",
+      "description": "Return the effective naming convention of this client's session (STP-1706): the word lists, naming rows and registrations that differ from the shipped baseline - the full difference, not only the latest change - with its stamp, the stamps of the layers folded in (global, session, plan) and the conflict check's findings. Read it after connecting, and register NamingChanged to follow it. A client that derives anything from it (speech models, name suggestions) keys that by the stamp and redoes nothing while it is unchanged. The baseStamp a PublishNaming needs is the target layer's stamp from layers. Read-only. Engines before STP-1706 answer No handler (success=false).",
+      "x-stpSafety": "read",
+      "x-stpEmits": [],
+      "params": [],
+      "result": {
+        "name": "notice",
+        "schema": {
+          "$ref": "#/components/schemas/NamingNotice"
+        }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "no active scenario",
+          "outcome": "accepted",
+          "note": "success; the session's convention (global layer and baseline), from the engine source (STP-1706 P2), not a live capture"
+        },
+        {
+          "when": "the engine has no naming convention loaded",
+          "outcome": "accepted",
+          "note": "success; a notice with only schema and scope (empty stamps, no layers), from the engine source, not a live capture"
+        }
+      ],
+      "examples": [
+        {
+          "name": "GetNaming (illustrative)",
+          "description": "A session whose plan layer adds CAT to MISCELLANEOUSDESIGNATORS; the global layer is empty. Stamps invented.",
+          "params": [],
+          "result": {
+            "name": "notice",
+            "value": {
+              "schema": 1,
+              "scope": "S1",
+              "stamp": "5d41402abc4b2a76",
+              "baseline_stamp": "9a0364b9e99bb480",
+              "layers": [
+                {
+                  "layer": "global",
+                  "stamp": "e3b0c44298fc1c14"
+                },
+                {
+                  "layer": "plan",
+                  "stamp": "7c211433f0207159"
+                }
+              ],
+              "word_lists": [
+                {
+                  "name": "MISCELLANEOUSDESIGNATORS",
+                  "is_new": false,
+                  "entries": [
+                    "ALPHA",
+                    "BRAVO",
+                    "CAT"
+                  ],
+                  "added": [
+                    "CAT"
+                  ],
+                  "removed": []
+                }
+              ],
+              "naming_rows": [],
+              "registrations": [],
+              "issues": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PublishNaming",
+      "description": "Publish a naming customization layer (STP-1706): target global (the server's layer, every session of this engine), plan (this session's scenario, saved and replicated with its plan data) or both. layer replaces the target layer whole. baseStamp is the target layer's stamp the edit started from (from GetNaming's or NamingChanged's layers; for both, the global and plan stamps joined by a comma; empty for a layer that did not exist): if someone published in between, nothing is stored and the answer is status stale_base with the current notice - reload, re-apply the edits and publish again. With checkOnly nothing is stored and effects say what would change (for global, how many sessions it reaches): show that to the author before a global publish. Blocked items are left out and listed in the notice's issues; the rest applies. Answers a NamingPublishResult; success is true for applied and check_only, false for stale_base and refused (the result still carries the status, message and notice). An applied publish that changes a session's effective convention sends NamingChanged to that session's clients - for global, to every session it reaches. Engines before STP-1706 answer No handler (success=false).",
+      "x-stpSafety": "destructive",
+      "x-stpEmits": [
+        {
+          "event": "NamingChanged",
+          "when": "if",
+          "condition": "the publish is applied (not checkOnly) and changes the session's effective naming convention",
+          "to": "session"
+        },
+        {
+          "event": "StpMessage",
+          "when": "if",
+          "condition": "STP does not answer the publish (the call fails); a stale_base or refused publish sends none",
+          "to": "caller"
+        }
+      ],
+      "params": [
+        {
+          "name": "target",
+          "description": "global, plan or both (case-insensitive).",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "global",
+              "plan",
+              "both"
+            ]
+          }
+        },
+        {
+          "name": "baseStamp",
+          "description": "The stamp of the target layer the edit started from; for both, GLOBAL,PLAN; empty (or absent) for a layer published for the first time.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "checkOnly",
+          "description": "If true, store nothing and answer what would change (default false).",
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "layer",
+          "description": "The layer: a NamingCustomization object, or its JSON as a string; null or absent is the empty layer (removes the target's customizations).",
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NamingCustomization"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ],
+      "result": {
+        "name": "publishResult",
+        "schema": {
+          "$ref": "#/components/schemas/NamingPublishResult"
+        }
+      },
+      "x-stpEdgeCases": [
+        {
+          "when": "baseStamp no longer the target layer's stamp",
+          "outcome": "refused",
+          "message": "someone published since you started editing (this plan's layer is now 7c211433f0207159, not e3b0c44298fc1c14) - nothing was stored; reload, re-apply your edits and publish again",
+          "note": "result status stale_base with the current notice; from the engine source (STP-1706 P2), not a live capture"
+        },
+        {
+          "when": "unknown or missing target",
+          "outcome": "refused",
+          "message": "TARGET 'x' is not one of global, plan, both",
+          "note": "result status refused; from the engine source, not a live capture"
+        },
+        {
+          "when": "target both with a baseStamp that is not GLOBAL,PLAN",
+          "outcome": "refused",
+          "message": "TARGET both needs BASE_STAMP as GLOBAL,PLAN (the two layer stamps the client edited from)",
+          "note": "result status refused; from the engine source, not a live capture"
+        },
+        {
+          "when": "layer that is not a naming customization",
+          "outcome": "refused",
+          "message": "LAYER is not a naming customization (...) - nothing published",
+          "note": "result status refused; from the engine source, not a live capture"
+        }
+      ],
+      "examples": [
+        {
+          "name": "PublishNaming (illustrative)",
+          "description": "Add CAT to MISCELLANEOUSDESIGNATORS in a plan that had no naming layer. Stamps invented.",
+          "params": [
+            {
+              "name": "target",
+              "value": "plan"
+            },
+            {
+              "name": "baseStamp",
+              "value": ""
+            },
+            {
+              "name": "checkOnly",
+              "value": false
+            },
+            {
+              "name": "layer",
+              "value": {
+                "word_lists": [
+                  {
+                    "name": "MISCELLANEOUSDESIGNATORS",
+                    "mode": "extend",
+                    "entries": [
+                      "CAT"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "result": {
+            "name": "publishResult",
+            "value": {
+              "status": "applied",
+              "target": "plan",
+              "notice": {
+                "schema": 1,
+                "scope": "S1",
+                "stamp": "5d41402abc4b2a76",
+                "baseline_stamp": "9a0364b9e99bb480",
+                "layers": [
+                  {
+                    "layer": "global",
+                    "stamp": "e3b0c44298fc1c14"
+                  },
+                  {
+                    "layer": "plan",
+                    "stamp": "7c211433f0207159"
+                  }
+                ],
+                "word_lists": [
+                  {
+                    "name": "MISCELLANEOUSDESIGNATORS",
+                    "is_new": false,
+                    "entries": [
+                      "ALPHA",
+                      "BRAVO",
+                      "CAT"
+                    ],
+                    "added": [
+                      "CAT"
+                    ],
+                    "removed": []
+                  }
+                ],
+                "naming_rows": [],
+                "registrations": [],
+                "issues": []
+              },
+              "effects": [
+                {
+                  "layer": "plan",
+                  "current_stamp": "e3b0c44298fc1c14",
+                  "new_stamp": "7c211433f0207159",
+                  "effective_stamp": "5d41402abc4b2a76",
+                  "lists_added": [],
+                  "lists_changed": [
+                    "MISCELLANEOUSDESIGNATORS"
+                  ],
+                  "lists_removed": [],
+                  "rows_changed": [],
+                  "words_added": [
+                    "MISCELLANEOUSDESIGNATORS: CAT"
+                  ],
+                  "words_removed": []
+                }
+              ]
+            }
+          },
+          "x-stpEventsObserved": [
+            {
+              "event": "NamingChanged",
+              "params": {
+                "schema": 1,
+                "scope": "S1",
+                "stamp": "5d41402abc4b2a76",
+                "baseline_stamp": "9a0364b9e99bb480",
+                "layers": [
+                  {
+                    "layer": "global",
+                    "stamp": "e3b0c44298fc1c14"
+                  },
+                  {
+                    "layer": "plan",
+                    "stamp": "7c211433f0207159"
+                  }
+                ],
+                "word_lists": [
+                  {
+                    "name": "MISCELLANEOUSDESIGNATORS",
+                    "is_new": false,
+                    "entries": [
+                      "ALPHA",
+                      "BRAVO",
+                      "CAT"
+                    ],
+                    "added": [
+                      "CAT"
+                    ],
+                    "removed": []
+                  }
+                ],
+                "naming_rows": [],
+                "registrations": [],
+                "issues": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "SearchSymbol",
       "description": "Find the symbols whose names or spoken phrases match a typed text (STP-1373), best first: what a symbol editor's search box or a type-and-sketch flow lists. Answered by the SDK itself from the symbol index it loads (sketch-thru-plan-symbol-index.schema.json; the index ships with STP, by default in its installation directory) - the engine never receives it, so it works offline and costs no round trip. Ranking, the same in every SDK, reproduces STP's own symbol search: the text's words (case ignored, stop words dropped) must all match a symbol's phrases, tried in passes - exactly, as prefixes, by stem (Snowball English), by stem prefix, then within edits - and the first pass that finds anything answers; a text whose words find nothing together is searched word by word and the results merged. Within a pass, results are ordered by a tf-idf relevance score over the phrases (the classic Lucene similarity STP's search uses), equal scores by key - except that an entry whose phrase is exactly the text (case and spacing ignored) ranks first. Each result names the gesture that places the symbol (a point, or a tactical graphic's line, area, arrow ...) and its default affiliation (hostile for the symbols users place as enemy by default); `speech` is the phrase that matched. No match, or a text of only stop words or spaces, answers []. Read-only.",
       "x-layer": "client",
@@ -10720,6 +11017,430 @@
           "score"
         ],
         "additionalProperties": false
+      },
+      "NamingLayerStamp": {
+        "description": "The stamp of one customization layer folded into the effective naming convention (STP-1706).",
+        "type": "object",
+        "properties": {
+          "layer": {
+            "type": "string",
+            "description": "global (the server's layer), session (what refresh_wordlists submitted this engine session, not persisted) or plan (the session's scenario's layer)."
+          },
+          "stamp": {
+            "type": "string",
+            "description": "Sixteen lower-case hex digits identifying the layer's content as stored; the empty layer's stamp is e3b0c44298fc1c14. This is the baseStamp PublishNaming takes."
+          }
+        },
+        "required": [
+          "layer",
+          "stamp"
+        ]
+      },
+      "NamingIssue": {
+        "description": "One finding of the naming convention's conflict check, or one layer item the engine could not take (STP-1706).",
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The class, stable to switch on: malformed, auto_registered, unknown_list, bad_row_key, nothing_to_extend, nothing_to_remove, written_form_clash, duplicate, prefix, shared_opening, too_long_for_pro, override, empty_list, global_changed_since_authoring, grammar_word, grammar_phrase, grammar_command, unreadable_plan_layer. Open: show an unknown code by its message."
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "note",
+              "warning",
+              "blocked"
+            ],
+            "description": "note: for information; warning: applied, but the author should know; blocked: NOT applied (the rest of the layer still is)."
+          },
+          "message": {
+            "type": "string",
+            "description": "Plain-language text for the author."
+          },
+          "layer": {
+            "type": "string",
+            "description": "The layer the item came from (global, session, plan); absent for the effective convention as a whole."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The list names, SICs or entries the issue is about."
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "message",
+          "items"
+        ]
+      },
+      "NamingRegistration": {
+        "description": "A registration of a word list to the designator feature a name from it is bound to (STP-1706).",
+        "type": "object",
+        "properties": {
+          "list": {
+            "type": "string",
+            "description": "The list's nonterminal, upper case."
+          },
+          "feature": {
+            "type": "string",
+            "description": "The feature a name from the list is bound to; designator1 unless given."
+          }
+        },
+        "required": [
+          "list"
+        ]
+      },
+      "WordListDelta": {
+        "description": "A word list of the effective naming convention that differs from the shipped baseline (STP-1706).",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The list's nonterminal, upper case (e.g. MISCELLANEOUSDESIGNATORS)."
+          },
+          "is_new": {
+            "type": "boolean",
+            "description": "True when the baseline has no list of this name."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The list's full effective content, in order. Each entry is a name, or TERM<TAB>SPOKEN | ALT (the written form, a tab, then the spoken forms separated by |)."
+          },
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Entries the baseline list does not have."
+          },
+          "removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Baseline entries the effective list no longer has."
+          }
+        },
+        "required": [
+          "name",
+          "is_new",
+          "entries",
+          "added",
+          "removed"
+        ]
+      },
+      "NamingRowDelta": {
+        "description": "A naming row of the effective naming convention that differs from the shipped baseline (STP-1706).",
+        "type": "object",
+        "properties": {
+          "sic": {
+            "type": "string",
+            "description": "The row key (a 2525D code prefix)."
+          },
+          "row": {
+            "type": "string",
+            "description": "The full effective row: SIC<TAB>Description<TAB>Vocabulary[<TAB>Comment[<TAB>Role]]."
+          },
+          "baseline_row": {
+            "type": "string",
+            "description": "The baseline row for this SIC; absent when the row is new."
+          }
+        },
+        "required": [
+          "sic",
+          "row"
+        ]
+      },
+      "NamingNotice": {
+        "description": "The effective naming convention (STP-1706), as GetNaming answers it and NamingChanged carries it: its full difference from the shipped baseline - never only what changed since the previous notice, so a client rebuilds from any one notice - with its stamp and the conflict check's findings. Same stamp, same names parsed the same way: key whatever is derived from it (speech models, suggestion lists) by the stamp. The engine's own JSON, snake_case, unchanged by the bridge.",
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "integer",
+            "description": "The document's schema number, 1. Bumped only on an incompatible change."
+          },
+          "scope": {
+            "type": "string",
+            "description": "global (for clients with no session), or the session id whose convention this is (its plan layer included)."
+          },
+          "stamp": {
+            "type": "string",
+            "description": "Identity of the effective convention (sixteen lower-case hex digits). Covers the baseline, so an upgrade that changes the shipped tables changes it too."
+          },
+          "baseline_stamp": {
+            "type": "string",
+            "description": "Identity of the shipped baseline alone."
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingLayerStamp"
+            },
+            "description": "The layers folded over the baseline, lowest first."
+          },
+          "word_lists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WordListDelta"
+            },
+            "description": "Every word list that differs from the baseline."
+          },
+          "naming_rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingRowDelta"
+            },
+            "description": "Every naming row that differs from the baseline."
+          },
+          "registrations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingRegistration"
+            },
+            "description": "Every registration the baseline does not have."
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingIssue"
+            },
+            "description": "The conflict check's findings and the items the fold blocked."
+          }
+        },
+        "required": [
+          "schema",
+          "scope",
+          "stamp",
+          "baseline_stamp",
+          "layers",
+          "word_lists",
+          "naming_rows",
+          "registrations",
+          "issues"
+        ]
+      },
+      "WordListChange": {
+        "description": "A naming customization layer's change to one word list (STP-1706).",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The list's nonterminal, upper case."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "replace",
+              "extend"
+            ],
+            "description": "replace (default): the list becomes entries, removals hold; extend: add entries and drop remove over the layer below."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "replace: the list's whole content; extend: entries to add. Each a name, or TERM<TAB>SPOKEN | ALT."
+          },
+          "remove": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "extend only: entries to remove (matched on the whole line, case-insensitive)."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "NamingRowChange": {
+        "description": "A naming customization layer's change to one naming row (STP-1706).",
+        "type": "object",
+        "properties": {
+          "sic": {
+            "type": "string",
+            "description": "The row key (a 2525D code prefix)."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "replace",
+              "extend"
+            ],
+            "description": "replace (default): row is the full row; extend: add_lists and remove_lists over the layer below."
+          },
+          "row": {
+            "type": "string",
+            "description": "replace only: the full row, SIC<TAB>Description<TAB>Vocabulary[<TAB>Comment[<TAB>Role]]; its first column must be sic."
+          },
+          "add_lists": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "extend only: vocabularies (word list or grammar rule names) to add to the row."
+          },
+          "remove_lists": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "extend only: vocabularies to drop from the row."
+          }
+        },
+        "required": [
+          "sic"
+        ]
+      },
+      "NamingCustomization": {
+        "description": "One naming customization layer over the shipped baseline (STP-1706): the same shape for the global layer and a plan's layer. It holds only what differs; an empty one is no customization. Snake_case, the engine's own JSON.",
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "integer",
+            "description": "The document's schema number, 1."
+          },
+          "word_lists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WordListChange"
+            }
+          },
+          "naming_rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingRowChange"
+            }
+          },
+          "registrations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingRegistration"
+            },
+            "description": "Registrations for lists the baseline does not register. A new list without one is registered as designator1."
+          }
+        }
+      },
+      "NamingLayerEffect": {
+        "description": "What a PublishNaming does (or, check-only, would do) to one target layer (STP-1706).",
+        "type": "object",
+        "properties": {
+          "layer": {
+            "type": "string",
+            "description": "global or plan."
+          },
+          "current_stamp": {
+            "type": "string",
+            "description": "The layer's stamp before the publish (what baseStamp must equal)."
+          },
+          "new_stamp": {
+            "type": "string",
+            "description": "The layer's stamp after the publish."
+          },
+          "effective_stamp": {
+            "type": "string",
+            "description": "The effective stamp of the requester's session after the publish."
+          },
+          "lists_added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Word lists the effective convention gains."
+          },
+          "lists_changed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Word lists whose effective content changes."
+          },
+          "lists_removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Word lists that go back to the shipped baseline (or away, for a list the baseline does not have)."
+          },
+          "rows_changed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Naming rows (SIC) that change, appear or go back to the baseline."
+          },
+          "words_added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Entries the effective convention gains, as LIST: entry."
+          },
+          "words_removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Entries the effective convention loses, as LIST: entry."
+          },
+          "sessions_reached": {
+            "type": "integer",
+            "description": "global target only: how many sessions of this engine the change reaches; absent otherwise."
+          }
+        },
+        "required": [
+          "layer",
+          "current_stamp",
+          "new_stamp",
+          "effective_stamp"
+        ]
+      },
+      "NamingPublishResult": {
+        "description": "The answer to PublishNaming (STP-1706): what was stored, or why nothing was. The engine's own JSON, snake_case.",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "check_only",
+              "stale_base",
+              "refused"
+            ],
+            "description": "applied: stored and the effective convention rebuilt (blocked items left out); check_only: nothing stored, effects say what would change; stale_base: someone published since baseStamp, nothing stored, notice is the current one; refused: see message."
+          },
+          "target": {
+            "type": "string",
+            "description": "The target as given."
+          },
+          "message": {
+            "type": "string",
+            "description": "Plain-language reason for a refusal; absent otherwise."
+          },
+          "notice": {
+            "$ref": "#/components/schemas/NamingNotice",
+            "description": "The effective convention of the requester's session: after the publish (applied), as it would be (check_only) or as it is now (refused). Absent when the engine has no naming convention to report."
+          },
+          "effects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingLayerEffect"
+            },
+            "description": "One entry per target layer; empty for a refusal."
+          }
+        },
+        "required": [
+          "status",
+          "target",
+          "effects"
+        ]
       }
     }
   },
@@ -11744,6 +12465,90 @@
           "description": "Severity level of the message.",
           "schema": {
             "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "NamingChanged",
+      "description": "Emitted when the effective naming convention changes (STP-1706): a PublishNaming, a word list refresh, a plan's layer arriving with a scenario. params are a NamingNotice - the FULL difference from the shipped baseline, so a client rebuilds from any one notice and a late joiner needs nothing else. A client receives the global-scope notice (for clients with no session) and its own session's (scope the session id, its plan layer included); once a session-scoped one has arrived, prefer it and ignore global ones. Same stamp, same convention: do no work when it has not changed.",
+      "params": [
+        {
+          "name": "schema",
+          "description": "The document's schema number, 1. Bumped only on an incompatible change.",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "scope",
+          "description": "global (for clients with no session), or the session id whose convention this is (its plan layer included).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "stamp",
+          "description": "Identity of the effective convention (sixteen lower-case hex digits). Covers the baseline, so an upgrade that changes the shipped tables changes it too.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "baseline_stamp",
+          "description": "Identity of the shipped baseline alone.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "layers",
+          "description": "The layers folded over the baseline, lowest first.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingLayerStamp"
+            }
+          }
+        },
+        {
+          "name": "word_lists",
+          "description": "Every word list that differs from the baseline.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WordListDelta"
+            }
+          }
+        },
+        {
+          "name": "naming_rows",
+          "description": "Every naming row that differs from the baseline.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingRowDelta"
+            }
+          }
+        },
+        {
+          "name": "registrations",
+          "description": "Every registration the baseline does not have.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingRegistration"
+            }
+          }
+        },
+        {
+          "name": "issues",
+          "description": "The conflict check's findings and the items the fold blocked.",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NamingIssue"
+            }
           }
         }
       ]
