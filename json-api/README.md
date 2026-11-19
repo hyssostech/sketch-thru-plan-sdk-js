@@ -321,7 +321,9 @@ it names exists in the contract.
 * `preconditions` - session state that must hold before the call. `activeScenario`: the session
   has an active scenario. Without one the engine accepts writes, creates the objects, and
   `HasActiveScenario` stays false. Every method requires it except `CreateNewScenario`,
-  `LoadNewScenario` and `LoadNewScenarioFromObjectSet`, which create one.
+  `LoadNewScenario` and `LoadNewScenarioFromObjectSet`, which create one, and `PublishNaming`:
+  a global publish needs no scenario, and the engine itself refuses a plan or both publish
+  without one (status `refused`, nothing stored, checkOnly included), so a client need not.
 * `required` - params without which the engine ignores the call and says nothing (for example
   `UpdateSymbol` without `symbol`). The contract marks no param as required, so these are listed
   here, each backed by an `ignored` case in the method's `x-stpEdgeCases`.

@@ -218,6 +218,16 @@
   refusals name `engineer`; `creatorRole` descriptions list the lower-case names the engine sends
 - Added `StpRole.engineer` (`'ENGINEER'`); `StpRole.eng` is deprecated
 - Call-validation rules 1.0.10, checked against contract 0.9.11; no rule changed
+- OpenRPC contract raised to 0.9.12 (STP-1706 P2): methods `GetNaming` (the session's effective naming
+  convention) and `PublishNaming` (publish a global, plan or both customization layer, with a base stamp and
+  check-only), event `NamingChanged`, and the schemas they carry in the engine's own snake_case JSON
+  (`NamingNotice`, `NamingCustomization`, `NamingPublishResult` and their parts). `PublishNaming` is
+  `destructive`: it replaces the target layer whole, for every session on a global publish
+- `PublishNaming` documents the engine's no-scenario refusal (operator ruling 283(a)): a plan or both publish in a
+  session with no active scenario is refused (status `refused`, nothing stored, `checkOnly` included), as is a plan
+  publish from a connection with no session; a global publish needs no scenario
+- Call-validation rules 1.0.12, checked against contract 0.9.12: a rule for `PublishNaming`, with no
+  `activeScenario` precondition (the engine refuses a plan publish without one; a global publish needs none)
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
   a change set, and every object handler (`onSymbolAdded` ... `onCoaDeleted`) receives the change set's id as a new
