@@ -169,7 +169,7 @@ export default function App() {
               <option value="s3">S3</option>
               <option value="s4">S4</option>
               <option value="fso">FSO</option>
-              <option value="eng">ENG</option>
+              <option value="engineer">ENGINEER</option>
             </select>
           </div>
         </AccordionSection>

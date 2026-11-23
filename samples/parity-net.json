@@ -1,0 +1,1099 @@
+{
+ "repo": "hyssostech/sketch-thru-plan-sdk-net",
+ "branch": "claude/STP-1802-net-512-samples",
+ "commit": "a33f92eef688eea0c3187e47bab79024af2437a0",
+ "mapping": "docs/articles/contract-name-mapping.md",
+ "methods": {
+  "SendPenDown": {
+   "sdk": [
+    "SendPenDown"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "SendInk": {
+   "sdk": [
+    "SendInk"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "SendSpeechRecognition": {
+   "sdk": [
+    "SendSpeechRecognition",
+    "SendSpeechRecognitionExt"
+   ],
+   "samples": [
+    "SpeechSample"
+   ]
+  },
+  "SendSimulatedSpeechRecognition": {
+   "sdk": [
+    "SendSimulatedSpeechRecognition"
+   ],
+   "samples": []
+  },
+  "CreateNewScenario": {
+   "sdk": [
+    "CreateNewScenarioAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample"
+   ]
+  },
+  "LoadNewScenario": {
+   "sdk": [
+    "LoadNewScenarioAsync(string)"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample"
+   ]
+  },
+  "ImportPlanData": {
+   "sdk": [
+    "ImportSTPDataAsync(string)"
+   ],
+   "samples": [
+    "C2SIMSample"
+   ]
+  },
+  "GetScenarioContent": {
+   "sdk": [
+    "GetScenarioContentAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample"
+   ]
+  },
+  "JoinScenarioSession": {
+   "sdk": [
+    "JoinScenarioSessionAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample"
+   ]
+  },
+  "SyncScenarioSession": {
+   "sdk": [
+    "SyncScenarioSessionAsync(string)"
+   ],
+   "samples": []
+  },
+  "HasActiveScenario": {
+   "sdk": [
+    "HasActiveScenarioAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample"
+   ]
+  },
+  "AddSymbol": {
+   "sdk": [
+    "AddSymbol"
+   ],
+   "samples": []
+  },
+  "UpdateSymbol": {
+   "sdk": [
+    "UpdateSymbol"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "DeleteSymbol": {
+   "sdk": [
+    "DeleteSymbol"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "ChooseAlternate": {
+   "sdk": [
+    "ChooseAlternate"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "ImportTaskOrgContent": {
+   "sdk": [
+    "ImportTaskOrgContentAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "GetTaskOrgContent": {
+   "sdk": [
+    "GetTaskOrgContentAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "SetDefaultTaskOrg": {
+   "sdk": [
+    "SetDefaultTaskOrgAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "ResetDefaultTaskOrg": {
+   "sdk": [
+    "ResetDefaultTaskOrgAsync"
+   ],
+   "samples": [
+    "TaskOrgSample"
+   ]
+  },
+  "AddTaskOrg": {
+   "sdk": [
+    "AddTaskOrg"
+   ],
+   "samples": []
+  },
+  "UpdateTaskOrg": {
+   "sdk": [
+    "UpdateTaskOrg"
+   ],
+   "samples": []
+  },
+  "DeleteTaskOrg": {
+   "sdk": [
+    "DeleteTaskOrg"
+   ],
+   "samples": []
+  },
+  "AddTaskOrgUnit": {
+   "sdk": [
+    "AddTaskOrgUnit"
+   ],
+   "samples": []
+  },
+  "UpdateTaskOrgUnit": {
+   "sdk": [
+    "UpdateTaskOrgUnit"
+   ],
+   "samples": []
+  },
+  "DeleteTaskOrgUnit": {
+   "sdk": [
+    "DeleteTaskOrgUnit"
+   ],
+   "samples": []
+  },
+  "AddTaskOrgRelationship": {
+   "sdk": [
+    "AddTaskOrgRelationship"
+   ],
+   "samples": []
+  },
+  "UpdateTaskOrgRelationship": {
+   "sdk": [
+    "UpdateTaskOrgRelationship"
+   ],
+   "samples": []
+  },
+  "DeleteTaskOrgRelationship": {
+   "sdk": [
+    "DeleteTaskOrgRelationship"
+   ],
+   "samples": []
+  },
+  "AddTask": {
+   "sdk": [
+    "AddTask"
+   ],
+   "samples": []
+  },
+  "UpdateTask": {
+   "sdk": [
+    "UpdateTask"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "DeleteTask": {
+   "sdk": [
+    "DeleteTask"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "ConfirmTask": {
+   "sdk": [
+    "ConfirmTask"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "GetTaskHistory": {
+   "sdk": [
+    "GetTaskHistoryAsync"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "AddTaskComment": {
+   "sdk": [
+    "AddTaskCommentAsync"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "EditTaskComment": {
+   "sdk": [
+    "EditTaskCommentAsync"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "DeleteTaskComment": {
+   "sdk": [
+    "DeleteTaskCommentAsync"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "SetCoaTaskOrg": {
+   "sdk": [
+    "SetCoaTaskOrgAsync"
+   ],
+   "samples": []
+  },
+  "ResetCoaTaskOrg": {
+   "sdk": [
+    "ResetCoaTaskOrgAsync"
+   ],
+   "samples": []
+  },
+  "ImportCoaContent": {
+   "sdk": [
+    "ImportCoaContentAsync"
+   ],
+   "samples": []
+  },
+  "GetCoaContent": {
+   "sdk": [
+    "GetCoaContentAsync"
+   ],
+   "samples": []
+  },
+  "SetCurrentCoa": {
+   "sdk": [
+    "SetCoaAsync"
+   ],
+   "samples": []
+  },
+  "AddCoa": {
+   "sdk": [
+    "AddCoa"
+   ],
+   "samples": []
+  },
+  "UpdateCoa": {
+   "sdk": [
+    "UpdateCoa"
+   ],
+   "samples": []
+  },
+  "DeleteCoa": {
+   "sdk": [
+    "DeleteCoaAsync",
+    "DeleteCoa"
+   ],
+   "samples": []
+  },
+  "SetRole": {
+   "sdk": [
+    "SetRoleAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample"
+   ]
+  },
+  "ConvertC2SIMContent": {
+   "sdk": [
+    "ConvertC2SIMContentAsync"
+   ],
+   "samples": [
+    "C2SIMSample"
+   ]
+  },
+  "GetC2SIMContent": {
+   "sdk": [
+    "GetC2SIMContentAsync"
+   ],
+   "samples": [
+    "C2SIMSample"
+   ]
+  },
+  "GetCoaObjectSet": {
+   "sdk": [
+    "GetCoaObjectSetAsync"
+   ],
+   "samples": []
+  },
+  "GetScenarioObjectSet": {
+   "sdk": [
+    "GetScenarioObjectSetContentAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "GetTaskOrgObjectSet": {
+   "sdk": [
+    "GetTaskOrgObjectSetAsync"
+   ],
+   "samples": [
+    "TaskOrgSample"
+   ]
+  },
+  "ImportCoaFromObjectSet": {
+   "sdk": [
+    "ImportCoaAsync(ObjectSet)",
+    "ImportCoaAsync(ObjectSet, TimeSpan)"
+   ],
+   "samples": []
+  },
+  "ImportPlanDataFromObjectSet": {
+   "sdk": [
+    "ImportSTPDataAsync(ObjectSet)",
+    "ImportSTPDataAsync(ObjectSet, TimeSpan)"
+   ],
+   "samples": [
+    "ScenarioSample"
+   ]
+  },
+  "ImportTaskOrgFromObjectSet": {
+   "sdk": [
+    "ImportTaskOrgAsync(ObjectSet)",
+    "ImportTaskOrgAsync(ObjectSet, TimeSpan)"
+   ],
+   "samples": [
+    "TaskOrgSample"
+   ]
+  },
+  "LoadNewScenarioFromObjectSet": {
+   "sdk": [
+    "LoadNewScenarioAsync(ObjectSet)",
+    "LoadNewScenarioAsync(ObjectSet, TimeSpan)"
+   ],
+   "samples": [
+    "ScenarioSample"
+   ]
+  },
+  "PullC2SIMInitialization": {
+   "sdk": [
+    "PullC2SIMInitializationContentAsync",
+    "PullC2SIMInitializationAsync"
+   ],
+   "samples": [
+    "C2SIMSample"
+   ]
+  },
+  "PushC2SIMContent": {
+   "sdk": [
+    "PushC2SIMContentAsync"
+   ],
+   "samples": [
+    "C2SIMSample"
+   ]
+  },
+  "Register": {
+   "sdk": [
+    "RegisterAsync",
+    "ConnectAndRegisterAsync"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "Request": {
+   "sdk": [],
+   "samples": []
+  },
+  "SyncScenarioSessionFromObjectSet": {
+   "sdk": [
+    "SyncScenarioSessionAsync(ObjectSet)",
+    "SyncScenarioSessionAsync(ObjectSet, TimeSpan)"
+   ],
+   "samples": [
+    "ScenarioSample"
+   ]
+  },
+  "ChangeTimeOut": {
+   "sdk": [
+    "ChangeTimeOut"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "ResetSegmentationTimeout": {
+   "sdk": [
+    "ResetSegmentationTimeout"
+   ],
+   "samples": []
+  },
+  "SetSpeechListening": {
+   "sdk": [
+    "SetSpeechListening"
+   ],
+   "samples": []
+  },
+  "RecognizeNow": {
+   "sdk": [
+    "RecognizeNow"
+   ],
+   "samples": []
+  },
+  "SendListen": {
+   "sdk": [
+    "SendListen"
+   ],
+   "samples": []
+  },
+  "SendAudioCaptureState": {
+   "sdk": [
+    "SendAudioCaptureState"
+   ],
+   "samples": []
+  },
+  "AdvertiseViewport": {
+   "sdk": [
+    "AdvertiseViewport"
+   ],
+   "samples": []
+  },
+  "SetAutoTasking": {
+   "sdk": [
+    "SetAutoTasking"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "ResetRole": {
+   "sdk": [
+    "ResetRole"
+   ],
+   "samples": []
+  },
+  "UndoLastOp": {
+   "sdk": [
+    "UndoLastOp"
+   ],
+   "samples": []
+  },
+  "ResetStpScenario": {
+   "sdk": [
+    "ResetStpScenarioAsync"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "GetActiveScenarioDescription": {
+   "sdk": [
+    "GetActiveScenarioDescriptionAsync"
+   ],
+   "samples": []
+  },
+  "GetAllObjects": {
+   "sdk": [
+    "RequestAllStpObjectsAsync"
+   ],
+   "samples": []
+  },
+  "GetDeletedObjects": {
+   "sdk": [
+    "RequestDeletedStpObjectsAsync"
+   ],
+   "samples": []
+  },
+  "GetPoidObject": {
+   "sdk": [
+    "RequestPoidObjectAsync"
+   ],
+   "samples": []
+  },
+  "GetScenarioTaskOrgList": {
+   "sdk": [
+    "GetScenarioTaskOrgsAsync"
+   ],
+   "samples": [
+    "TaskOrgSample"
+   ]
+  },
+  "GetTaskOrgObjects": {
+   "sdk": [
+    "GetTaskOrgObjectsAsync"
+   ],
+   "samples": []
+  },
+  "SearchSymbol": {
+   "sdk": [
+    "SymbolSearch.Search"
+   ],
+   "samples": [
+    "EditingSample"
+   ]
+  }
+ },
+ "events": {
+  "InkProcessed": {
+   "sdk": [
+    "OnInkProcessed"
+   ],
+   "samples": []
+  },
+  "SpeechRecognized": {
+   "sdk": [
+    "OnSpeechRecognized"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "SpeechDiscarded": {
+   "sdk": [
+    "OnSpeechDiscarded"
+   ],
+   "samples": []
+  },
+  "SpeechParsed": {
+   "sdk": [
+    "OnSpeechParsed"
+   ],
+   "samples": []
+  },
+  "NewScenario": {
+   "sdk": [
+    "OnNewScenario"
+   ],
+   "samples": []
+  },
+  "SymbolAdded": {
+   "sdk": [
+    "OnSymbolAdded",
+    "OnSymbolAddedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "SymbolModified": {
+   "sdk": [
+    "OnSymbolModified",
+    "OnSymbolModifiedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "SymbolDeleted": {
+   "sdk": [
+    "OnSymbolDeleted",
+    "OnSymbolDeletedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "SymbolReport": {
+   "sdk": [
+    "OnSymbolReport"
+   ],
+   "samples": [
+    "C2SIMSample"
+   ]
+  },
+  "TaskOrgAdded": {
+   "sdk": [
+    "OnTaskOrgAdded",
+    "OnTaskOrgAddedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgModified": {
+   "sdk": [
+    "OnTaskOrgModified",
+    "OnTaskOrgModifiedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgDeleted": {
+   "sdk": [
+    "OnTaskOrgDeleted",
+    "OnTaskOrgDeletedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgUnitAdded": {
+   "sdk": [
+    "OnTaskOrgUnitAdded",
+    "OnTaskOrgUnitAddedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgUnitModified": {
+   "sdk": [
+    "OnTaskOrgUnitModified",
+    "OnTaskOrgUnitModifiedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgUnitDeleted": {
+   "sdk": [
+    "OnTaskOrgUnitDeleted",
+    "OnTaskOrgUnitDeletedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgRelationshipAdded": {
+   "sdk": [
+    "OnTaskOrgRelationshipAdded",
+    "OnTaskOrgRelationshipAddedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgRelationshipModified": {
+   "sdk": [
+    "OnTaskOrgRelationshipModified",
+    "OnTaskOrgRelationshipModifiedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgRelationshipDeleted": {
+   "sdk": [
+    "OnTaskOrgRelationshipDeleted",
+    "OnTaskOrgRelationshipDeletedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskOrgSwitched": {
+   "sdk": [
+    "OnTaskOrgSwitched"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample",
+    "TaskOrgSample"
+   ]
+  },
+  "TaskAdded": {
+   "sdk": [
+    "OnTaskAdded",
+    "OnTaskAddedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "TaskModified": {
+   "sdk": [
+    "OnTaskModified",
+    "OnTaskModifiedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "TaskDeleted": {
+   "sdk": [
+    "OnTaskDeleted",
+    "OnTaskDeletedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "TaskEventAdded": {
+   "sdk": [
+    "OnTaskEventAdded"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "TaskEventModified": {
+   "sdk": [
+    "OnTaskEventModified"
+   ],
+   "samples": [
+    "TaskingSample"
+   ]
+  },
+  "SymbolEdited": {
+   "sdk": [
+    "OnSymbolEdited",
+    "OnSymbolEditedExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "MapOperation": {
+   "sdk": [
+    "OnMapOperation",
+    "OnMapOperationExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample"
+   ]
+  },
+  "Command": {
+   "sdk": [
+    "OnCommand",
+    "OnCommandExt"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample"
+   ]
+  },
+  "CoaAdded": {
+   "sdk": [
+    "OnCoaAdded",
+    "OnCoaAddedExt"
+   ],
+   "samples": [
+    "ScenarioSample"
+   ]
+  },
+  "CoaModified": {
+   "sdk": [
+    "OnCoaModified",
+    "OnCoaModifiedExt"
+   ],
+   "samples": []
+  },
+  "CoaDeleted": {
+   "sdk": [
+    "OnCoaDeleted",
+    "OnCoaDeletedExt"
+   ],
+   "samples": [
+    "ScenarioSample"
+   ]
+  },
+  "CoaSwitched": {
+   "sdk": [
+    "OnCoaSwitched"
+   ],
+   "samples": []
+  },
+  "RoleSwitched": {
+   "sdk": [
+    "OnRoleSwitched"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "RolesSample",
+    "SessionSample"
+   ]
+  },
+  "BatchStarted": {
+   "sdk": [
+    "OnBatchStarted"
+   ],
+   "samples": [
+    "ScenarioSample"
+   ]
+  },
+  "BatchEnded": {
+   "sdk": [
+    "OnBatchEnded"
+   ],
+   "samples": [
+    "ScenarioSample"
+   ]
+  },
+  "StpMessage": {
+   "sdk": [
+    "OnStpMessage"
+   ],
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
+  },
+  "RequestResponse": {
+   "sdk": [],
+   "samples": []
+  }
+ }
+}

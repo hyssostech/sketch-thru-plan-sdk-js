@@ -1,0 +1,49 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: sans-serif;
+    font-size: 13px;
+}
+#actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    overflow: hidden;
+    background-color: darkgrey;
+    border: 1px solid gray;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.group {
+    margin-left: 15px;
+}
+#messages {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    overflow: hidden;
+}
+#search {
+    position: absolute;
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    bottom: 0;
+    overflow-y: auto;
+}
+#search table {
+    margin-top: 8px;
+    border-collapse: collapse;
+}
+#search td, #search th {
+    border-bottom: 1px solid #ddd;
+    padding: 2px 6px;
+    text-align: left;
+}

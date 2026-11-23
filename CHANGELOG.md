@@ -1,4 +1,18 @@
 # Sketch-Thru-Plan Change Log
+## Unreleased - STP 5.12
+- Samples for STP 5.12: task history, batches, object sets and symbol search, and the C2SIM
+  `refuseUnconfirmedPlaceholders` option. `samples/PARITY.md` lists every contract method and event with the JS and
+  .NET SDK members that carry it and the samples that show it (`node scripts/sample-parity.mjs`)
+- Naming: what earlier entries call "change sets" (STP-1265, `onBatchStarted` / `onBatchEnded` and the `batchId`
+  argument) is now called "batches" in the docs, the JSDoc and the samples; the sample is `samples/batches`. The
+  contract's descriptions say "batch" too (text only; contract stays 0.9.11). No API or wire name changed. The
+  engine's "change set" (the MilTable symbol-set selection) is a different thing
+- COA calls exist for creating COAs and their task orgs, but in 5.12 symbols and tasks are not assigned to a COA, so planning by COA is not supported. The COA calls and handlers (`addCoa`, `updateCoa`, `deleteCoa`,
+  `setCurrentCoa`, `getCoaContent`, `importCoaContent`, `getCoaObjectSet`, `importCoaFromObjectSet`,
+  `setCoaTaskOrg`, `resetCoaTaskOrg`, `onCoaAdded`, `onCoaModified`, `onCoaDeleted`, `onCoaSwitched`) stay, and
+  their docs and contract descriptions say so; there is no COA sample
+- `onPenDown` is deprecated: it never fires, because STP sends no PenDown event. It is kept so that code that
+  assigns it still compiles
 ## Version 0.6.17 - BREAKING: task enum values now match the wire
 - BREAKING: `TaskWhat`, `TaskHow`, `TaskWhy` and `TaskROE` values are now the engine's
   member names, which is what the engine sends: `"ambush"` -> `"AMBUSH"`,

@@ -483,6 +483,13 @@ async function start(){
     // C2SIM actions and events
 // Get a proxy to interact with C2SIM, setting generation options
     const c2simProxy = stpsdk.createC2SIMProxy({ serverProtocol: '1.0.2'});
+    // STP 5.12: refuse to produce a C2SIM document while a task graphic is still an unconfirmed placeholder - one
+    // drawn from no evidence and not yet moved, nor its confidence set, by staff. Unchecked, such estimates are only
+    // warned about in the engine log. The proxy's options go with every call, so the checkbox is read at each export
+    const refuseCheckbox = document.getElementById('refusePlaceholders');
+    refuseCheckbox.onchange = () => {
+        c2simProxy.options.refuseUnconfirmedPlaceholders = refuseCheckbox.checked;
+    };
 
     // C2SIM export to server
     const buttonExport = document.getElementById('export');

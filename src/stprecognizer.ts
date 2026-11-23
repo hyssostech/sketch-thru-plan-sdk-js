@@ -143,7 +143,7 @@ export class StpRecognizer{
 
   //#region Handler dispatching
   private handleInform(msg: StpType.StpMessage) {
-    // STP-1265: the change set an object event arrived in; null on the wire outside one, absent from an older engine
+    // STP-1265: the batch an object event arrived in; null on the wire outside one, absent from an older engine
     const batchOf = (params: object): string | undefined => (params as { batchId?: string | null })?.batchId ?? undefined;
     // Invoke a handler
     if (msg.method === 'SymbolAdded' && this.onSymbolAdded) {
@@ -722,6 +722,7 @@ export class StpRecognizer{
    * before anything is applied. The load is not all-or-nothing: if the engine rejects an object, it stops there
    * and the call fails naming that object and those applied before it. Engines before STP-1090 cannot read
    * getCoaObjectSet output back; use importCoaContent with getCoaContent text there.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param objects - Array of COA objects (StpCoa + symbols)
    * @param timeout - Optional timeout in seconds
    * @returns Imported COA's unique id
@@ -736,6 +737,7 @@ export class StpRecognizer{
    * Get COA content as an array of typed objects. Each object carries its content in PrologTerm, a string
    * holding the object's STP text, and the array can be passed as it is to importCoaFromObjectSet.
    * Engines before STP-1090 return PrologTerm as a nested array that no import reads back.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid - COA's unique id
    * @param timeout - Optional timeout in seconds
    * @returns Array of COA objects
@@ -1132,6 +1134,7 @@ export class StpRecognizer{
    * With `coaPoid` the TO is tied to that one COA for the TO's affiliation: while that COA is
    * current it uses this TO instead of the affiliation default. Engines before STP-1077 refuse a
    * `coaPoid` with "per-COA task org is not supported yet".
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param toPoid - Unique id of the TO to set
    * @param coaPoid - Unique Id of the COA the TO is tied to; omit it to set the default for the
    *   TO's affiliation
@@ -1152,6 +1155,7 @@ export class StpRecognizer{
    * With a `coaPoid` the TO tied to that COA is cleared - for `affiliation`, or for every
    * affiliation when it is omitted - and the COA falls back to the affiliation default.
    * Engines before STP-1077 refuse a `coaPoid` with "per-COA task org is not supported yet".
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param target - `{ affiliation, coaPoid }`. `affiliation` is required when `coaPoid` is
    *   omitted. A plain string is taken as `coaPoid`, the form this method has always declared.
    * @param timeout - Optional timeout in seconds
@@ -1172,6 +1176,7 @@ export class StpRecognizer{
    * Unique ids (poids) are kept exactly as they are in the content - the COA definition's as well
    * as the individual symbols' - so the content is not used as a template.
    * Task org units and relationships are not part of COA content; see {@link importTaskOrgContent}.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param content - Content to load, formatted as object_set([[element1], [element2], ...]) 
    * @param timeout - Optional timeout in seconds
    * @returns Imported COA's unique id
@@ -1185,6 +1190,7 @@ export class StpRecognizer{
   /**
    * Get a COA, with its units, graphics and tasks, as a multiline string ready to be persisted.
    * Task org units and relationships are not included; see {@link getTaskOrgContent}.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid -COA's unique id
    * @param timeout - Optional timeout in seconds
    */
@@ -1197,7 +1203,8 @@ export class StpRecognizer{
   /**
    * Select the current COA - edits and data imports are made into this COA henceforth.
    * Resolves at once if the COA is already current; otherwise `onCoaSwitched` follows.
-   * A missing or blank poid is refused
+   * A missing or blank poid is refused.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid - COA's unique id
    * @param timeout - Optional timeout in seconds
    */
@@ -1208,7 +1215,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Add a new COA to the scenario. The engine confirms with `onCoaAdded`
+   * Add a new COA to the scenario. The engine confirms with `onCoaAdded`.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param coa - COA to add 
    */
   addCoa(coa: StpType.StpCoa) {
@@ -1218,7 +1226,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Update COA definition. The engine confirms with `onCoaModified`
+   * Update COA definition. The engine confirms with `onCoaModified`.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid 
    * @param coa - updated COA
    */
@@ -1230,7 +1239,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Delete COA from scenario. The engine confirms with `onCoaDeleted`
+   * Delete COA from scenario. The engine confirms with `onCoaDeleted`.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid 
    */
   deleteCoa(poid: string) {
@@ -1303,6 +1313,8 @@ export class StpRecognizer{
    * A pen down action was performed by a user
    * @param time - Pen down time
    * @param coord - Pen down map coordinate
+   * @deprecated Never fires: STP sends no PenDown event (the contract has none), so the SDK never calls this
+   *   handler. Kept so that existing code that assigns it still compiles.
    */
   onPenDown: ((time: Date, coord: StpType.LatLon) => void) | undefined;
   //onPenUp: (time: Date, coord: LatLon) => void;
@@ -1342,7 +1354,7 @@ export class StpRecognizer{
    * A new symbol has been added
    * @param alternates - One or more symbol interpretations, ranked by likelihood
    * @param isUndo - True if this is the result of an undo operation (of a symbol delete)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onSymbolAdded:
     | ((alternates: StpType.StpSymbol[], isUndo: boolean, batchId?: string) => void)
@@ -1352,7 +1364,7 @@ export class StpRecognizer{
    * @param poid - Unique symbol identifier of the modified symbol
    * @param symbol - Symbol added
    * @param isUndo - True if this is the result of an undo operation (of a symbol modify)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onSymbolModified:
     | ((poid: string, symbol: StpType.StpSymbol, isUndo: boolean, batchId?: string) => void)
@@ -1361,7 +1373,7 @@ export class StpRecognizer{
    * A symbol has been deleted
    * @param poid - Unique symbol identifier of the deleted symbol
    * @param isUndo - True if this is the result of an undo operation (of a symbol add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onSymbolDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
   /**
@@ -1379,7 +1391,7 @@ export class StpRecognizer{
    * A new task org  has been added
    * @param  -  Added TO
    * @param isUndo - True if this is the result of an undo operation (of a TO delete)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgAdded:
     | ((taskOrg: StpType.StpTaskOrg, isUndo: boolean, batchId?: string) => void)
@@ -1389,7 +1401,7 @@ export class StpRecognizer{
    * @param poid - Unique symbol identifier of the modified symbol
    * @param taskOrg - Modified TO
    * @param isUndo - True if this is the result of an undo operation (of a TO modify)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgModified:
     | ((poid: string, taskOrg : StpType.StpTaskOrg, isUndo: boolean, batchId?: string) => void)
@@ -1398,7 +1410,7 @@ export class StpRecognizer{
    * A task org  has been deleted
    * @param poid - Unique identifier of the deleted TO 
    * @param isUndo - True if this is the result of an undo operation (of a TO add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
 
@@ -1406,7 +1418,7 @@ export class StpRecognizer{
    * A new task org unit has been added
    * @param unit - Unit added
    * @param isUndo - True if this is the result of an undo operation (of a to unit delete)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgUnitAdded:
     | ((unit: StpType.StpTaskOrgUnit, isUndo: boolean, batchId?: string) => void)
@@ -1416,7 +1428,7 @@ export class StpRecognizer{
    * @param poid - Unique symbol identifier of the modified symbol
    * @param unit - Unit added
    * @param isUndo - True if this is the result of an undo operation (of a to unit modify)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgUnitModified:
     | ((poid: string, unit: StpType.StpTaskOrgUnit, isUndo: boolean, batchId?: string) => void)
@@ -1425,7 +1437,7 @@ export class StpRecognizer{
    * A task org unit has been deleted
    * @param poid - Unique identifier of the deleted to unit
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgUnitDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
 
@@ -1433,7 +1445,7 @@ export class StpRecognizer{
    * A new task org relationship has been added
    * @param rel - Relationship added
    * @param isUndo - True if this is the result of an undo operation (of a to unit delete)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgRelationshipAdded:
     | ((rel: StpType.StpTaskOrgRelationship, isUndo: boolean, batchId?: string) => void)
@@ -1443,7 +1455,7 @@ export class StpRecognizer{
    * @param poid - Unique identifier of the modified to relationship
    * @param rel - Relationship added
    * @param isUndo - True if this is the result of an undo operation (of a to unit modify)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgRelationshipModified:
     | ((poid: string, rel: StpType.StpTaskOrgRelationship, isUndo: boolean, batchId?: string) => void)
@@ -1452,7 +1464,7 @@ export class StpRecognizer{
    * A task org relationship has been deleted
    * @param poid - Unique identifier of the deleted to relationship
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskOrgRelationshipDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
 
@@ -1469,7 +1481,7 @@ export class StpRecognizer{
    * @param poid - Unique identifier of the added task
    * @param alternates - Ranked collection of alternate task interpretations
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskAdded:
     | ((poid: string, alternates: StpType.StpTask[], taskPoids: string[], isUndo: boolean, batchId?: string) => void)
@@ -1479,7 +1491,7 @@ export class StpRecognizer{
    * @param poid - Unique identifier of the modified task
    * @param alternates - Ranked collection of alternate task interpretations
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskModified:
     | ((poid: string, alternates: StpType.StpTask[], taskPoids: string[], isUndo: boolean, batchId?: string) => void)
@@ -1488,41 +1500,45 @@ export class StpRecognizer{
    * A task has been deleted
    * @param poid - Unique identifier of the deleted task
    * @param isUndo - True if this is the result of an undo operation (of a to unit add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onTaskDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
   //#endregion
 
   //#region Handlers - COA operations
   /**
-   * A new COA has been added
+   * A new COA has been added.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid - Unique identifier of the added COA
    * @param coa - Definition of COA to add
    * @param isUndo - True if this is the result of an undo operation (of a to COA delete)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onCoaAdded:
     | ((poid: string, coa: StpType.StpCoa, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
-   * A COA has been modified
+   * A COA has been modified.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid - Unique identifier of the added COA
    * @param coa - Modified COA definition
    * @param isUndo - True if this is the result of an undo operation (of a to COA modify)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onCoaModified:
     | ((poid: string, coa: StpType.StpCoa, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
-   * A COA has been deleted
+   * A COA has been deleted.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param poid - Unique identifier of the added COA
    * @param isUndo - True if this is the result of an undo operation (of a to COA add)
-   * @param batchId - The change set (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
+   * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onCoaDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
   /**
-   * A new COA has become current/active
+   * A new COA has become current/active.
+   * Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported.
    * @param coa
    */
   onCoaSwitched: ((coa: StpType.StpCoa) => void) | undefined;
@@ -1562,17 +1578,17 @@ export class StpRecognizer{
   //#endregion
 
 
-  //#region Handlers - Change sets (STP-1265)
+  //#region Handlers - Batches (STP-1265)
   /**
-   * A change set began: one client's bulk operation (a load, an import, a reconcile, an approve all, ...) or a join's
+   * A batch began: one client's bulk operation (a load, an import, a reconcile, an approve all, ...) or a join's
    * replay. The object events that follow carry its `batchId`. Do not wait for it before handling objects: an engine
-   * that predates change sets sends none, and an object may arrive first.
+   * that predates batches sends none, and an object may arrive first.
    * @param batch - The batch: its id, kind, how many objects it expects (-1 when unknown), whether this client opened
    * it, and its origin ('live' or 'replay')
    */
   onBatchStarted: ((batch: StpType.StpBatchStarted) => void) | undefined;
   /**
-   * A change set ended. Its last object event has been sent before this.
+   * A batch ended. Its last object event has been sent before this.
    * @param batch - As BatchStarted, plus how it ended ('completed', 'cancelled', 'failed', or the engine's 'abandoned'
    * and 'expired') and how many object events the engine stamped with it
    */
@@ -1584,7 +1600,7 @@ export class StpRecognizer{
    * A task's history gained an entry: a change by any client through any path, or a comment
    * @param poid - The entry's unique id (what editTaskComment / deleteTaskComment name)
    * @param entry - The entry; entry.task names the task
-   * @param batchId - The change set the change arrived in; undefined outside one
+   * @param batchId - The batch the change arrived in; undefined outside one
    */
   onTaskEventAdded: ((poid: string, entry: StpType.StpTaskHistoryEntry, batchId?: string) => void) | undefined;
   /**
@@ -1592,7 +1608,7 @@ export class StpRecognizer{
    * tombstone (deleted set, no text)
    * @param poid - The entry's unique id
    * @param entry - The entry as it now stands
-   * @param batchId - The change set the change arrived in; undefined outside one
+   * @param batchId - The batch the change arrived in; undefined outside one
    */
   onTaskEventModified: ((poid: string, entry: StpType.StpTaskHistoryEntry, batchId?: string) => void) | undefined;
   //#endregion

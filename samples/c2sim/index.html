@@ -13,7 +13,7 @@
     <!-- STP SDK and plugins - needs to be added *after* the references to speech and communication services it may use -->
     <script type="application/javascript" src="../../dist/sketch-thru-plan-sdk-bundle-min.js"></script>
     <!-- To use the PUBLISHED package instead of this repo's local build:
-         <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@latest/dist/sketch-thru-plan-sdk-bundle-min.js"></script> -->
+         <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.6.17/dist/sketch-thru-plan-sdk-bundle-min.js"></script> -->
     <script type="application/javascript" src="../../plugins/speech/azurespeech-plugin/dist/stpazurespeech-bundle-min.js"></script>
     <!--<script type="application/javascript" src="../../plugins/speech/azurespeech-plugin/dist/stpazurespeech-bundle-min.js"></script>-->
     <link rel="stylesheet" href="styles.css">
@@ -46,11 +46,11 @@
       <label id="roleGroup" class="group" for="roles">Role:</label>
       <select name="roles" id="roles">
         <option value="none">None</option>
-        <option value="S2">S2</option>
-        <option value="S3">S3</option>
-        <option value="S4">S4</option>
-        <option value="FSO">FSO</option>
-        <option value="ENG">ENG</option>
+        <option value="s2">S2</option>
+        <option value="s3">S3</option>
+        <option value="s4">S4</option>
+        <option value="fso">FSO</option>
+        <option value="engineer">ENGINEER</option>
       </select>
       <br>
       <label id="c2simGroup"class="group">C2SIM:</label>
@@ -64,6 +64,7 @@
         <option value="Initialization">Initialization</option>
         <option value="Order">Order</option>
       </select>
+      <label title="Refuse a C2SIM document while a task graphic is still an unconfirmed placeholder (STP 5.12)"><input type="checkbox" id="refusePlaceholders">Refuse unconfirmed</label>
       <input type="button" id="import" value="Import" />
       <label id="importGroup" for="import">Initialization</label>
     </div>

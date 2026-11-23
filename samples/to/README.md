@@ -151,9 +151,6 @@ affects TO selection.
 If `S2` is selected, for example, a default `hostile` affiliation is assumed. 
 If there is a default hostile TO that has been previously set, that TO is automatically used.
 
-* The [coas](../coas) sample illustrates the association of specific TOs to a Course of Action (COA).
-TOs associated with a COA take precedence over the default.
-
 ### Handling TO switches
 
 The `onTaskOrgSwitched` event is triggered by the sdk whenever user actions (e.g. loading a different TO)

@@ -15,7 +15,7 @@ export interface StpMessage {
 }
 
 /**
- * A change set (STP-1265): one client's bulk operation, or a join's replay, as BatchStarted reports it
+ * A batch (STP-1265): one client's bulk operation, or a join's replay, as BatchStarted reports it
  */
 export interface StpBatchStarted {
   /** The id every object event of the batch carries as its trailing `batchId` */
@@ -70,7 +70,7 @@ export interface StpTaskHistoryItem {
 }
 
 /**
- * A change set's end (STP-1265), as BatchEnded reports it
+ * A batch's end (STP-1265), as BatchEnded reports it
  */
 export interface StpBatchEnded extends StpBatchStarted {
   /** How it ended: the client's 'completed', 'cancelled' or 'failed', or the engine's 'abandoned' (the requester
