@@ -15,7 +15,7 @@ This unified sample extends the quickstart demonstration of Sketch‑Thru‑Plan
 Three cdn libraries are referenced in [index.html](index.html):
 
 1. Microsoft's Cognitive Services Speech SDK – used by the Azure speech plugin
-1. STP SDK itself – available on jsDelivr
+1. STP SDK itself – loaded from this repository's build (`../../dist`); the commented-out jsDelivr tag, pinned to 0.6.17, is the published alternative (see the [samples README](../README.md#which-sdk-build-the-samples-load))
 1. The Azure Speech plugin
 
 The Vosk speech plugin and its WASM runtime (`vosk.js`) are loaded from the local plugin build output. The AWS speech plugin bundle is also loaded locally.

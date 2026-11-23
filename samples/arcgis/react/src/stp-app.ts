@@ -261,7 +261,7 @@ async function start() {
       selectedRole = roleSelect.value;
       roleSelect.value = 'none';
       log('Requesting role switch to ' + selectedRole);
-      const roleMap: Record<string, any> = { s2: StpSDK.StpRole.s2, s3: StpSDK.StpRole.s3, s4: StpSDK.StpRole.s4, fso: StpSDK.StpRole.fso, eng: StpSDK.StpRole.eng };
+      const roleMap: Record<string, any> = { s2: StpSDK.StpRole.s2, s3: StpSDK.StpRole.s3, s4: StpSDK.StpRole.s4, fso: StpSDK.StpRole.fso, engineer: StpSDK.StpRole.engineer };
       if (selectedRole && roleMap[selectedRole]) {
         await stpsdk!.setCurrentRole(roleMap[selectedRole]);
       }

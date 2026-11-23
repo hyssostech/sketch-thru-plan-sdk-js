@@ -5,7 +5,7 @@ This sample adds role switching capabilities to the  [Scenario](../scenario) sam
 For Prerequisites, Script references and Configuration, see the [gmaps sample README](../gmaps/README.md).
 
 
-STP supports multiple roles - S2 (Intel), S3 (Operations), S4 (Logisitcs), Eng (Engineering), and FSO (Fires Support Officer). 
+STP supports multiple roles - S2 (Intel), S3 (Operations), S4 (Logisitcs), ENGINEER (Engineering), and FSO (Fires Support Officer). 
 Selecting a role causes the following effects:
 
 * A TO/ORBAT that matches the role's default affiliation (`hostile` for `S2`, `friend` for the rest) is loaded,
@@ -97,9 +97,14 @@ export enum StpRole {
   s3 = 'S3',
   s4 = 'S4',
   fso = 'FSO',
+  engineer = 'ENGINEER',
+  /** @deprecated Use StpRole.engineer - ENG is accepted by the engine as an alias of ENGINEER */
   eng = 'ENG'
 }
 ```
+
+The engine confirms a switch with `onRoleSwitched`, passing the role name in lower case
+(`s2`, `s3`, `s4`, `fso`, `engineer`), which is why the radio buttons' ids are the lower-case names.
 
 ### Handling Role switching notifications
 
