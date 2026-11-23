@@ -722,6 +722,7 @@ export class StpRecognizer{
    * before anything is applied. The load is not all-or-nothing: if the engine rejects an object, it stops there
    * and the call fails naming that object and those applied before it. Engines before STP-1090 cannot read
    * getCoaObjectSet output back; use importCoaContent with getCoaContent text there.
+   * Not supported in STP 5.12.
    * @param objects - Array of COA objects (StpCoa + symbols)
    * @param timeout - Optional timeout in seconds
    * @returns Imported COA's unique id
@@ -736,6 +737,7 @@ export class StpRecognizer{
    * Get COA content as an array of typed objects. Each object carries its content in PrologTerm, a string
    * holding the object's STP text, and the array can be passed as it is to importCoaFromObjectSet.
    * Engines before STP-1090 return PrologTerm as a nested array that no import reads back.
+   * Not supported in STP 5.12.
    * @param poid - COA's unique id
    * @param timeout - Optional timeout in seconds
    * @returns Array of COA objects
@@ -1132,6 +1134,7 @@ export class StpRecognizer{
    * With `coaPoid` the TO is tied to that one COA for the TO's affiliation: while that COA is
    * current it uses this TO instead of the affiliation default. Engines before STP-1077 refuse a
    * `coaPoid` with "per-COA task org is not supported yet".
+   * Not supported in STP 5.12.
    * @param toPoid - Unique id of the TO to set
    * @param coaPoid - Unique Id of the COA the TO is tied to; omit it to set the default for the
    *   TO's affiliation
@@ -1152,6 +1155,7 @@ export class StpRecognizer{
    * With a `coaPoid` the TO tied to that COA is cleared - for `affiliation`, or for every
    * affiliation when it is omitted - and the COA falls back to the affiliation default.
    * Engines before STP-1077 refuse a `coaPoid` with "per-COA task org is not supported yet".
+   * Not supported in STP 5.12.
    * @param target - `{ affiliation, coaPoid }`. `affiliation` is required when `coaPoid` is
    *   omitted. A plain string is taken as `coaPoid`, the form this method has always declared.
    * @param timeout - Optional timeout in seconds
@@ -1172,6 +1176,7 @@ export class StpRecognizer{
    * Unique ids (poids) are kept exactly as they are in the content - the COA definition's as well
    * as the individual symbols' - so the content is not used as a template.
    * Task org units and relationships are not part of COA content; see {@link importTaskOrgContent}.
+   * Not supported in STP 5.12.
    * @param content - Content to load, formatted as object_set([[element1], [element2], ...]) 
    * @param timeout - Optional timeout in seconds
    * @returns Imported COA's unique id
@@ -1185,6 +1190,7 @@ export class StpRecognizer{
   /**
    * Get a COA, with its units, graphics and tasks, as a multiline string ready to be persisted.
    * Task org units and relationships are not included; see {@link getTaskOrgContent}.
+   * Not supported in STP 5.12.
    * @param poid -COA's unique id
    * @param timeout - Optional timeout in seconds
    */
@@ -1197,7 +1203,8 @@ export class StpRecognizer{
   /**
    * Select the current COA - edits and data imports are made into this COA henceforth.
    * Resolves at once if the COA is already current; otherwise `onCoaSwitched` follows.
-   * A missing or blank poid is refused
+   * A missing or blank poid is refused.
+   * Not supported in STP 5.12.
    * @param poid - COA's unique id
    * @param timeout - Optional timeout in seconds
    */
@@ -1208,7 +1215,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Add a new COA to the scenario. The engine confirms with `onCoaAdded`
+   * Add a new COA to the scenario. The engine confirms with `onCoaAdded`.
+   * Not supported in STP 5.12.
    * @param coa - COA to add 
    */
   addCoa(coa: StpType.StpCoa) {
@@ -1218,7 +1226,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Update COA definition. The engine confirms with `onCoaModified`
+   * Update COA definition. The engine confirms with `onCoaModified`.
+   * Not supported in STP 5.12.
    * @param poid 
    * @param coa - updated COA
    */
@@ -1230,7 +1239,8 @@ export class StpRecognizer{
   }
 
   /**
-   * Delete COA from scenario. The engine confirms with `onCoaDeleted`
+   * Delete COA from scenario. The engine confirms with `onCoaDeleted`.
+   * Not supported in STP 5.12.
    * @param poid 
    */
   deleteCoa(poid: string) {
@@ -1495,7 +1505,8 @@ export class StpRecognizer{
 
   //#region Handlers - COA operations
   /**
-   * A new COA has been added
+   * A new COA has been added.
+   * Not supported in STP 5.12.
    * @param poid - Unique identifier of the added COA
    * @param coa - Definition of COA to add
    * @param isUndo - True if this is the result of an undo operation (of a to COA delete)
@@ -1505,7 +1516,8 @@ export class StpRecognizer{
     | ((poid: string, coa: StpType.StpCoa, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
-   * A COA has been modified
+   * A COA has been modified.
+   * Not supported in STP 5.12.
    * @param poid - Unique identifier of the added COA
    * @param coa - Modified COA definition
    * @param isUndo - True if this is the result of an undo operation (of a to COA modify)
@@ -1515,14 +1527,16 @@ export class StpRecognizer{
     | ((poid: string, coa: StpType.StpCoa, isUndo: boolean, batchId?: string) => void)
     | undefined;
   /**
-   * A COA has been deleted
+   * A COA has been deleted.
+   * Not supported in STP 5.12.
    * @param poid - Unique identifier of the added COA
    * @param isUndo - True if this is the result of an undo operation (of a to COA add)
    * @param batchId - The batch (STP-1265) the object arrived in, as BatchStarted named it; undefined outside one
    */
   onCoaDeleted: ((poid: string, isUndo: boolean, batchId?: string) => void) | undefined;
   /**
-   * A new COA has become current/active
+   * A new COA has become current/active.
+   * Not supported in STP 5.12.
    * @param coa
    */
   onCoaSwitched: ((coa: StpType.StpCoa) => void) | undefined;
