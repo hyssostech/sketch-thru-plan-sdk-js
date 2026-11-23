@@ -35,7 +35,7 @@ stpsdk.onBatchEnded = (batch) => {
 stpsdk.onSymbolAdded = (alternates, isUndo, batchId) => { /* ... */ };
 stpsdk.onSymbolModified = (poid, symbol, isUndo, batchId) => { /* ... */ };
 stpsdk.onSymbolDeleted = (poid, isUndo, batchId) => { /* ... */ };
-// ... and the same for tasks, task orgs, task org units and relationships, COAs and task history events
+// ... and the same for tasks, task orgs, task org units and relationships, and task history events
 ```
 
 Handle the object events as they come; do not wait for `onBatchStarted`. An engine that predates batches sends

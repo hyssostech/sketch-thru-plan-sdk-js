@@ -106,7 +106,6 @@ async function start(){
     stpsdk.onTaskOrgAdded = () => announced('TaskOrgAdded');
     stpsdk.onTaskOrgUnitAdded = () => announced('TaskOrgUnitAdded');
     stpsdk.onTaskOrgRelationshipAdded = () => announced('TaskOrgRelationshipAdded');
-    stpsdk.onCoaAdded = () => announced('CoaAdded');
 
     //#region Object-set actions
     const kindSelect = document.getElementById('kind');
@@ -119,10 +118,8 @@ async function start(){
             const kind = kindSelect.value;
             if (kind === 'scenario') {
                 objects = await stpsdk.getScenarioObjectSet();
-            } else if (kind === 'taskorg') {
-                objects = await stpsdk.getTaskOrgObjectSet(poidBox.value.trim());
             } else {
-                objects = await stpsdk.getCoaObjectSet(poidBox.value.trim());
+                objects = await stpsdk.getTaskOrgObjectSet(poidBox.value.trim());
             }
             objectsKind = kind;
             showObjects();
@@ -132,7 +129,7 @@ async function start(){
         }
     };
     // Load replaces the whole scenario, Import merges into it, Sync applies the differences.
-    // A task org or COA object set can only be imported
+    // A task org object set can only be imported
     document.getElementById('load').onclick = () => runLoad('load');
     document.getElementById('import').onclick = () => runLoad('import');
     document.getElementById('sync').onclick = () => runLoad('sync');
@@ -171,7 +168,7 @@ async function start(){
             log(phrases[0]);
         }
     }
-    // STP event to be communicated to user - refusals of fire-and-forget calls (AddCoa, UpdateCoa, ...) arrive here
+    // STP event to be communicated to user - refusals of fire-and-forget calls arrive here
     stpsdk.onStpMessage = (msg, level) => {
         if (level === 'Debug') return;
         // While a load runs, the engine also announces its report as an StpMessage - that is all a client
@@ -383,9 +380,6 @@ async function runLoad(op) {
         if (kind === 'taskorg') {
             const poid = await stpsdk.importTaskOrgFromObjectSet(toSend, timeout);
             outcome = { ok: true, text: "Task org imported: " + poid };
-        } else if (kind === 'coa') {
-            const poid = await stpsdk.importCoaFromObjectSet(toSend, timeout);
-            outcome = { ok: true, text: "COA imported: " + poid };
         } else if (op === 'load') {
             await stpsdk.loadNewScenarioFromObjectSet(toSend, timeout);
             outcome = { ok: true, text: "Scenario replaced" };

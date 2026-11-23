@@ -10,7 +10,7 @@ branch's `docs/articles/contract-name-mapping.md`; a .NET sample is listed when 
 "pending (STP-1802)" marks an item no .NET sample shows yet; "-" in the .NET SDK column means the .NET SDK has no member
 for it at that commit.
 
-77 methods and 36 events; 47 are shown in no JS sample,
+77 methods and 36 events; 52 are shown in no JS sample,
 42 in no .NET sample.
 
 ## Methods
@@ -64,10 +64,10 @@ for it at that commit.
 | SetRole | `StpRecognizer.setCurrentRole` | [arcgis/react](arcgis/react), [arcgis/ts](arcgis/ts), [c2sim](c2sim), [commands](commands), [roles](roles), [scenario](scenario), [session](session) | `SetRoleAsync` | C2SIMSample, RolesSample, SessionSample |  |
 | ConvertC2SIMContent | `IC2SIMProxy.convertC2SIMContent` | [arcgis/react](arcgis/react) (via importInitializationFromC2SIMServer), [arcgis/ts](arcgis/ts) (via importInitializationFromC2SIMServer), [c2sim](c2sim) (via importInitializationFromC2SIMServer) | `ConvertC2SIMContentAsync` | C2SIMSample |  |
 | GetC2SIMContent | `IC2SIMProxy.getC2SIMContent` | [arcgis/react](arcgis/react) (via exportPlanDataToC2SIMServer), [arcgis/ts](arcgis/ts) (via exportPlanDataToC2SIMServer), [c2sim](c2sim) (via exportPlanDataToC2SIMServer) | `GetC2SIMContentAsync` | C2SIMSample |  |
-| GetCoaObjectSet | `StpRecognizer.getCoaObjectSet` | [objectsets](objectsets) | `GetCoaObjectSetAsync` | pending (STP-1802) |  |
+| GetCoaObjectSet | `StpRecognizer.getCoaObjectSet` | **none** | `GetCoaObjectSetAsync` | pending (STP-1802) |  |
 | GetScenarioObjectSet | `StpRecognizer.getScenarioObjectSet` | [objectsets](objectsets) | `GetScenarioObjectSetContentAsync` | C2SIMSample, RolesSample, ScenarioSample, SessionSample, TaskOrgSample |  |
 | GetTaskOrgObjectSet | `StpRecognizer.getTaskOrgObjectSet` | [objectsets](objectsets) | `GetTaskOrgObjectSetAsync` | TaskOrgSample |  |
-| ImportCoaFromObjectSet | `StpRecognizer.importCoaFromObjectSet` | [objectsets](objectsets) | `ImportCoaAsync(ObjectSet)`, `ImportCoaAsync(ObjectSet, TimeSpan)` | pending (STP-1802) |  |
+| ImportCoaFromObjectSet | `StpRecognizer.importCoaFromObjectSet` | **none** | `ImportCoaAsync(ObjectSet)`, `ImportCoaAsync(ObjectSet, TimeSpan)` | pending (STP-1802) |  |
 | ImportPlanDataFromObjectSet | `StpRecognizer.importPlanDataFromObjectSet` | [objectsets](objectsets) | `ImportSTPDataAsync(ObjectSet)`, `ImportSTPDataAsync(ObjectSet, TimeSpan)` | ScenarioSample |  |
 | ImportTaskOrgFromObjectSet | `StpRecognizer.importTaskOrgFromObjectSet` | [objectsets](objectsets) | `ImportTaskOrgAsync(ObjectSet)`, `ImportTaskOrgAsync(ObjectSet, TimeSpan)` | TaskOrgSample |  |
 | LoadNewScenarioFromObjectSet | `StpRecognizer.loadNewScenarioFromObjectSet` | [objectsets](objectsets) | `LoadNewScenarioAsync(ObjectSet)`, `LoadNewScenarioAsync(ObjectSet, TimeSpan)` | ScenarioSample |  |
@@ -126,9 +126,9 @@ for it at that commit.
 | SymbolEdited | `StpRecognizer.onSymbolEdited` | [arcgis/react](arcgis/react), [arcgis/ts](arcgis/ts), [c2sim](c2sim), [commands](commands) | `OnSymbolEdited`, `OnSymbolEditedExt` | C2SIMSample, DotNetFrameworkSample, EditingSample, RolesSample, ScenarioSample, SessionSample, SpeechSample, TaskOrgSample, TaskingSample |  |
 | MapOperation | `StpRecognizer.onMapOperation` | [arcgis/react](arcgis/react), [arcgis/ts](arcgis/ts), [c2sim](c2sim), [commands](commands) | `OnMapOperation`, `OnMapOperationExt` | C2SIMSample, DotNetFrameworkSample, EditingSample, RolesSample, ScenarioSample, SessionSample, SpeechSample, TaskOrgSample, TaskingSample |  |
 | Command | `StpRecognizer.onCommand` | [arcgis/react](arcgis/react), [arcgis/ts](arcgis/ts), [c2sim](c2sim), [commands](commands) | `OnCommand`, `OnCommandExt` | C2SIMSample, EditingSample, RolesSample, ScenarioSample, SessionSample, SpeechSample, TaskOrgSample |  |
-| CoaAdded | `StpRecognizer.onCoaAdded` | [batches](batches), [objectsets](objectsets) | `OnCoaAdded`, `OnCoaAddedExt` | ScenarioSample |  |
-| CoaModified | `StpRecognizer.onCoaModified` | [batches](batches) | `OnCoaModified`, `OnCoaModifiedExt` | pending (STP-1802) |  |
-| CoaDeleted | `StpRecognizer.onCoaDeleted` | [batches](batches) | `OnCoaDeleted`, `OnCoaDeletedExt` | ScenarioSample |  |
+| CoaAdded | `StpRecognizer.onCoaAdded` | **none** | `OnCoaAdded`, `OnCoaAddedExt` | ScenarioSample |  |
+| CoaModified | `StpRecognizer.onCoaModified` | **none** | `OnCoaModified`, `OnCoaModifiedExt` | pending (STP-1802) |  |
+| CoaDeleted | `StpRecognizer.onCoaDeleted` | **none** | `OnCoaDeleted`, `OnCoaDeletedExt` | ScenarioSample |  |
 | CoaSwitched | `StpRecognizer.onCoaSwitched` | **none** | `OnCoaSwitched` | pending (STP-1802) |  |
 | RoleSwitched | `StpRecognizer.onRoleSwitched` | [arcgis/react](arcgis/react), [arcgis/ts](arcgis/ts), [c2sim](c2sim), [commands](commands), [roles](roles), [scenario](scenario), [session](session) | `OnRoleSwitched` | C2SIMSample, RolesSample, SessionSample |  |
 | BatchStarted | `StpRecognizer.onBatchStarted` | [batches](batches) | `OnBatchStarted` | ScenarioSample |  |

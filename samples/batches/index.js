@@ -137,9 +137,6 @@ async function start(){
     stpsdk.onTaskOrgRelationshipAdded = (rel, isUndo, batchId) => objectEvent("TaskOrgRelationshipAdded", rel?.poid, batchId);
     stpsdk.onTaskOrgRelationshipModified = (poid, rel, isUndo, batchId) => objectEvent("TaskOrgRelationshipModified", poid, batchId);
     stpsdk.onTaskOrgRelationshipDeleted = (poid, isUndo, batchId) => objectEvent("TaskOrgRelationshipDeleted", poid, batchId);
-    stpsdk.onCoaAdded = (poid, coa, isUndo, batchId) => objectEvent("CoaAdded", poid, batchId);
-    stpsdk.onCoaModified = (poid, coa, isUndo, batchId) => objectEvent("CoaModified", poid, batchId);
-    stpsdk.onCoaDeleted = (poid, isUndo, batchId) => objectEvent("CoaDeleted", poid, batchId);
     stpsdk.onTaskEventAdded = (poid, entry, batchId) => objectEvent("TaskEventAdded", poid, batchId);
     stpsdk.onTaskEventModified = (poid, entry, batchId) => objectEvent("TaskEventModified", poid, batchId);
     //#endregion
@@ -213,7 +210,7 @@ async function start(){
             log(phrases[0]);
         }
     }
-    // STP event to be communicated to user - refusals of fire-and-forget calls (AddCoa, UpdateCoa, ...) arrive here
+    // STP event to be communicated to user - refusals of fire-and-forget calls arrive here
     stpsdk.onStpMessage = (msg, level) => {
         if (level === 'Debug') return;
         log(msg, level);

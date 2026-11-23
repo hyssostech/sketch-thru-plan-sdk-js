@@ -15,7 +15,7 @@ Unified sample with adapter selection (Leaflet or Google Maps) for experimenting
 `refuseUnconfirmedPlaceholders` option
 * [Task history](taskhistory) - shows a task's history, follows it live and adds, edits and deletes comments (STP 5.12)
 * [Batches](batches) - shows which object events arrived together, as one batch (STP 5.12)
-* [Object sets](objectsets) - reads and writes scenarios, task orgs and COAs as object sets, with a load timeout and
+* [Object sets](objectsets) - reads and writes scenarios and task orgs as object sets, with a load timeout and
 the report STP gives when a load stops (STP 5.12)
 * [Symbol search](symbolsearch) - searches the symbol index from typed text; runs without STP against the contract's
 test index (STP 5.12)
@@ -48,7 +48,7 @@ npm start          # serves the repository root and opens samples/index.html
 Each sample's `index.html` carries, commented out, the jsDelivr tag for the published package, pinned to
 `sketch-thru-plan-sdk@0.6.17` - the first release with the 5.12 API. Swap the local tag for it once 0.6.17
 is published to use the CDN instead of a local build. Do not use `@latest` or an earlier version: 0.6.16
-and earlier implement an older contract and lack the 5.12 methods (for example `updateCoa`, the ENGINEER role
+and earlier implement an older contract and lack the 5.12 methods (for example `getTaskHistory`, the ENGINEER role
 and the `refuseUnconfirmedPlaceholders` C2SIM option).
 
 Note: All samples and quickstarts use `leaflet` as the default map adapter. To try Google Maps, see the [Basic](basic) sample.

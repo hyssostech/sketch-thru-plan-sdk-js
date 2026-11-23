@@ -1,6 +1,6 @@
 # Object sets sample
 
-Scenarios, task orgs and COAs can be read and written as **object sets**: JSON arrays of typed STP objects instead of
+Scenarios and task orgs can be read and written as **object sets**: JSON arrays of typed STP objects instead of
 text. This sample reads one, saves it to a file and sends it back - replacing the scenario, merging into it, or
 syncing the session - with a load timeout, and shows the report STP gives when a load is refused, stops part way or
 runs out of time.
@@ -14,7 +14,6 @@ loads this repository's build of the SDK; run `npm ci` and `npm run build:all` a
 ```javascript
 const scenario = await stpsdk.getScenarioObjectSet();
 const taskOrg = await stpsdk.getTaskOrgObjectSet(toPoid);
-const coa = await stpsdk.getCoaObjectSet(coaPoid);
 ```
 
 Each object carries its content in `PrologTerm`, a string holding the object's STP text. Send the array back as it
@@ -28,11 +27,10 @@ await stpsdk.loadNewScenarioFromObjectSet(objects, timeout);      // replace the
 await stpsdk.importPlanDataFromObjectSet(objects, timeout);       // merge into it
 await stpsdk.syncScenarioSessionFromObjectSet(objects, timeout);  // apply the differences
 const toPoid = await stpsdk.importTaskOrgFromObjectSet(objects, timeout);
-const coaPoid = await stpsdk.importCoaFromObjectSet(objects, timeout);
 ```
 
 The timeout bounds both the engine's load and this client's wait for the answer. While a load runs, the objects
-it applies are announced as ordinary events (`onSymbolAdded`, `onCoaAdded`, ...); the sample counts them.
+it applies are announced as ordinary events (`onSymbolAdded`, `onTaskOrgAdded`, ...); the sample counts them.
 
 ## The load report
 
