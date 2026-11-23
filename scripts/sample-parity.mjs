@@ -11,10 +11,11 @@
 // Each JS name is checked against the built type declarations (dist/sketch-thru-plan-sdk-bundle.d.ts), so run
 // `npm run build` first. A name the SDK does not declare stops the script: fix the mapping below, not the table.
 //
-// The .NET columns come from samples/parity-net.json, which --net extracts from the .NET repository's source: the
-// public SDK member that sends each wire method (or the handler that each event's subscription keys on), and the
-// .NET samples whose code calls or subscribes to it. The file records the .NET commit it was taken from, so the
-// table can be regenerated and checked without the clone.
+// The .NET columns come from samples/parity-net.json, which --net extracts from a clone of the .NET repository (the
+// 5.12 branch, claude/STP-1797-net-512-calls, until it merges): the .NET name of each item, per that clone's
+// docs/articles/contract-name-mapping.md, and the .NET samples whose code uses it. The file records the branch and
+// commit it was taken from, so the table can be regenerated and checked without the clone. Without the file the
+// table has the JS columns only.
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -61,71 +62,98 @@ const listFiles = (dir, keep, out = []) => {
 
 //#region .NET extraction (--net)
 /**
- * Read the .NET SDK and samples from a clone: for each contract method, the public members that send it (directly,
- * or through one other public member), and the samples that call them; for each event, the handler its subscription
- * keys on and the samples that subscribe to it
+ * Read the .NET names and samples from a clone of sketch-thru-plan-sdk-net. The .NET name of each contract item
+ * follows docs/articles/contract-name-mapping.md in that clone: a method is its wire name plus `Async` (or the plain
+ * name for a fire-and-forget call), an event is `On` plus its name (with the `Ext` twin that carries batchId),
+ * except for the calls that document lists. A name is kept only if the SDK source declares it. A .NET sample shows
+ * an item when its code calls the method or subscribes to the event; an `*FromObjectSet` overload counts only in a
+ * file that also uses `ObjectSet`, since the overload shares its name with the text-content call
  */
 function extractNet(netRoot) {
-  const sdkFiles = listFiles(join(netRoot, 'src'), (f) => f.endsWith('.cs'));
-  const sdk = sdkFiles.map((f) => readFileSync(f, 'utf8'));
-  // Public members, with their bodies (a body runs to the next public/private/internal/protected member)
-  const members = [];
-  for (const text of sdk) {
-    const decl = /\n\s*public\s+(?:static\s+|async\s+|override\s+|virtual\s+)*[\w<>\[\](),.? ]+?\s+(\w+)\s*\(/g;
-    const starts = [...text.matchAll(decl)];
-    starts.forEach((m, i) => {
-      if (/\bdelegate\b/.test(m[0])) return;
-      const end = i + 1 < starts.length ? starts[i + 1].index : text.length;
-      members.push({ name: m[1], body: text.slice(m.index, end) });
-    });
+  const mappingPath = join(netRoot, 'docs/articles/contract-name-mapping.md');
+  if (!existsSync(mappingPath)) {
+    console.error('--net: docs/articles/contract-name-mapping.md not found in the clone (use the 5.12 branch)');
+    process.exit(2);
   }
-  const sampleFiles = [
+  // The documented exceptions: | `Wire` | `Owner.Member(args)` ... |
+  const exceptions = {};
+  for (const m of readFileSync(mappingPath, 'utf8').matchAll(/^\|\s*`(\w+)`\s*\|\s*`(\w+)\.(\w+)(\([^)]*\))?`/gm)) {
+    exceptions[m[1]] = { owner: m[2], member: m[3], args: m[4] ?? '' };
+  }
+  // Public members and events the SDK declares
+  const sdkText = listFiles(join(netRoot, 'src'), (f) => f.endsWith('.cs')).map((f) => readFileSync(f, 'utf8')).join('\n');
+  const declaredNet = new Set([
+    ...[...sdkText.matchAll(/\bpublic\s+(?:static\s+|async\s+|override\s+|virtual\s+)*[\w<>\[\](),.? ]+?\s+(\w+)\s*\(/g)].map((m) => m[1]),
+    ...[...sdkText.matchAll(/\bpublic\s+event\s+[\w<>.]+\s+(\w+)\s*;/g)].map((m) => m[1]),
+  ]);
+  const sampleCode = [
     ...listFiles(join(netRoot, 'samples'), (f) => f.endsWith('.cs') && !/Designer\.cs$/.test(f)),
     ...listFiles(join(netRoot, 'quickstart'), (f) => f.endsWith('.cs') && !/Designer\.cs$/.test(f)),
-  ];
-  const sampleCode = sampleFiles.map((f) => {
+  ].map((f) => {
     const rel = relative(netRoot, f).split('\\').join('/');
     return { sample: rel.startsWith('quickstart/') ? 'quickstart' : rel.split('/')[1], text: readFileSync(f, 'utf8') };
   });
-  const used = (re) => [...new Set(sampleCode.filter((s) => re.test(s.text)).map((s) => s.sample))].sort();
+  const used = (test) => [...new Set(sampleCode.filter((s) => test(s.text)).map((s) => s.sample))].sort();
 
+  // Members that also have an ObjectSet overload, per the mapping
+  const objectSetOverloads = new Set(Object.values(exceptions).filter((e) => /ObjectSet/.test(e.args)).map((e) => e.member));
   const methods = {};
   for (const m of contract.methods) {
-    const wire = new RegExp(`(?:Send\\w*\\(|Method\\s*=\\s*)\\s*"${m.name}"`);
-    const direct = [...new Set(members.filter((x) => wire.test(x.body)).map((x) => x.name))];
-    const via = [...new Set(members
-      .filter((x) => !direct.includes(x.name) && direct.some((d) => new RegExp(`\\b${d}\\s*\\(`).test(x.body)))
-      .map((x) => x.name))];
-    const samples = used(new RegExp(`\\.(?:${direct.join('|') || '$^'})\\s*\\(`));
-    // Each sample that reaches it only through another member, with the members it uses
-    const viaSamples = [];
-    for (const v of via) {
-      for (const s of used(new RegExp(`\\.${v}\\s*\\(`))) {
-        if (samples.includes(s)) continue;
-        const entry = viaSamples.find((x) => x.sample === s) ?? viaSamples[viaSamples.push({ sample: s, via: [] }) - 1];
-        entry.via.push(v);
-      }
+    const ex = exceptions[m.name];
+    let owner = 'StpRecognizer';
+    let member;
+    let args = '';
+    if (ex) {
+      ({ owner, member, args } = ex);
+    } else if (declaredNet.has(m.name + 'Async')) {
+      member = m.name + 'Async';
+    } else if (declaredNet.has(m.name)) {
+      member = m.name;
     }
-    viaSamples.sort((a, b) => a.sample.localeCompare(b.sample));
-    methods[m.name] = { sdk: direct, via, samples, viaSamples };
+    if (!member || !declaredNet.has(member)) {
+      methods[m.name] = { sdk: [], samples: [] };
+      continue;
+    }
+    // The *FromObjectSet overloads share their name with the text-content call: tell the two apart by the type of
+    // the first argument (a variable declared as ObjectSet, or a new ObjectSet)
+    const wantsObjectSet = /ObjectSet/.test(args);
+    const shared = !wantsObjectSet && objectSetOverloads.has(member);
+    const shows = (t) => {
+      if (owner !== 'StpRecognizer') return new RegExp(`\\b${owner}\\b`).test(t) && new RegExp(`\\.${member}\\s*\\(`).test(t);
+      const firstArgs = [...t.matchAll(new RegExp(`\\.${member}\\s*\\(\\s*([^,)]*)`, 'g'))].map((c) => c[1].trim());
+      if (!firstArgs.length) return false;
+      if (!wantsObjectSet && !shared) return true;
+      const isObjectSet = (a) => /^new\s+ObjectSet\b/.test(a) || (/^\w+$/.test(a) && new RegExp(`\\bObjectSet\\s+${a}\\b`).test(t));
+      return firstArgs.some((a) => isObjectSet(a) === wantsObjectSet);
+    };
+    methods[m.name] = {
+      sdk: [`${owner === 'StpRecognizer' ? '' : owner + '.'}${member}${args}`],
+      samples: used(shows),
+    };
   }
-  // SearchSymbol is answered by the SDK, not sent: its member is SymbolSearch.Search
-  if (sdk.some((t) => /class SymbolSearch\b/.test(t) && /public IReadOnlyList<SymbolSearchResult> Search\(/.test(t))) {
-    methods.SearchSymbol = { sdk: ['SymbolSearch.Search'], via: [], samples: used(/\bSymbolSearch\b/), viaSamples: [] };
-  }
-
   const events = {};
-  const recognizer = sdk.join('\n');
   for (const e of contract['x-stpEvents']) {
-    const sub = recognizer.match(new RegExp(`if \\((On\\w+) != null[^)]*\\) solvables\\.Add\\("${e.name}"\\)`));
-    const handler = sub ? sub[1] : null;
-    events[e.name] = { sdk: handler ? [handler] : [], samples: handler ? used(new RegExp(`\\b${handler}\\s*\\+=`)) : [] };
+    const names = ['On' + e.name, 'On' + e.name + 'Ext'].filter((n) => declaredNet.has(n));
+    events[e.name] = {
+      sdk: names,
+      samples: names.length ? used((t) => new RegExp(`\\b(?:${names.join('|')})\\s*\\+=`).test(t)) : [],
+    };
   }
-  let commit = 'unknown';
-  try {
-    commit = execFileSync('git', ['-C', netRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-  } catch { /* not a git clone */ }
-  return { repo: 'hyssostech/sketch-thru-plan-sdk-net', commit, methods, events };
+  const git = (...a) => {
+    try {
+      return execFileSync('git', ['-C', netRoot, ...a], { encoding: 'utf8' }).trim();
+    } catch {
+      return 'unknown';
+    }
+  };
+  return {
+    repo: 'hyssostech/sketch-thru-plan-sdk-net',
+    branch: git('rev-parse', '--abbrev-ref', 'HEAD'),
+    commit: git('rev-parse', 'HEAD'),
+    mapping: 'docs/articles/contract-name-mapping.md',
+    methods,
+    events,
+  };
 }
 
 const netArg = process.argv.indexOf('--net');
@@ -143,7 +171,6 @@ const netSdk = (entry) => (entry?.sdk?.length ? entry.sdk.map((n) => `\`${n}\``)
 const netShown = (entry) => {
   const list = [
     ...(entry?.samples ?? []),
-    ...(entry?.viaSamples ?? []).map((s) => `${s.sample} (via ${s.via.join(', ')})`),
   ];
   return list.length ? list.join(', ') : NET_PENDING;
 };
@@ -210,20 +237,24 @@ if (problems.length) {
   process.exit(1);
 }
 
+// Without .NET data (no samples/parity-net.json) the table has the JS columns only
 const table = (kind) => [
-  `| Contract ${kind} | JS SDK | JS sample | .NET SDK | .NET sample | Note |`,
-  '|---|---|---|---|---|---|',
-  ...rows.filter((r) => r.kind === kind)
-    .map((r) => `| ${r.contract} | \`${r.js}\` | ${r.shown} | ${r.netSdk} | ${r.netShown} | ${r.note} |`),
+  net
+    ? `| Contract ${kind} | JS SDK | JS sample | .NET SDK | .NET sample | Note |\n|---|---|---|---|---|---|`
+    : `| Contract ${kind} | JS SDK | JS sample | Note |\n|---|---|---|---|`,
+  ...rows.filter((r) => r.kind === kind).map((r) => net
+    ? `| ${r.contract} | \`${r.js}\` | ${r.shown} | ${r.netSdk} | ${r.netShown} | ${r.note} |`
+    : `| ${r.contract} | \`${r.js}\` | ${r.shown} | ${r.note} |`),
 ].join('\n');
 const none = rows.filter((r) => r.shown === '**none**');
-const netNone = rows.filter((r) => r.netShown === NET_PENDING);
+const netNone = net ? rows.filter((r) => r.netShown === NET_PENDING) : [];
 const netSource = net
-  ? `The .NET columns are taken from [${net.repo}](https://github.com/${net.repo}) at commit \`${net.commit.slice(0, 12)}\`
-(\`samples/parity-net.json\`; refresh with \`--net <clone>\`): the public .NET member that sends the method, or the
-handler its event subscription keys on, and the .NET samples (\`samples/<name>\`, \`quickstart\`) that use it.
-"${NET_PENDING}" marks a capability no .NET sample shows yet.`
-  : 'No .NET data (samples/parity-net.json is missing; run with `--net <clone>`).';
+  ? `The .NET columns are taken from [${net.repo}](https://github.com/${net.repo}), branch \`${net.branch}\` at commit
+\`${net.commit.slice(0, 12)}\` (\`samples/parity-net.json\`; refresh with \`--net <clone>\`). The .NET names follow that
+branch's \`${net.mapping}\`; a .NET sample is listed when its code calls the method or subscribes to the event.
+"${NET_PENDING}" marks an item no .NET sample shows yet; "-" in the .NET SDK column means the .NET SDK has no member
+for it at that commit.`
+  : 'JS columns only: there is no .NET data (samples/parity-net.json is missing; run with `--net <clone>`).';
 const md = `# STP contract parity: methods and events in the JS and .NET SDKs and their samples
 
 Generated by \`node scripts/sample-parity.mjs\` from \`json-api/sketch-thru-plan-api.json\` (contract
@@ -232,8 +263,8 @@ the method or assigns the handler; "via" means a sample uses a higher-level SDK 
 
 ${netSource}
 
-${contract.methods.length} methods and ${contract['x-stpEvents'].length} events; ${none.length} are shown in no JS sample,
-${netNone.length} in no .NET sample.
+${contract.methods.length} methods and ${contract['x-stpEvents'].length} events; ${none.length} are shown in no JS sample${net ? `,
+${netNone.length} in no .NET sample` : ''}.
 
 ## Methods
 
@@ -254,5 +285,6 @@ if (process.argv.includes('--check')) {
   console.log('samples/PARITY.md is up to date');
 } else {
   writeFileSync(out, md);
-  console.log(`wrote samples/PARITY.md: ${rows.length} rows, ${none.length} in no JS sample, ${netNone.length} in no .NET sample`);
+  console.log(`wrote samples/PARITY.md: ${rows.length} rows, ${none.length} in no JS sample` +
+    (net ? `, ${netNone.length} in no .NET sample` : ' (JS columns only: no .NET data)'));
 }

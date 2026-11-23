@@ -1,12 +1,13 @@
 {
  "repo": "hyssostech/sketch-thru-plan-sdk-net",
- "commit": "e56509a70185bb8118c3917e5faf5cbc61afb711",
+ "branch": "claude/STP-1797-net-512-calls",
+ "commit": "0e1ecfd8ba8df8f823c7b8278e1bc97ee39ff719",
+ "mapping": "docs/articles/contract-name-mapping.md",
  "methods": {
   "SendPenDown": {
    "sdk": [
     "SendPenDown"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "EditingSample",
@@ -18,14 +19,12 @@
     "TaskOrgSample",
     "TaskingSample",
     "quickstart"
-   ],
-   "viaSamples": []
+   ]
   },
   "SendInk": {
    "sdk": [
     "SendInk"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "EditingSample",
@@ -37,35 +36,26 @@
     "TaskOrgSample",
     "TaskingSample",
     "quickstart"
-   ],
-   "viaSamples": []
+   ]
   },
   "SendSpeechRecognition": {
    "sdk": [
-    "SendSpeechRecognition",
-    "SendSpeechRecognitionExt"
+    "SendSpeechRecognition"
    ],
-   "via": [],
    "samples": [
     "SpeechSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "SendSimulatedSpeechRecognition": {
    "sdk": [
     "SendSimulatedSpeechRecognition"
    ],
-   "via": [
-    "Stop"
-   ],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "CreateNewScenario": {
    "sdk": [
     "CreateNewScenarioAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -74,14 +64,12 @@
     "SessionSample",
     "SpeechSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "LoadNewScenario": {
    "sdk": [
     "LoadNewScenarioAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -90,22 +78,18 @@
     "SessionSample",
     "SpeechSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "ImportPlanData": {
    "sdk": [
-    "ImportSTPDataAsync"
+    "ImportSTPDataAsync(string content)"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetScenarioContent": {
    "sdk": [
     "GetScenarioContentAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -114,14 +98,12 @@
     "SessionSample",
     "SpeechSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "JoinScenarioSession": {
    "sdk": [
     "JoinScenarioSessionAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -130,22 +112,18 @@
     "SessionSample",
     "SpeechSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "SyncScenarioSession": {
    "sdk": [
     "SyncScenarioSessionAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "HasActiveScenario": {
    "sdk": [
     "HasActiveScenarioAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -154,22 +132,18 @@
     "SessionSample",
     "SpeechSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "AddSymbol": {
    "sdk": [
     "AddSymbol"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "UpdateSymbol": {
    "sdk": [
     "UpdateSymbol"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "EditingSample",
@@ -180,14 +154,12 @@
     "SpeechSample",
     "TaskOrgSample",
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "DeleteSymbol": {
    "sdk": [
     "DeleteSymbol"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "EditingSample",
@@ -198,14 +170,12 @@
     "SpeechSample",
     "TaskOrgSample",
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "ChooseAlternate": {
    "sdk": [
     "ChooseAlternate"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "EditingSample",
@@ -216,141 +186,111 @@
     "SpeechSample",
     "TaskOrgSample",
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "ImportTaskOrgContent": {
    "sdk": [
     "ImportTaskOrgContentAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "RolesSample",
     "SessionSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "GetTaskOrgContent": {
    "sdk": [
     "GetTaskOrgContentAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "RolesSample",
     "SessionSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "SetDefaultTaskOrg": {
    "sdk": [
     "SetDefaultTaskOrgAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "RolesSample",
     "SessionSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "ResetDefaultTaskOrg": {
    "sdk": [
     "ResetDefaultTaskOrgAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "AddTaskOrg": {
    "sdk": [
     "AddTaskOrg"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "UpdateTaskOrg": {
    "sdk": [
     "UpdateTaskOrg"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "DeleteTaskOrg": {
    "sdk": [
     "DeleteTaskOrg"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "AddTaskOrgUnit": {
    "sdk": [
     "AddTaskOrgUnit"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "UpdateTaskOrgUnit": {
    "sdk": [
     "UpdateTaskOrgUnit"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "DeleteTaskOrgUnit": {
    "sdk": [
     "DeleteTaskOrgUnit"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "AddTaskOrgRelationship": {
    "sdk": [
     "AddTaskOrgRelationship"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "UpdateTaskOrgRelationship": {
    "sdk": [
     "UpdateTaskOrgRelationship"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "DeleteTaskOrgRelationship": {
    "sdk": [
     "DeleteTaskOrgRelationship"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "AddTask": {
    "sdk": [
     "AddTask"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "UpdateTask": {
    "sdk": [
     "UpdateTask"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -360,14 +300,12 @@
     "SpeechSample",
     "TaskOrgSample",
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "DeleteTask": {
    "sdk": [
     "DeleteTask"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -377,16 +315,12 @@
     "SpeechSample",
     "TaskOrgSample",
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "ConfirmTask": {
    "sdk": [
     "ConfirmTask"
    ],
-   "via": [
-    "SwitchRoleAndCoaAsync"
-   ],
    "samples": [
     "C2SIMSample",
     "ReactiveSample",
@@ -396,314 +330,186 @@
     "SpeechSample",
     "TaskOrgSample",
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "GetTaskHistory": {
-   "sdk": [],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "sdk": [
+    "GetTaskHistoryAsync"
+   ],
+   "samples": []
   },
   "AddTaskComment": {
-   "sdk": [],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "sdk": [
+    "AddTaskCommentAsync"
+   ],
+   "samples": []
   },
   "EditTaskComment": {
-   "sdk": [],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "sdk": [
+    "EditTaskCommentAsync"
+   ],
+   "samples": []
   },
   "DeleteTaskComment": {
-   "sdk": [],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "sdk": [
+    "DeleteTaskCommentAsync"
+   ],
+   "samples": []
   },
   "SetCoaTaskOrg": {
    "sdk": [
     "SetCoaTaskOrgAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "ResetCoaTaskOrg": {
    "sdk": [
     "ResetCoaTaskOrgAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "ImportCoaContent": {
    "sdk": [
     "ImportCoaContentAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetCoaContent": {
    "sdk": [
     "GetCoaContentAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SetCurrentCoa": {
    "sdk": [
     "SetCoaAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "AddCoa": {
    "sdk": [
     "AddCoa"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "UpdateCoa": {
    "sdk": [
     "UpdateCoa"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "DeleteCoa": {
    "sdk": [
-    "DeleteCoa",
     "DeleteCoaAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SetRole": {
    "sdk": [
     "SetRoleAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "RolesSample",
     "SessionSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "ConvertC2SIMContent": {
    "sdk": [
     "ConvertC2SIMContentAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetC2SIMContent": {
    "sdk": [
     "GetC2SIMContentAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "GetCoaObjectSet": {
    "sdk": [
     "GetCoaObjectSetAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetScenarioObjectSet": {
    "sdk": [
     "GetScenarioObjectSetContentAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "RolesSample",
     "ScenarioSample",
     "SessionSample",
     "TaskOrgSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "GetTaskOrgObjectSet": {
    "sdk": [
     "GetTaskOrgObjectSetAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "ImportCoaFromObjectSet": {
    "sdk": [
-    "ImportCoaAsync"
+    "ImportCoaAsync(ObjectSet)"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "ImportPlanDataFromObjectSet": {
    "sdk": [
-    "ImportSTPDataAsync"
+    "ImportSTPDataAsync(ObjectSet)"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "ImportTaskOrgFromObjectSet": {
    "sdk": [
-    "ImportTaskOrgAsync"
+    "ImportTaskOrgAsync(ObjectSet)"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "LoadNewScenarioFromObjectSet": {
    "sdk": [
-    "LoadNewScenarioAsync"
+    "LoadNewScenarioAsync(ObjectSet)"
    ],
-   "via": [],
-   "samples": [
-    "C2SIMSample",
-    "ReactiveSample",
-    "RolesSample",
-    "ScenarioSample",
-    "SessionSample",
-    "SpeechSample",
-    "TaskOrgSample"
-   ],
-   "viaSamples": []
+   "samples": []
   },
   "PullC2SIMInitialization": {
    "sdk": [
     "PullC2SIMInitializationAsync"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "PushC2SIMContent": {
    "sdk": [
     "PushC2SIMContentAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "Register": {
    "sdk": [
     "RegisterAsync"
    ],
-   "via": [
-    "ConnectAndRegisterAsync",
-    "RefreshSubscriptionsAsync",
-    "RegisterEventsAsync"
-   ],
-   "samples": [],
-   "viaSamples": [
-    {
-     "sample": "C2SIMSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "DotNetFrameworkSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "EditingSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "quickstart",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "ReactiveSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "RolesSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "ScenarioSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "SessionSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "SpeechSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "TaskingSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    },
-    {
-     "sample": "TaskOrgSample",
-     "via": [
-      "ConnectAndRegisterAsync"
-     ]
-    }
-   ]
+   "samples": []
   },
   "Request": {
    "sdk": [],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SyncScenarioSessionFromObjectSet": {
    "sdk": [
-    "SyncScenarioSessionAsync"
+    "SyncScenarioSessionAsync(ObjectSet)"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "ChangeTimeOut": {
    "sdk": [
     "ChangeTimeOut"
    ],
-   "via": [],
    "samples": [
     "C2SIMSample",
     "EditingSample",
@@ -715,148 +521,113 @@
     "TaskOrgSample",
     "TaskingSample",
     "quickstart"
-   ],
-   "viaSamples": []
+   ]
   },
   "ResetSegmentationTimeout": {
    "sdk": [
     "ResetSegmentationTimeout"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SetSpeechListening": {
    "sdk": [
     "SetSpeechListening"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "RecognizeNow": {
    "sdk": [
     "RecognizeNow"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SendListen": {
    "sdk": [
     "SendListen"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SendAudioCaptureState": {
    "sdk": [
     "SendAudioCaptureState"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "AdvertiseViewport": {
    "sdk": [
     "AdvertiseViewport"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SetAutoTasking": {
    "sdk": [
     "SetAutoTasking"
    ],
-   "via": [],
    "samples": [
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "ResetRole": {
    "sdk": [
     "ResetRole"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "UndoLastOp": {
    "sdk": [
     "UndoLastOp"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "ResetStpScenario": {
    "sdk": [
     "ResetStpScenarioAsync"
    ],
-   "via": [],
    "samples": [
     "TaskingSample"
-   ],
-   "viaSamples": []
+   ]
   },
   "GetActiveScenarioDescription": {
    "sdk": [
     "GetActiveScenarioDescriptionAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetAllObjects": {
    "sdk": [
     "RequestAllStpObjectsAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetDeletedObjects": {
    "sdk": [
     "RequestDeletedStpObjectsAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetPoidObject": {
    "sdk": [
     "RequestPoidObjectAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetScenarioTaskOrgList": {
    "sdk": [
     "GetScenarioTaskOrgsAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "GetTaskOrgObjects": {
    "sdk": [
     "GetTaskOrgObjectsAsync"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   },
   "SearchSymbol": {
    "sdk": [
     "SymbolSearch.Search"
    ],
-   "via": [],
-   "samples": [],
-   "viaSamples": []
+   "samples": []
   }
  },
  "events": {
@@ -903,7 +674,8 @@
   },
   "SymbolAdded": {
    "sdk": [
-    "OnSymbolAdded"
+    "OnSymbolAdded",
+    "OnSymbolAddedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -920,7 +692,8 @@
   },
   "SymbolModified": {
    "sdk": [
-    "OnSymbolModified"
+    "OnSymbolModified",
+    "OnSymbolModifiedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -937,7 +710,8 @@
   },
   "SymbolDeleted": {
    "sdk": [
-    "OnSymbolDeleted"
+    "OnSymbolDeleted",
+    "OnSymbolDeletedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -960,7 +734,8 @@
   },
   "TaskOrgAdded": {
    "sdk": [
-    "OnTaskOrgAdded"
+    "OnTaskOrgAdded",
+    "OnTaskOrgAddedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -971,7 +746,8 @@
   },
   "TaskOrgModified": {
    "sdk": [
-    "OnTaskOrgModified"
+    "OnTaskOrgModified",
+    "OnTaskOrgModifiedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -982,7 +758,8 @@
   },
   "TaskOrgDeleted": {
    "sdk": [
-    "OnTaskOrgDeleted"
+    "OnTaskOrgDeleted",
+    "OnTaskOrgDeletedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -993,7 +770,8 @@
   },
   "TaskOrgUnitAdded": {
    "sdk": [
-    "OnTaskOrgUnitAdded"
+    "OnTaskOrgUnitAdded",
+    "OnTaskOrgUnitAddedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1004,7 +782,8 @@
   },
   "TaskOrgUnitModified": {
    "sdk": [
-    "OnTaskOrgUnitModified"
+    "OnTaskOrgUnitModified",
+    "OnTaskOrgUnitModifiedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1015,7 +794,8 @@
   },
   "TaskOrgUnitDeleted": {
    "sdk": [
-    "OnTaskOrgUnitDeleted"
+    "OnTaskOrgUnitDeleted",
+    "OnTaskOrgUnitDeletedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1026,7 +806,8 @@
   },
   "TaskOrgRelationshipAdded": {
    "sdk": [
-    "OnTaskOrgRelationshipAdded"
+    "OnTaskOrgRelationshipAdded",
+    "OnTaskOrgRelationshipAddedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1037,7 +818,8 @@
   },
   "TaskOrgRelationshipModified": {
    "sdk": [
-    "OnTaskOrgRelationshipModified"
+    "OnTaskOrgRelationshipModified",
+    "OnTaskOrgRelationshipModifiedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1048,7 +830,8 @@
   },
   "TaskOrgRelationshipDeleted": {
    "sdk": [
-    "OnTaskOrgRelationshipDeleted"
+    "OnTaskOrgRelationshipDeleted",
+    "OnTaskOrgRelationshipDeletedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1070,7 +853,8 @@
   },
   "TaskAdded": {
    "sdk": [
-    "OnTaskAdded"
+    "OnTaskAdded",
+    "OnTaskAddedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1084,7 +868,8 @@
   },
   "TaskModified": {
    "sdk": [
-    "OnTaskModified"
+    "OnTaskModified",
+    "OnTaskModifiedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1098,7 +883,8 @@
   },
   "TaskDeleted": {
    "sdk": [
-    "OnTaskDeleted"
+    "OnTaskDeleted",
+    "OnTaskDeletedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1111,16 +897,21 @@
    ]
   },
   "TaskEventAdded": {
-   "sdk": [],
+   "sdk": [
+    "OnTaskEventAdded"
+   ],
    "samples": []
   },
   "TaskEventModified": {
-   "sdk": [],
+   "sdk": [
+    "OnTaskEventModified"
+   ],
    "samples": []
   },
   "SymbolEdited": {
    "sdk": [
-    "OnSymbolEdited"
+    "OnSymbolEdited",
+    "OnSymbolEditedExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1136,7 +927,8 @@
   },
   "MapOperation": {
    "sdk": [
-    "OnMapOperation"
+    "OnMapOperation",
+    "OnMapOperationExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1152,7 +944,8 @@
   },
   "Command": {
    "sdk": [
-    "OnCommand"
+    "OnCommand",
+    "OnCommandExt"
    ],
    "samples": [
     "C2SIMSample",
@@ -1166,19 +959,22 @@
   },
   "CoaAdded": {
    "sdk": [
-    "OnCoaAdded"
+    "OnCoaAdded",
+    "OnCoaAddedExt"
    ],
    "samples": []
   },
   "CoaModified": {
    "sdk": [
-    "OnCoaModified"
+    "OnCoaModified",
+    "OnCoaModifiedExt"
    ],
    "samples": []
   },
   "CoaDeleted": {
    "sdk": [
-    "OnCoaDeleted"
+    "OnCoaDeleted",
+    "OnCoaDeletedExt"
    ],
    "samples": []
   },
@@ -1199,11 +995,15 @@
    ]
   },
   "BatchStarted": {
-   "sdk": [],
+   "sdk": [
+    "OnBatchStarted"
+   ],
    "samples": []
   },
   "BatchEnded": {
-   "sdk": [],
+   "sdk": [
+    "OnBatchEnded"
+   ],
    "samples": []
   },
   "StpMessage": {
