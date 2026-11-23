@@ -11,6 +11,11 @@
   `setCurrentCoa`, `getCoaContent`, `importCoaContent`, `getCoaObjectSet`, `importCoaFromObjectSet`,
   `setCoaTaskOrg`, `resetCoaTaskOrg`, `onCoaAdded`, `onCoaModified`, `onCoaDeleted`, `onCoaSwitched`) stay, and
   their docs and contract descriptions say so; there is no COA sample
+- Contract descriptions (text only; contract stays 0.9.11, STP-1808): `AddSymbol` is for a sidc from the user's data,
+  a file or STP, passed as given, and says that a 2525C-only sidc is converted to 2525D;
+  `SendSimulatedSpeechRecognition` is the path for a symbol or task described in words; `SearchSymbol` names the
+  bridge's `/symbol-index.json` route, says its codes are a symbol type's template (default affiliation, echelon
+  00), and its refusal reads `symbol index not available: <source> (<reason>)`, a path or a URL
 - `onPenDown` is deprecated: it never fires, because STP sends no PenDown event. It is kept so that code that
   assigns it still compiles
 ## Version 0.6.17 - BREAKING: task enum values now match the wire

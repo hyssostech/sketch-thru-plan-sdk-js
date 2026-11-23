@@ -773,7 +773,7 @@
     },
     {
       "name": "SendSimulatedSpeechRecognition",
-      "description": "Send typed text as if a speech recognizer had heard it - the simplest way for a program to 'say' a phrase such as 'infantry platoon', with a SendInk stroke or on its own. Numbers and letters are converted server-side to spoken form (e.g. 'A 3 1' becomes 'alpha three one'); startTime defaults to now and the utterance is taken to last 0.5 s. Fire and forget: the engine sends no reply. SpeechParsed (to the caller) always follows, SpeechRecognized carries the phrase that integrated, and a recognized symbol or task arrives as SymbolAdded / TaskAdded. Text the grammar does not match gives SpeechParsed with no alternates and nothing else; missing text is silently ignored.",
+      "description": "Send typed text as if a speech recognizer had heard it - the simplest way for a program to 'say' a phrase such as 'infantry platoon', with a SendInk stroke or on its own. Use it when a symbol or task is described in words: send the phrase with SendPenDown and SendInk strokes for its place (a point, a line or an area outline), and STP produces the code and properties. For a symbol whose code is already in the user's data, use AddSymbol. Numbers and letters are converted server-side to spoken form (e.g. 'A 3 1' becomes 'alpha three one'); startTime defaults to now and the utterance is taken to last 0.5 s. Fire and forget: the engine sends no reply. SpeechParsed (to the caller) always follows, SpeechRecognized carries the phrase that integrated, and a recognized symbol or task arrives as SymbolAdded / TaskAdded. Text the grammar does not match gives SpeechParsed with no alternates and nothing else; missing text is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -2043,7 +2043,7 @@
     },
     {
       "name": "AddSymbol",
-      "description": "Create one symbol (a unit, tactical graphic or other 2525/APP-6 object) directly from a full definition, with no sketch or speech recognition - use it when the program already knows the symbol's sidc and location; to recognize what a user draws and says, use SendInk with speech instead. The engine assigns the poid and fills in the descriptions from the sidc. Fire and forget: the engine sends no reply; the result arrives as SymbolAdded (to every client, with the new poid), after an InkProcessed to the caller. A symbol without a valid sidc and location produces only InkProcessed and no symbol; a missing symbol is silently ignored. Needs an active scenario: with none the symbol is still created, but HasActiveScenario stays false.",
+      "description": "Create one symbol (a unit, tactical graphic or other 2525/APP-6 object) directly from a full definition, with no sketch or speech recognition. Use it when the sidc comes from the user's data, a file or STP (an existing object, SearchSymbol): a feed, rows with SIDCs, a copied symbol. Pass that sidc as given and do not compose one. For a symbol described in words ('a recon platoon at the bridge'), use SendSimulatedSpeechRecognition with SendPenDown and SendInk, and STP produces the code. The engine assigns the poid and fills in the descriptions from the sidc; a sidc given only in 2525C (charlie) is converted to 2525D (conversion goes C to D only). Fire and forget: the engine sends no reply; the result arrives as SymbolAdded (to every client, with the new poid), after an InkProcessed to the caller. A symbol without a valid sidc and location produces only InkProcessed and no symbol; a missing symbol is silently ignored. Needs an active scenario: with none the symbol is still created, but HasActiveScenario stays false.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -9552,7 +9552,7 @@
     },
     {
       "name": "SearchSymbol",
-      "description": "Find the symbols whose names or spoken phrases match a typed text (STP-1373), best first: what a symbol editor's search box or a type-and-sketch flow lists. Answered by the SDK itself from the symbol index it loads (sketch-thru-plan-symbol-index.schema.json; the index ships with STP, by default in its installation directory) - the engine never receives it, so it works offline and costs no round trip. Ranking, the same in every SDK, reproduces STP's own symbol search: the text's words (case ignored, stop words dropped) must all match a symbol's phrases, tried in passes - exactly, as prefixes, by stem (Snowball English), by stem prefix, then within edits - and the first pass that finds anything answers; a text whose words find nothing together is searched word by word and the results merged. Within a pass, results are ordered by a tf-idf relevance score over the phrases (the classic Lucene similarity STP's search uses), equal scores by key - except that an entry whose phrase is exactly the text (case and spacing ignored) ranks first. Each result names the gesture that places the symbol (a point, or a tactical graphic's line, area, arrow ...) and its default affiliation (hostile for the symbols users place as enemy by default); `speech` is the phrase that matched. No match, or a text of only stop words or spaces, answers []. Read-only.",
+      "description": "Find the symbols whose names or spoken phrases match a typed text (STP-1373), best first: what a symbol editor's search box or a type-and-sketch flow lists. Answered by the SDK itself from the symbol index it loads (sketch-thru-plan-symbol-index.schema.json). The index ships with STP, by default in its installation directory. A running STP's WebSockets bridge also serves it over HTTP at `/symbol-index.json` on the bridge's host and port (https for wss), and a client without a local install loads it from there. The engine never receives the call, so it costs no round trip. Ranking, the same in every SDK, reproduces STP's own symbol search: the text's words (case ignored, stop words dropped) must all match a symbol's phrases, tried in passes - exactly, as prefixes, by stem (Snowball English), by stem prefix, then within edits - and the first pass that finds anything answers; a text whose words find nothing together is searched word by word and the results merged. Within a pass, results are ordered by a tf-idf relevance score over the phrases (the classic Lucene similarity STP's search uses), equal scores by key - except that an entry whose phrase is exactly the text (case and spacing ignored) ranks first. Each result names the gesture that places the symbol (a point, or a tactical graphic's line, area, arrow ...) and its default affiliation (hostile for the symbols users place as enemy by default); `speech` is the phrase that matched. The codes are the symbol type's template (deltaSidc, and charlieSidc where a 2525C code exists, empty otherwise) with its default affiliation and echelon 00. They are not a finished symbol to complete by hand. To place a symbol described in words, use recognition (SendSimulatedSpeechRecognition with SendInk). No match, or a text of only stop words or spaces, answers []. Read-only.",
       "x-layer": "client",
       "x-stpSafety": "read",
       "x-stpEmits": [],
@@ -9587,10 +9587,10 @@
       },
       "x-stpEdgeCases": [
         {
-          "when": "the SDK has no symbol index (not installed, or the configured path does not exist or does not parse)",
+          "when": "the SDK has no symbol index (not installed; the configured path or URL does not exist, cannot be fetched or does not parse)",
           "outcome": "refused",
-          "message": "symbol index not available: <path> (<reason>)",
-          "note": "an error, never an empty result - [] would read as 'nothing matches'"
+          "message": "symbol index not available: <source> (<reason>)",
+          "note": "<source> is the path or URL the index was read from. An error, never an empty result - [] would read as 'nothing matches'"
         },
         {
           "when": "empty text, spaces, or only stop words",
