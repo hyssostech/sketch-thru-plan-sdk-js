@@ -19,7 +19,37 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
+
+// Reads the branch and commit of a checkout from its .git files, without running git
+// (a child process that resolves 'git' through PATH is a security hotspot).
+function gitHead(root) {
+  try {
+    let gitDir = join(root, '.git');
+    if (statSync(gitDir).isFile()) {
+      gitDir = resolve(root, readFileSync(gitDir, 'utf8').replace(/^gitdir:\s*/, '').trim());
+    }
+    const headText = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();
+    if (!headText.startsWith('ref: ')) return { branch: 'HEAD', commit: headText };
+    const ref = headText.slice(5);
+    const branch = ref.replace(/^refs\/heads\//, '');
+    const commonFile = join(gitDir, 'commondir');
+    const commonDir = existsSync(commonFile) ? resolve(gitDir, readFileSync(commonFile, 'utf8').trim()) : gitDir;
+    for (const dir of [gitDir, commonDir]) {
+      const loose = join(dir, ref);
+      if (existsSync(loose)) return { branch, commit: readFileSync(loose, 'utf8').trim() };
+    }
+    const packed = join(commonDir, 'packed-refs');
+    if (existsSync(packed)) {
+      for (const line of readFileSync(packed, 'utf8').split('\n')) {
+        const [sha, name] = line.split(' ');
+        if (name === ref) return { branch, commit: sha };
+      }
+    }
+    return { branch, commit: 'unknown' };
+  } catch {
+    return { branch: 'unknown', commit: 'unknown' };
+  }
+}
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Code-unit order, as a plain sort() gives, stated explicitly
@@ -170,17 +200,11 @@ function extractNet(netRoot) {
       samples: names.length ? used((t) => new RegExp(`\\b(?:${names.join('|')})\\s*\\+=`).test(t)) : [],
     };
   }
-  const git = (...a) => {
-    try {
-      return execFileSync('git', ['-C', netRoot, ...a], { encoding: 'utf8' }).trim();
-    } catch {
-      return 'unknown';
-    }
-  };
+  const head = gitHead(netRoot);
   return {
     repo: 'hyssostech/sketch-thru-plan-sdk-net',
-    branch: git('rev-parse', '--abbrev-ref', 'HEAD'),
-    commit: git('rev-parse', 'HEAD'),
+    branch: head.branch,
+    commit: head.commit,
     mapping: 'docs/articles/contract-name-mapping.md',
     methods,
     events,

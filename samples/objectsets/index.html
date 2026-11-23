@@ -31,17 +31,17 @@
     <div id="panel">
       <h3>Object set</h3>
       <p>
-        <select id="kind">
+        <select id="kind" aria-label="What to get">
           <option value="scenario">Scenario</option>
           <option value="taskorg">Task org (poid)</option>
         </select>
-        <input type="text" id="poid" size="22" placeholder="poid of the task org">
+        <input type="text" id="poid" size="22" placeholder="poid of the task org" aria-label="Task org poid">
         <input type="button" id="get" value="Get" />
       </p>
       <p id="held">0 objects</p>
       <p>
         <input type="button" id="download" value="Save to file" />
-        <input type="file" id="file" accept=".json,application/json">
+        <input type="file" id="file" accept=".json,application/json" aria-label="Object set file">
       </p>
       <h3>Send it back</h3>
       <p>

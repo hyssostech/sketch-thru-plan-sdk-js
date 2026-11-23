@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-let webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+let webSocketUrl  = "wss://<STP server/proxy_path>";// or "ws://<STP server>:<STP port>" for a local server without TLS
 // An invented index that ships with this repository's contract, for trying the search without STP.
 // Its symbols are made up (Zephyr, Zephyr Lance, ...): search for "zephyr"
 let indexUrl = "../../json-api/symbol-search/fixture-index.json";
