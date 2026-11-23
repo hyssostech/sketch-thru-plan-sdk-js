@@ -10800,7 +10800,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -10838,7 +10838,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -10869,7 +10869,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -10928,7 +10928,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -10966,7 +10966,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -10997,7 +10997,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11035,7 +11035,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11073,7 +11073,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11104,7 +11104,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11142,7 +11142,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11180,7 +11180,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11211,7 +11211,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11276,7 +11276,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11327,7 +11327,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11358,7 +11358,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11388,7 +11388,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) the change that produced the entry arrived in; null outside one.",
+          "description": "The batch (STP-1265) the change that produced the entry arrived in; null outside one.",
           "schema": {
             "type": [
               "string",
@@ -11418,7 +11418,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) the change that produced the entry arrived in; null outside one.",
+          "description": "The batch (STP-1265) the change that produced the entry arrived in; null outside one.",
           "schema": {
             "type": [
               "string",
@@ -11518,7 +11518,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11555,7 +11555,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11585,7 +11585,7 @@
         },
         {
           "name": "batchId",
-          "description": "The change set (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates change sets omits it.",
+          "description": "The batch (STP-1265) this object arrived in, as the BatchStarted that opened it named it; null outside one. An engine that predates batches omits it.",
           "schema": {
             "type": [
               "string",
@@ -11625,7 +11625,7 @@
     },
     {
       "name": "BatchStarted",
-      "description": "Emitted when a change set begins (STP-1265): one client's bulk operation (a load, an import, a reconcile with its stray deletes, a Confirm all, a multi-delete) or a join's local replay. Every object event it produces carries its batchId; a client can therefore tell a bulk arrival from a lone add without timing. Sent to every client of the session, the one that opened it included. Do not wait for it before handling objects: an engine that predates change sets sends none.",
+      "description": "Emitted when a batch begins (STP-1265): one client's bulk operation (a load, an import, a reconcile with its stray deletes, a Confirm all, a multi-delete) or a join's local replay. Every object event it produces carries its batchId; a client can therefore tell a bulk arrival from a lone add without timing. Sent to every client of the session, the one that opened it included. Do not wait for it before handling objects: an engine that predates batches sends none.",
       "params": [
         {
           "name": "batchId",
@@ -11670,7 +11670,7 @@
     },
     {
       "name": "BatchEnded",
-      "description": "Emitted when a change set ends (STP-1265), after its last object event. A client that held work for the batch (a pane refresh, a selection) runs it now. The engine ends a batch itself when its requester disconnects (abandoned) or it goes idle too long (expired).",
+      "description": "Emitted when a batch ends (STP-1265), after its last object event. A client that held work for the batch (a pane refresh, a selection) runs it now. The engine ends a batch itself when its requester disconnects (abandoned) or it goes idle too long (expired).",
       "params": [
         {
           "name": "batchId",

@@ -16,7 +16,7 @@ Unified sample with adapter selection (Leaflet or Google Maps) for experimenting
 * [COAs](coas) - lists, adds, renames, deletes and selects Courses of Action, exports and imports them, and ties a
 task org to a COA (STP 5.12 COA API)
 * [Task history](taskhistory) - shows a task's history, follows it live and adds, edits and deletes comments (STP 5.12)
-* [Change sets](changesets) - shows which object events arrived together, as one change set (STP 5.12)
+* [Batches](batches) - shows which object events arrived together, as one batch (STP 5.12)
 * [Object sets](objectsets) - reads and writes scenarios, task orgs and COAs as object sets, with a load timeout and
 the report STP gives when a load stops (STP 5.12)
 * [Symbol search](symbolsearch) - searches the symbol index from typed text; runs without STP against the contract's

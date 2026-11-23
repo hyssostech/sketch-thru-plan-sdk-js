@@ -73,7 +73,7 @@ async function start(){
     const userParm = urlParams.get('user');
     if (userParm) userName = userParm;
 
-    const appName = "SdkChangeSetSample";
+    const appName = "SdkBatchSample";
 
     // Create an STP connection object - using a websocket connection to STP's native pub/sub system
     const stpconn = new StpSDK.StpWebSocketsConnector(webSocketUrl);
@@ -84,10 +84,10 @@ async function start(){
 
     // Hook up to the events _before_ connecting, so that the correct message subscriptions can be identified
 
-    //#region Change sets
-    // A change set (batch) begins: one client's bulk operation - a load, an import, a sync, a join's replay,
+    //#region Batches
+    // A batch begins: one client's bulk operation - a load, an import, a sync, a join's replay,
     // a multi-delete ... Every object event it produces carries its batchId.
-    // Do not wait for BatchStarted before handling objects: an engine that predates change sets sends none,
+    // Do not wait for BatchStarted before handling objects: an engine that predates batches sends none,
     // and its object events carry no batchId
     stpsdk.onBatchStarted = (batch) => {
         batches.set(batch.batchId, { started: batch, events: [] });
@@ -95,7 +95,7 @@ async function start(){
             " isOwn=" + batch.isOwn + " origin=" + batch.origin);
         renderBatches();
     };
-    // The change set ended, after its last object event. Work held for the batch (a pane refresh, a selection,
+    // The batch ended, after its last object event. Work held for the batch (a pane refresh, a selection,
     // a map fit) runs now, once, instead of once per object
     stpsdk.onBatchEnded = (batch) => {
         const b = batches.get(batch.batchId) ?? { started: batch, events: [] };
@@ -107,7 +107,7 @@ async function start(){
     };
     //#endregion
 
-    //#region Object events - each carries the batchId of the change set it arrived in, or undefined outside one
+    //#region Object events - each carries the batchId of the batch it arrived in, or undefined outside one
     stpsdk.onSymbolAdded = (alternates, isUndo, batchId) => {
         objectEvent("SymbolAdded", alternates[0]?.poid, batchId);
         // A load or import re-sends objects this map may already show - replace rather than duplicate
@@ -144,18 +144,18 @@ async function start(){
     stpsdk.onTaskEventModified = (poid, entry, batchId) => objectEvent("TaskEventModified", poid, batchId);
     //#endregion
 
-    //#region Bulk operations that produce change sets
+    //#region Bulk operations that produce batches
     // Keep the scenario text so that Load/Import/Sync have something to send back
     let content = '';
     document.getElementById('save').onclick = async () => {
         try {
             content = await stpsdk.getScenarioContent();
-            log("Scenario content kept (" + content.length + " characters) - Load, Import or Sync it to see a change set");
+            log("Scenario content kept (" + content.length + " characters) - Load, Import or Sync it to see a batch");
         } catch (error) {
             log(error, 'Error');
         }
     };
-    // Replace the scenario: the engine resets it and sends every object again, as one change set (kind 'load')
+    // Replace the scenario: the engine resets it and sends every object again, as one batch (kind 'load')
     document.getElementById('load').onclick = async () => {
         if (!content) { log("Save first", "Error"); return; }
         try {
@@ -165,7 +165,7 @@ async function start(){
             log(error, 'Error');
         }
     };
-    // Merge the content into the scenario: one change set (kind 'import')
+    // Merge the content into the scenario: one batch (kind 'import')
     document.getElementById('import').onclick = async () => {
         if (!content) { log("Save first", "Error"); return; }
         try {
@@ -175,7 +175,7 @@ async function start(){
             log(error, 'Error');
         }
     };
-    // Bring the session in line with the content - only the differences arrive, as one change set
+    // Bring the session in line with the content - only the differences arrive, as one batch
     document.getElementById('sync').onclick = async () => {
         if (!content) { log("Save first", "Error"); return; }
         try {
@@ -185,7 +185,7 @@ async function start(){
             log(error, 'Error');
         }
     };
-    // Join replays the scenario's objects to this client as one change set with origin 'replay'
+    // Join replays the scenario's objects to this client as one batch with origin 'replay'
     document.getElementById('join').onclick = async () => {
         try {
             await stpsdk.joinScenarioSession();
@@ -356,8 +356,8 @@ function esc(text) {
 }
 //#endregion
 
-//#region Change set bookkeeping and display
-// Change sets by batchId, with the object events that arrived in each, and the events that arrived outside any
+//#region Batch bookkeeping and display
+// Batches by batchId, with the object events that arrived in each, and the events that arrived outside any
 const batches = new Map();
 const singles = [];
 
@@ -365,8 +365,8 @@ async function afterJoin() {
 }
 
 /**
- * Record an object event under its change set - or as a single edit when it carries no batchId
- * (a lone sketch or speech edit, or an engine that predates change sets)
+ * Record an object event under its batch - or as a single edit when it carries no batchId
+ * (a lone sketch or speech edit, or an engine that predates batches)
  */
 function objectEvent(name, poid, batchId) {
     if (batchId) {
