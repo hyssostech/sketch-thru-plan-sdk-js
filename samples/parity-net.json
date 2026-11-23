@@ -1,7 +1,7 @@
 {
  "repo": "hyssostech/sketch-thru-plan-sdk-net",
- "branch": "claude/STP-1797-net-512-calls",
- "commit": "0e1ecfd8ba8df8f823c7b8278e1bc97ee39ff719",
+ "branch": "claude/STP-1802-net-512-samples",
+ "commit": "4bd49a6c15d67a79d821819a4b9fbb4c3d9bfe4e",
  "mapping": "docs/articles/contract-name-mapping.md",
  "methods": {
   "SendPenDown": {
@@ -40,7 +40,8 @@
   },
   "SendSpeechRecognition": {
    "sdk": [
-    "SendSpeechRecognition"
+    "SendSpeechRecognition",
+    "SendSpeechRecognitionExt"
    ],
    "samples": [
     "SpeechSample"
@@ -68,7 +69,7 @@
   },
   "LoadNewScenario": {
    "sdk": [
-    "LoadNewScenarioAsync"
+    "LoadNewScenarioAsync(string)"
    ],
    "samples": [
     "C2SIMSample",
@@ -82,9 +83,11 @@
   },
   "ImportPlanData": {
    "sdk": [
-    "ImportSTPDataAsync(string content)"
+    "ImportSTPDataAsync(string)"
    ],
-   "samples": []
+   "samples": [
+    "C2SIMSample"
+   ]
   },
   "GetScenarioContent": {
    "sdk": [
@@ -116,7 +119,7 @@
   },
   "SyncScenarioSession": {
    "sdk": [
-    "SyncScenarioSessionAsync"
+    "SyncScenarioSessionAsync(string)"
    ],
    "samples": []
   },
@@ -225,7 +228,9 @@
    "sdk": [
     "ResetDefaultTaskOrgAsync"
    ],
-   "samples": []
+   "samples": [
+    "TaskOrgSample"
+   ]
   },
   "AddTaskOrg": {
    "sdk": [
@@ -336,25 +341,33 @@
    "sdk": [
     "GetTaskHistoryAsync"
    ],
-   "samples": []
+   "samples": [
+    "TaskingSample"
+   ]
   },
   "AddTaskComment": {
    "sdk": [
     "AddTaskCommentAsync"
    ],
-   "samples": []
+   "samples": [
+    "TaskingSample"
+   ]
   },
   "EditTaskComment": {
    "sdk": [
     "EditTaskCommentAsync"
    ],
-   "samples": []
+   "samples": [
+    "TaskingSample"
+   ]
   },
   "DeleteTaskComment": {
    "sdk": [
     "DeleteTaskCommentAsync"
    ],
-   "samples": []
+   "samples": [
+    "TaskingSample"
+   ]
   },
   "SetCoaTaskOrg": {
    "sdk": [
@@ -400,7 +413,8 @@
   },
   "DeleteCoa": {
    "sdk": [
-    "DeleteCoaAsync"
+    "DeleteCoaAsync",
+    "DeleteCoa"
    ],
    "samples": []
   },
@@ -418,7 +432,9 @@
    "sdk": [
     "ConvertC2SIMContentAsync"
    ],
-   "samples": []
+   "samples": [
+    "C2SIMSample"
+   ]
   },
   "GetC2SIMContent": {
    "sdk": [
@@ -450,34 +466,47 @@
    "sdk": [
     "GetTaskOrgObjectSetAsync"
    ],
-   "samples": []
+   "samples": [
+    "TaskOrgSample"
+   ]
   },
   "ImportCoaFromObjectSet": {
    "sdk": [
-    "ImportCoaAsync(ObjectSet)"
+    "ImportCoaAsync(ObjectSet)",
+    "ImportCoaAsync(ObjectSet, TimeSpan)"
    ],
    "samples": []
   },
   "ImportPlanDataFromObjectSet": {
    "sdk": [
-    "ImportSTPDataAsync(ObjectSet)"
+    "ImportSTPDataAsync(ObjectSet)",
+    "ImportSTPDataAsync(ObjectSet, TimeSpan)"
    ],
-   "samples": []
+   "samples": [
+    "ScenarioSample"
+   ]
   },
   "ImportTaskOrgFromObjectSet": {
    "sdk": [
-    "ImportTaskOrgAsync(ObjectSet)"
+    "ImportTaskOrgAsync(ObjectSet)",
+    "ImportTaskOrgAsync(ObjectSet, TimeSpan)"
    ],
-   "samples": []
+   "samples": [
+    "TaskOrgSample"
+   ]
   },
   "LoadNewScenarioFromObjectSet": {
    "sdk": [
-    "LoadNewScenarioAsync(ObjectSet)"
+    "LoadNewScenarioAsync(ObjectSet)",
+    "LoadNewScenarioAsync(ObjectSet, TimeSpan)"
    ],
-   "samples": []
+   "samples": [
+    "ScenarioSample"
+   ]
   },
   "PullC2SIMInitialization": {
    "sdk": [
+    "PullC2SIMInitializationContentAsync",
     "PullC2SIMInitializationAsync"
    ],
    "samples": [
@@ -488,13 +517,28 @@
    "sdk": [
     "PushC2SIMContentAsync"
    ],
-   "samples": []
+   "samples": [
+    "C2SIMSample"
+   ]
   },
   "Register": {
    "sdk": [
-    "RegisterAsync"
+    "RegisterAsync",
+    "ConnectAndRegisterAsync"
    ],
-   "samples": []
+   "samples": [
+    "C2SIMSample",
+    "DotNetFrameworkSample",
+    "EditingSample",
+    "ReactiveSample",
+    "RolesSample",
+    "ScenarioSample",
+    "SessionSample",
+    "SpeechSample",
+    "TaskOrgSample",
+    "TaskingSample",
+    "quickstart"
+   ]
   },
   "Request": {
    "sdk": [],
@@ -502,9 +546,12 @@
   },
   "SyncScenarioSessionFromObjectSet": {
    "sdk": [
-    "SyncScenarioSessionAsync(ObjectSet)"
+    "SyncScenarioSessionAsync(ObjectSet)",
+    "SyncScenarioSessionAsync(ObjectSet, TimeSpan)"
    ],
-   "samples": []
+   "samples": [
+    "ScenarioSample"
+   ]
   },
   "ChangeTimeOut": {
    "sdk": [
@@ -615,7 +662,9 @@
    "sdk": [
     "GetScenarioTaskOrgsAsync"
    ],
-   "samples": []
+   "samples": [
+    "TaskOrgSample"
+   ]
   },
   "GetTaskOrgObjects": {
    "sdk": [
@@ -627,7 +676,9 @@
    "sdk": [
     "SymbolSearch.Search"
    ],
-   "samples": []
+   "samples": [
+    "EditingSample"
+   ]
   }
  },
  "events": {
@@ -730,7 +781,9 @@
    "sdk": [
     "OnSymbolReport"
    ],
-   "samples": []
+   "samples": [
+    "C2SIMSample"
+   ]
   },
   "TaskOrgAdded": {
    "sdk": [
@@ -740,6 +793,7 @@
    "samples": [
     "C2SIMSample",
     "RolesSample",
+    "ScenarioSample",
     "SessionSample",
     "TaskOrgSample"
    ]
@@ -776,6 +830,7 @@
    "samples": [
     "C2SIMSample",
     "RolesSample",
+    "ScenarioSample",
     "SessionSample",
     "TaskOrgSample"
    ]
@@ -812,6 +867,7 @@
    "samples": [
     "C2SIMSample",
     "RolesSample",
+    "ScenarioSample",
     "SessionSample",
     "TaskOrgSample"
    ]
@@ -900,13 +956,17 @@
    "sdk": [
     "OnTaskEventAdded"
    ],
-   "samples": []
+   "samples": [
+    "TaskingSample"
+   ]
   },
   "TaskEventModified": {
    "sdk": [
     "OnTaskEventModified"
    ],
-   "samples": []
+   "samples": [
+    "TaskingSample"
+   ]
   },
   "SymbolEdited": {
    "sdk": [
@@ -962,7 +1022,9 @@
     "OnCoaAdded",
     "OnCoaAddedExt"
    ],
-   "samples": []
+   "samples": [
+    "ScenarioSample"
+   ]
   },
   "CoaModified": {
    "sdk": [
@@ -976,7 +1038,9 @@
     "OnCoaDeleted",
     "OnCoaDeletedExt"
    ],
-   "samples": []
+   "samples": [
+    "ScenarioSample"
+   ]
   },
   "CoaSwitched": {
    "sdk": [
@@ -998,13 +1062,17 @@
    "sdk": [
     "OnBatchStarted"
    ],
-   "samples": []
+   "samples": [
+    "ScenarioSample"
+   ]
   },
   "BatchEnded": {
    "sdk": [
     "OnBatchEnded"
    ],
-   "samples": []
+   "samples": [
+    "ScenarioSample"
+   ]
   },
   "StpMessage": {
    "sdk": [

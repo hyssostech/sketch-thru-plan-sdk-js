@@ -12,7 +12,7 @@
 // `npm run build` first. A name the SDK does not declare stops the script: fix the mapping below, not the table.
 //
 // The .NET columns come from samples/parity-net.json, which --net extracts from a clone of the .NET repository (the
-// 5.12 branch, claude/STP-1797-net-512-calls, until it merges): the .NET name of each item, per that clone's
+// 5.12 samples branch, claude/STP-1802-net-512-samples, until it merges): the .NET name of each item, per that clone's
 // docs/articles/contract-name-mapping.md, and the .NET samples whose code uses it. The file records the branch and
 // commit it was taken from, so the table can be regenerated and checked without the clone. Without the file the
 // table has the JS columns only.
@@ -64,10 +64,13 @@ const listFiles = (dir, keep, out = []) => {
 /**
  * Read the .NET names and samples from a clone of sketch-thru-plan-sdk-net. The .NET name of each contract item
  * follows docs/articles/contract-name-mapping.md in that clone: a method is its wire name plus `Async` (or the plain
- * name for a fire-and-forget call), an event is `On` plus its name (with the `Ext` twin that carries batchId),
- * except for the calls that document lists. A name is kept only if the SDK source declares it. A .NET sample shows
- * an item when its code calls the method or subscribes to the event; an `*FromObjectSet` overload counts only in a
- * file that also uses `ObjectSet`, since the overload shares its name with the text-content call
+ * name for a fire-and-forget call), an event is `On` plus its name, except for the calls that document lists.
+ * Every member that sends the item is listed: an event's `On<X>Ext` twin (which carries batchId), a fire-and-forget
+ * call and its `Async` pair, a method's `Ext` twin, and any other `*Async` member the mapping row names. A text call
+ * and its `*FromObjectSet` overload share a name, so the pair is split: each row lists the overloads it covers by
+ * parameter types (CancellationToken left out). A name is kept only if the SDK source declares it. A .NET sample
+ * shows an item when its code calls one of its members or subscribes to one of its events; for a split pair, the
+ * first argument decides which overload a call is (an ObjectSet variable, field, lambda parameter or new ObjectSet)
  */
 function extractNet(netRoot) {
   const mappingPath = join(netRoot, 'docs/articles/contract-name-mapping.md');
@@ -75,15 +78,26 @@ function extractNet(netRoot) {
     console.error('--net: docs/articles/contract-name-mapping.md not found in the clone (use the 5.12 branch)');
     process.exit(2);
   }
-  // The documented exceptions: | `Wire` | `Owner.Member(args)` ... |
+  // The documented exceptions: | `Wire` | `Owner.Member(args)` ... |, with any other member the row names
+  // (an older or convenience call that sends the same wire method, e.g. `RegisterAsync` / `ConnectAndRegisterAsync`)
   const exceptions = {};
-  for (const m of readFileSync(mappingPath, 'utf8').matchAll(/^\|\s*`(\w+)`\s*\|\s*`(\w+)\.(\w+)(\([^)]*\))?`/gm)) {
-    exceptions[m[1]] = { owner: m[2], member: m[3], args: m[4] ?? '' };
+  for (const line of readFileSync(mappingPath, 'utf8').split('\n')) {
+    const m = line.match(/^\|\s*`(\w+)`\s*\|\s*`(\w+)\.(\w+)(\([^)]*\))?`([^|]*)/);
+    if (!m) continue;
+    const also = [...m[5].matchAll(/`(?:\w+\.)?(\w+)`/g)].map((a) => a[1]).filter((a) => a !== m[3] && a.endsWith('Async'));
+    exceptions[m[1]] = { owner: m[2], member: m[3], args: m[4] ?? '', also };
   }
-  // Public members and events the SDK declares
+  // Public members and events the SDK declares, with the parameter types of each method overload
   const sdkText = listFiles(join(netRoot, 'src'), (f) => f.endsWith('.cs')).map((f) => readFileSync(f, 'utf8')).join('\n');
+  const overloads = {};
+  for (const m of sdkText.matchAll(/\bpublic\s+(?:static\s+|async\s+|override\s+|virtual\s+)*[\w<>\[\](),.? ]+?\s+(\w+)\s*\(([^)]*)\)/g)) {
+    // Parameter types, without the trailing CancellationToken every async call takes
+    const types = m[2].split(',').map((p) => p.trim().replace(/\s*=.*$/, '').split(/\s+/).slice(0, -1).join(' '))
+      .filter((t) => t && t !== 'CancellationToken');
+    (overloads[m[1]] ??= []).push(types);
+  }
   const declaredNet = new Set([
-    ...[...sdkText.matchAll(/\bpublic\s+(?:static\s+|async\s+|override\s+|virtual\s+)*[\w<>\[\](),.? ]+?\s+(\w+)\s*\(/g)].map((m) => m[1]),
+    ...Object.keys(overloads),
     ...[...sdkText.matchAll(/\bpublic\s+event\s+[\w<>.]+\s+(\w+)\s*;/g)].map((m) => m[1]),
   ]);
   const sampleCode = [
@@ -95,6 +109,18 @@ function extractNet(netRoot) {
   });
   const used = (test) => [...new Set(sampleCode.filter((s) => test(s.text)).map((s) => s.sample))].sort();
 
+  // An argument is an ObjectSet when it is a new ObjectSet, a variable or field declared as one, or the parameter of a
+  // lambda passed where a Func<ObjectSet, ...> / Action<ObjectSet, ...> is expected
+  const isObjectSet = (a, t) => /^new\s+ObjectSet\b/.test(a) ||
+    (/^\w+$/.test(a) && (new RegExp(`\\bObjectSet\\s+${a}\\b`).test(t) ||
+      (/\b(?:Func|Action)<ObjectSet\b/.test(t) && new RegExp(`\\(\\s*${a}\\s*[,)][^)]*\\)?\\s*=>|\\b${a}\\s*=>`).test(t))));
+  // A sample calls member; with kind 'string' or 'ObjectSet', only with a first argument of that kind
+  const calls = (member, kind) => (t) => {
+    const firstArgs = [...t.matchAll(new RegExp(`\\.${member}\\s*\\(\\s*([^,)]*)`, 'g'))].map((c) => c[1].trim());
+    if (!kind) return firstArgs.length > 0;
+    return firstArgs.some((a) => isObjectSet(a, t) === (kind === 'ObjectSet'));
+  };
+
   // Members that also have an ObjectSet overload, per the mapping
   const objectSetOverloads = new Set(Object.values(exceptions).filter((e) => /ObjectSet/.test(e.args)).map((e) => e.member));
   const methods = {};
@@ -103,8 +129,9 @@ function extractNet(netRoot) {
     let owner = 'StpRecognizer';
     let member;
     let args = '';
+    let also = [];
     if (ex) {
-      ({ owner, member, args } = ex);
+      ({ owner, member, args, also } = ex);
     } else if (declaredNet.has(m.name + 'Async')) {
       member = m.name + 'Async';
     } else if (declaredNet.has(m.name)) {
@@ -114,22 +141,24 @@ function extractNet(netRoot) {
       methods[m.name] = { sdk: [], samples: [] };
       continue;
     }
-    // The *FromObjectSet overloads share their name with the text-content call: tell the two apart by the type of
-    // the first argument (a variable declared as ObjectSet, or a new ObjectSet)
-    const wantsObjectSet = /ObjectSet/.test(args);
-    const shared = !wantsObjectSet && objectSetOverloads.has(member);
-    const shows = (t) => {
-      if (owner !== 'StpRecognizer') return new RegExp(`\\b${owner}\\b`).test(t) && new RegExp(`\\.${member}\\s*\\(`).test(t);
-      const firstArgs = [...t.matchAll(new RegExp(`\\.${member}\\s*\\(\\s*([^,)]*)`, 'g'))].map((c) => c[1].trim());
-      if (!firstArgs.length) return false;
-      if (!wantsObjectSet && !shared) return true;
-      const isObjectSet = (a) => /^new\s+ObjectSet\b/.test(a) || (/^\w+$/.test(a) && new RegExp(`\\bObjectSet\\s+${a}\\b`).test(t));
-      return firstArgs.some((a) => isObjectSet(a) === wantsObjectSet);
-    };
-    methods[m.name] = {
-      sdk: [`${owner === 'StpRecognizer' ? '' : owner + '.'}${member}${args}`],
-      samples: used(shows),
-    };
+    const prefix = owner === 'StpRecognizer' ? '' : owner + '.';
+    // The members that send this wire method: the fire-and-forget call and its Async pair, an Ext twin (the call
+    // with an extra leading argument), and the other members the mapping row names
+    const names = [...new Set([member, m.name, m.name + 'Async', m.name + 'Ext', ...also])].filter((n) => declaredNet.has(n));
+    // A text call and its *FromObjectSet twin share a name: split the overloads by the type of the first argument
+    const kind = /ObjectSet/.test(args) ? 'ObjectSet' : objectSetOverloads.has(member) ? 'string' : null;
+    const sdk = [];
+    for (const n of names) {
+      if (n === member && kind) {
+        const sigs = [...new Set((overloads[n] ?? []).filter((p) => p[0] === kind).map((p) => p.join(', ')))];
+        sdk.push(...(sigs.length ? sigs : [kind]).map((p) => `${prefix}${n}(${p})`));
+      } else {
+        sdk.push(prefix + n);
+      }
+    }
+    const shows = (t) => (owner === 'StpRecognizer' || new RegExp(`\\b${owner}\\b`).test(t)) &&
+      names.some((n) => calls(n, n === member ? kind : null)(t));
+    methods[m.name] = { sdk, samples: used(shows) };
   }
   const events = {};
   for (const e of contract['x-stpEvents']) {
