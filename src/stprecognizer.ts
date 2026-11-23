@@ -1313,6 +1313,8 @@ export class StpRecognizer{
    * A pen down action was performed by a user
    * @param time - Pen down time
    * @param coord - Pen down map coordinate
+   * @deprecated Never fires: STP sends no PenDown event (the contract has none), so the SDK never calls this
+   *   handler. Kept so that existing code that assigns it still compiles.
    */
   onPenDown: ((time: Date, coord: StpType.LatLon) => void) | undefined;
   //onPenUp: (time: Date, coord: LatLon) => void;
