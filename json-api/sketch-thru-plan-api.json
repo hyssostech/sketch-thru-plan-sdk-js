@@ -4786,7 +4786,7 @@
     },
     {
       "name": "SetCoaTaskOrg",
-      "description": "Not supported in STP 5.12. Choose the Task Organization (TO) used for COAs; take toPoid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. The binding is stored on the COA (friendTaskOrg, or hostileTaskOrg for a hostile TO), so it is saved and loaded with the scenario and the COA's content; CoaModified goes to every client, and each client whose current COA it is gets TaskOrgSwitched when its task org changes. Deleting the TO clears the binding (CoaModified), and the COA falls back to the default. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing. Engines before STP-1091 answer success to an unknown toPoid and change nothing.",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Choose the Task Organization (TO) used for COAs; take toPoid from GetScenarioTaskOrgList, TaskOrgAdded or ImportTaskOrgContent. Without coaPoid: makes the TO (toPoid) the default for its affiliation - exactly the same as SetDefaultTaskOrg with poid = toPoid. With coaPoid: ties the TO to that one COA for the TO's affiliation - while that COA is current it uses this TO instead of the affiliation default, and a later SetCoaTaskOrg for the same COA and affiliation replaces the binding. The binding is stored on the COA (friendTaskOrg, or hostileTaskOrg for a hostile TO), so it is saved and loaded with the scenario and the COA's content; CoaModified goes to every client, and each client whose current COA it is gets TaskOrgSwitched when its task org changes. Deleting the TO clears the binding (CoaModified), and the COA falls back to the default. An unknown coaPoid or toPoid, or a toPoid that is not a TO, is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing. Engines before STP-1091 answer success to an unknown toPoid and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -4903,7 +4903,7 @@
     },
     {
       "name": "ResetCoaTaskOrg",
-      "description": "Not supported in STP 5.12. Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg (friend, hostile or any; another value is refused). With coaPoid: removes the TO tied to that COA for affiliation (friend, hostile or any), or for every affiliation when affiliation is omitted or any, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. CoaModified goes to every client, and each client whose current COA it is gets TaskOrgSwitched when its task org changes. An unknown coaPoid is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Clear a Task Organization (TO) selection; the TO itself is not deleted. Without coaPoid: unsets the default TO for affiliation, which is then required - exactly the same as ResetDefaultTaskOrg (friend, hostile or any; another value is refused). With coaPoid: removes the TO tied to that COA for affiliation (friend, hostile or any), or for every affiliation when affiliation is omitted or any, so the COA falls back to the affiliation default; clearing a binding that does not exist succeeds. CoaModified goes to every client, and each client whose current COA it is gets TaskOrgSwitched when its task org changes. An unknown coaPoid is refused (success=false with the reason). Answers null on success; TaskOrgSwitched reports a change to the caller's current task org. Engines before STP-1077 refuse coaPoid with success=false, \"per-COA task org is not supported yet\", and change nothing.",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -5001,7 +5001,7 @@
     },
     {
       "name": "ImportCoaContent",
-      "description": "Not supported in STP 5.12. Load a COA and its units, graphics and tasks from STP object-set text, typically produced by GetCoaContent, into the active scenario. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the imported COA's poid (the poid of the coa object in the content); use it with SetCurrentCoa to work on the COA. Task-organization data is not part of COA content; load it with ImportTaskOrgContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Answers null for content without a coa object, and for blank content, which imports nothing. Malformed content is refused with the parse error.",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Load a COA and its units, graphics and tasks from STP object-set text, typically produced by GetCoaContent, into the active scenario. Poids are kept exactly as they are in the content: the content is not used as a template and no new ids are generated. Returns the imported COA's poid (the poid of the coa object in the content); use it with SetCurrentCoa to work on the COA. Task-organization data is not part of COA content; load it with ImportTaskOrgContent. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (fsdb_version 0) deletes that poid. Answers null for content without a coa object, and for blank content, which imports nothing. Malformed content is refused with the parse error.",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -5131,7 +5131,7 @@
     },
     {
       "name": "GetCoaContent",
-      "description": "Not supported in STP 5.12. Return a COA and its units, graphics and tasks as STP object-set text (object_set([...])), ready to be saved and later loaded back with ImportCoaContent. The text does NOT include task-organization units or relationships; save those separately with GetTaskOrgContent. Read-only: nothing changes and no event follows. Get the poid from CoaAdded or the ImportCoaContent result. An unknown poid returns an empty object_set([]); a missing poid returns the whole scenario instead of an error, so always send one.",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Return a COA and its units, graphics and tasks as STP object-set text (object_set([...])), ready to be saved and later loaded back with ImportCoaContent. The text does NOT include task-organization units or relationships; save those separately with GetTaskOrgContent. Read-only: nothing changes and no event follows. Get the poid from CoaAdded or the ImportCoaContent result. An unknown poid returns an empty object_set([]); a missing poid returns the whole scenario instead of an error, so always send one.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
@@ -5186,7 +5186,7 @@
     },
     {
       "name": "SetCurrentCoa",
-      "description": "Not supported in STP 5.12. Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Get the poid from CoaAdded or the ImportCoaContent result. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false). An unknown poid, or one that names a deleted COA or an object of another type, is refused at once; engines before STP-1091 refuse an unknown poid only after about 10 s ('the engine did not confirm within 10 s').",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Make a COA the current one. Sketch and speech recognition, edits and imports apply to the current COA from then on, so select the COA before working on it. Get the poid from CoaAdded or the ImportCoaContent result. Answers null on success. If the COA is already current the call succeeds immediately and nothing is emitted; otherwise the engine emits CoaSwitched with the newly current COA. A missing or blank poid is refused (success=false). An unknown poid, or one that names a deleted COA or an object of another type, is refused at once; engines before STP-1091 refuse an unknown poid only after about 10 s ('the engine did not confirm within 10 s').",
       "x-stpSafety": "write",
       "x-stpEmits": [
         {
@@ -5288,7 +5288,7 @@
     },
     {
       "name": "AddCoa",
-      "description": "Not supported in STP 5.12. Add a Course of Action (COA) - an alternative plan for one affiliation - to the active scenario. Use it to create a new, empty COA; its units, graphics and tasks are then drawn or spoken while it is current (see SetCurrentCoa), or come in with ImportCoaContent instead of this call. Fire and forget: there is no result. On success the engine emits CoaAdded with the COA's poid and definition; treat that event, not this call, as the confirmation. A missing coa is refused with an StpMessage; a coa that is not an object is silently ignored.",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Add a Course of Action (COA) - an alternative plan for one affiliation - to the active scenario. Use it to create a new, empty COA; its units, graphics and tasks are then drawn or spoken while it is current (see SetCurrentCoa), or come in with ImportCoaContent instead of this call. Fire and forget: there is no result. On success the engine emits CoaAdded with the COA's poid and definition; treat that event, not this call, as the confirmation. A missing coa is refused with an StpMessage; a coa that is not an object is silently ignored.",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -5376,7 +5376,7 @@
     },
     {
       "name": "UpdateCoa",
-      "description": "Not supported in STP 5.12. Change the definition of an existing COA (for example its name), identified by poid (from CoaAdded). Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state. A missing poid or coa, an unknown poid, or one that names a deleted COA or an object of another type, is refused with an StpMessage (engines before STP-1091 ignore an unknown poid).",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Change the definition of an existing COA (for example its name), identified by poid (from CoaAdded). Use it to edit the COA object itself, not its units, graphics or tasks - those have their own Update* methods. Fire and forget: there is no result. On success the engine emits CoaModified with the COA's new state. A missing poid or coa, an unknown poid, or one that names a deleted COA or an object of another type, is refused with an StpMessage (engines before STP-1091 ignore an unknown poid).",
       "x-stpSafety": "write",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -5477,7 +5477,7 @@
     },
     {
       "name": "DeleteCoa",
-      "description": "Not supported in STP 5.12. Delete a COA, identified by poid (from CoaAdded or the ImportCoaContent result), from the active scenario. Fire and forget: there is no result. On success the engine emits CoaDeleted to every client. The engine waits up to 10 s to confirm the delete: an unknown poid is refused after that wait with an StpMessage ('the engine did not confirm within 10 s'), and a missing poid at once.",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Delete a COA, identified by poid (from CoaAdded or the ImportCoaContent result), from the active scenario. Fire and forget: there is no result. On success the engine emits CoaDeleted to every client. The engine waits up to 10 s to confirm the delete: an unknown poid is refused after that wait with an StpMessage ('the engine did not confirm within 10 s'), and a missing poid at once.",
       "x-stpSafety": "destructive",
       "x-stpInform": true,
       "x-stpEmits": [
@@ -5966,7 +5966,7 @@
     },
     {
       "name": "GetCoaObjectSet",
-      "description": "Not supported in STP 5.12. Return the objects of one COA - the coa object with its units, tactical graphics and tasks - as a JSON array; the object-set form of GetCoaContent. The array is valid input for ImportCoaFromObjectSet as it is. Each object carries fsTYPE, poid, dbTimestamp, dbCreationTimestamp, dbVersion and Description, and its content in PrologTerm: a string holding the object's STP text, the same text GetCoaContent returns for it (for example [fsTYPE: coa,poid: id1Q1MT3LD4G16Q75ANN1HNRN2GU,fsdb_timestamp: '639273441310089207',fsdb_creation_timestamp: '639273441310089207',fsdb_version: vJTXMQ32SV2G1TS5XVNFSQTUFE,name: 'Alpha COA',type: friend,creator_role: 'S3']). The objects are free-form JSON: read the content from PrologTerm, not from the other fields. Read-only. An unknown poid returns []; a missing poid returns every object in the session, session state included. Engines before STP-1090 return PrologTerm as a nested array that no import reads back; with those, use GetCoaContent and ImportCoaContent instead.",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Return the objects of one COA - the coa object with its units, tactical graphics and tasks - as a JSON array; the object-set form of GetCoaContent. The array is valid input for ImportCoaFromObjectSet as it is. Each object carries fsTYPE, poid, dbTimestamp, dbCreationTimestamp, dbVersion and Description, and its content in PrologTerm: a string holding the object's STP text, the same text GetCoaContent returns for it (for example [fsTYPE: coa,poid: id1Q1MT3LD4G16Q75ANN1HNRN2GU,fsdb_timestamp: '639273441310089207',fsdb_creation_timestamp: '639273441310089207',fsdb_version: vJTXMQ32SV2G1TS5XVNFSQTUFE,name: 'Alpha COA',type: friend,creator_role: 'S3']). The objects are free-form JSON: read the content from PrologTerm, not from the other fields. Read-only. An unknown poid returns []; a missing poid returns every object in the session, session state included. Engines before STP-1090 return PrologTerm as a nested array that no import reads back; with those, use GetCoaContent and ImportCoaContent instead.",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [
@@ -6169,7 +6169,7 @@
     },
     {
       "name": "ImportCoaFromObjectSet",
-      "description": "Not supported in STP 5.12. Import a COA from a JSON array of STP objects; the object-set form of ImportCoaContent. Send the objects as GetCoaObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first coa object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout answers success false with the same kind of report: the objects applied, any rejected and skipped, the object in flight (sent with no reply yet - the engine may still apply and announce it) and those not sent; the report is also announced as StpMessage, which is all a client whose own timeout fired first receives (engines before STP-1095 answer \"The operation was canceled.\", naming nothing). Engines before STP-1090 refuse the verbatim GetCoaObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportCoaContent with GetCoaContent text instead. A missing objects is refused up front, naming the parameter (engines before STP-1095 answer \"Object reference not set to an instance of an object.\").",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Import a COA from a JSON array of STP objects; the object-set form of ImportCoaContent. Send the objects as GetCoaObjectSet returned them: each object's PrologTerm, the string holding its STP text, is its content, and typed fields sent beside it win over the text. Poids are kept exactly as they are in the objects; no new ids are generated. An object in the content whose poid already exists in the scenario REPLACES the resident object (its previous version stays in the undo history); objects not in the content are left alone, and a content object carrying the deletion version (dbVersion v0; such a marker needs no PrologTerm) deletes that poid - a poid the scenario never had too, which is not an error and is announced as deleted. Returns the poid of the first coa object (null when there is none; an empty array imports nothing). Refused before anything is applied, with the object named: an object without PrologTerm (a deletion marker aside), a PrologTerm in the array form older engines returned, PrologTerm text that is not an object, and an entry that is not an object (null, a string). The objects are applied one at a time, not all-or-nothing: when the engine rejects one, the load stops there and answers success false naming that object and why, the objects applied before it (they stay applied and were announced), any rejected and skipped on the way, and those not applied. A load cut off by the request timeout answers success false with the same kind of report: the objects applied, any rejected and skipped, the object in flight (sent with no reply yet - the engine may still apply and announce it) and those not sent; the report is also announced as StpMessage, which is all a client whose own timeout fired first receives (engines before STP-1095 answer \"The operation was canceled.\", naming nothing). Engines before STP-1090 refuse the verbatim GetCoaObjectSet output as unreadable (engines before STP-1088 never answer) and import objects without PrologTerm with empty fields; with those, use ImportCoaContent with GetCoaContent text instead. A missing objects is refused up front, naming the parameter (engines before STP-1095 answer \"Object reference not set to an instance of an object.\").",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -11493,7 +11493,7 @@
     },
     {
       "name": "CoaAdded",
-      "description": "Not supported in STP 5.12. Emitted after a COA has been added (AddCoa).",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Emitted after a COA has been added (AddCoa).",
       "params": [
         {
           "name": "poid",
@@ -11530,7 +11530,7 @@
     },
     {
       "name": "CoaModified",
-      "description": "Not supported in STP 5.12. Emitted after a COA's definition has been updated (UpdateCoa).",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Emitted after a COA's definition has been updated (UpdateCoa).",
       "params": [
         {
           "name": "poid",
@@ -11567,7 +11567,7 @@
     },
     {
       "name": "CoaDeleted",
-      "description": "Not supported in STP 5.12. Emitted after a COA has been deleted (DeleteCoa).",
+      "description": "Limited in STP 5.12: symbols and tasks are not assigned to a COA, so planning by COA is not supported. Emitted after a COA has been deleted (DeleteCoa).",
       "params": [
         {
           "name": "poid",

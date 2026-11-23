@@ -7,7 +7,7 @@
   argument) is now called "batches" in the docs, the JSDoc and the samples; the sample is `samples/batches`. The
   contract's descriptions say "batch" too (text only; contract stays 0.9.11). No API or wire name changed. The
   engine's "change set" (the MilTable symbol-set selection) is a different thing
-- COAs are not supported in STP 5.12. The COA calls and handlers (`addCoa`, `updateCoa`, `deleteCoa`,
+- COA calls exist for creating COAs and their task orgs, but in 5.12 symbols and tasks are not assigned to a COA, so planning by COA is not supported. The COA calls and handlers (`addCoa`, `updateCoa`, `deleteCoa`,
   `setCurrentCoa`, `getCoaContent`, `importCoaContent`, `getCoaObjectSet`, `importCoaFromObjectSet`,
   `setCoaTaskOrg`, `resetCoaTaskOrg`, `onCoaAdded`, `onCoaModified`, `onCoaDeleted`, `onCoaSwitched`) stay, and
   their docs and contract descriptions say so; there is no COA sample
