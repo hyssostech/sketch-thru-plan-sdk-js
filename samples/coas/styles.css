@@ -1,0 +1,80 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: sans-serif;
+    font-size: 13px;
+}
+#actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    overflow: hidden;
+    background-color: darkgrey;
+    border: 1px solid gray;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.group {
+    margin-left: 15px;
+}
+#messages {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    overflow: hidden;
+}
+/* Side panel with the sample's lists and its event log */
+#panel {
+    position: absolute;
+    top: 52px;
+    left: 0;
+    width: 420px;
+    bottom: 0;
+    overflow-y: auto;
+    border-right: 1px solid gray;
+    padding: 4px 8px;
+    box-sizing: border-box;
+}
+#panel h3 {
+    margin: 8px 0 4px 0;
+}
+#panel table {
+    width: 100%;
+    border-collapse: collapse;
+}
+#panel td, #panel th {
+    border-bottom: 1px solid #ddd;
+    padding: 2px 4px;
+    text-align: left;
+    vertical-align: top;
+}
+#panel tr.current {
+    background-color: #e0f0ff;
+    font-weight: bold;
+}
+#log {
+    font-family: monospace;
+    font-size: 11px;
+    white-space: pre-wrap;
+    background-color: #f6f6f6;
+    border: 1px solid #ddd;
+    max-height: 300px;
+    overflow-y: auto;
+}
+/* Always set the map height explicitly to define the size of the div
+* element that contains the map. */
+#map {
+    position: absolute;
+    top: 52px;
+    left: 420px;
+    right: 0;
+    bottom: 0;
+    cursor: crosshair;
+}

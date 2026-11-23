@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sketch-thru-Plan Browser App</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">  
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <!-- Renderers -->
+    <!-- Speech recognition -->
+    <script type="application/javascript" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@1.51.0/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js" integrity="sha384-M3ff7S+yGrJgt57GlKT5DSXOIH6BmWyNccNicmYs+IKE9j3IV0Mxjm2/CjqFdNez" crossorigin="anonymous"></script>
+    <!-- STP SDK and plugins - needs to be added *after* the references to speech and communication services it may use -->
+    <script type="application/javascript" src="../../dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <!-- To use the PUBLISHED package instead of this repo's local build:
+         <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.6.17/dist/sketch-thru-plan-sdk-bundle-min.js"></script> -->
+    <script type="application/javascript" src="../../plugins/speech/azurespeech-plugin/dist/stpazurespeech-bundle-min.js"></script>
+    <!--<script type="application/javascript" src="../../plugins/speech/azurespeech-plugin/dist/stpazurespeech-bundle-min.js"></script>-->
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="actions">
+      <label for="sessionId" class="group">Session:</label>
+      <input type="text" id="sessionId" placeholder="auto">
+      <input type="button" id="connect" value="Connect" />
+      <label class="group">Scenario:</label>
+      <input type="button" id="save" value="Save" />
+      <input type="button" id="load" value="Load" />
+      <input type="button" id="import" value="Import" />
+      <input type="button" id="sync" value="Sync" />
+      <input type="button" id="join" value="Join" />
+      <input type="button" id="clear" value="Clear log" class="group" />
+    </div>
+    <div id="messages"></div>
+    <div id="panel">
+      <h3>Change sets</h3>
+      <table>
+        <thead><tr><th>Kind / batchId</th><th>Events / expected</th><th>Status</th></tr></thead>
+        <tbody id="batchRows"></tbody>
+      </table>
+      <p>Single edits (no batchId): <span id="singles">0</span></p>
+      <h3>Events</h3>
+      <div id="log"></div>
+    </div>
+    <div id="map">Connect to load map...</div>
+    <script type="application/javascript" src="../../plugins/maps/leaflet/dist/leaflet-bundle-min.js"></script>
+    <script type="application/javascript" src="../../plugins/renderers/milsymjs/dist/jmsrenderer-bundle-min.js"></script>
+    <script src="index.js"></script>
+   </body>
+</html>

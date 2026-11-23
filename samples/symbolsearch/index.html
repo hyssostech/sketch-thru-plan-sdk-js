@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sketch-thru-Plan Browser App</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">  
+    <!-- STP SDK - symbol search runs in the SDK itself: no map, renderer or speech is needed -->
+    <script type="application/javascript" src="../../dist/sketch-thru-plan-sdk-bundle-min.js"></script>
+    <!-- To use the PUBLISHED package instead of this repo's local build:
+         <script src="https://cdn.jsdelivr.net/npm/sketch-thru-plan-sdk@0.6.17/dist/sketch-thru-plan-sdk-bundle-min.js"></script> -->
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="actions">
+      <label for="sessionId" class="group">Session:</label>
+      <input type="text" id="sessionId" placeholder="auto">
+      <input type="button" id="connect" value="Connect and load STP's index" />
+      <label for="indexUrl" class="group">or index URL:</label>
+      <input type="text" id="indexUrl" size="50">
+      <input type="button" id="loadUrl" value="Load" />
+    </div>
+    <div id="messages"></div>
+    <div id="search">
+      <label for="text">Search:</label>
+      <input type="text" id="text" size="40" placeholder="e.g. recon platoon" disabled>
+      <label for="maxResults">at most</label>
+      <input type="number" id="maxResults" value="20" min="1" style="width: 4em">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Matched phrase</th><th>Gesture</th><th>Default affiliation</th><th>2525D</th><th>2525C</th><th>Key</th><th>Score</th></tr>
+        </thead>
+        <tbody id="results"></tbody>
+      </table>
+    </div>
+    <script src="index.js"></script>
+   </body>
+</html>

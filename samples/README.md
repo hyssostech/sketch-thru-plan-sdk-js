@@ -11,10 +11,25 @@ Unified sample with adapter selection (Leaflet or Google Maps) for experimenting
 * [Scenario](scenario) - demonstrates management of scenario data
 * [Sessions](session) - demonstrates connection to STP server sessions
 * [Custom Commands](commands) - demonstrates the definition of custom commands
-* [C2SIM](c2sim) - demonstrates generation of C2SIM-compliant documents and server interaction
+* [C2SIM](c2sim) - demonstrates generation of C2SIM-compliant documents and server interaction, including the 5.12
+`refuseUnconfirmedPlaceholders` option
+* [COAs](coas) - lists, adds, renames, deletes and selects Courses of Action, exports and imports them, and ties a
+task org to a COA (STP 5.12 COA API)
+* [Task history](taskhistory) - shows a task's history, follows it live and adds, edits and deletes comments (STP 5.12)
+* [Change sets](changesets) - shows which object events arrived together, as one change set (STP 5.12)
+* [Object sets](objectsets) - reads and writes scenarios, task orgs and COAs as object sets, with a load timeout and
+the report STP gives when a load stops (STP 5.12)
+* [Symbol search](symbolsearch) - searches the symbol index from typed text; runs without STP against the contract's
+test index (STP 5.12)
 * [ArcGIS](arcgis) - variation of the [C2SIM](c2sim) sample that demonstrates the use of the ArcGIS map plugin, in two variations:
     * [TypeScript](arcgis/ts) - plain TypeScript app that replicates the [C2SIM](c2sim) functionality directly
     * [React](arcgis/react) - React app with some interface enhancements
+
+## STP 5.12 API coverage
+
+[PARITY.md](PARITY.md) lists every method and event of the STP contract, the JS SDK member that carries it and
+the samples that show it. It is generated from the contract: run `node scripts/sample-parity.mjs` at the
+repository root after changing a sample (`--check` reports whether it is out of date).
 
 ## Which SDK build the samples load
 

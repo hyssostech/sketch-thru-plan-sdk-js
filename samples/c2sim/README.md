@@ -213,6 +213,26 @@ export class StpC2SIMOptions {
 }
 ```
 
+### Refusing unconfirmed placeholders (STP 5.12)
+
+A task graphic that STP drew from no evidence, and that no one has since moved or given a confidence, is an
+unconfirmed placeholder. By default STP still produces the C2SIM document and only warns about such estimates in
+its log. With `refuseUnconfirmedPlaceholders` set, it refuses the document instead, so that guesses are not sent to
+C2 systems and simulators as if they were plans.
+
+The sample's **Refuse unconfirmed** checkbox sets the option on the proxy. The proxy sends its options with every
+call, so the change applies to the next export or import:
+
+```javascript
+const refuseCheckbox = document.getElementById('refusePlaceholders');
+refuseCheckbox.onchange = () => {
+    c2simProxy.options.refuseUnconfirmedPlaceholders = refuseCheckbox.checked;
+};
+```
+
+The option can also be given when the proxy is created:
+`stpsdk.createC2SIMProxy({ serverProtocol: '1.0.2', refuseUnconfirmedPlaceholders: true })`.
+
 ### Exporting the current scenario to C2 and Simulators connected to a C2SIM server
 
 The `exportPlanDataToC2SIMServer` retrieves the content of the current scenario in C2SIM-compliant format and 
