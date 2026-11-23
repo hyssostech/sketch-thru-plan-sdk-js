@@ -28,8 +28,10 @@ test index (STP 5.12)
 ## STP 5.12 API coverage
 
 [PARITY.md](PARITY.md) lists every method and event of the STP contract, the JS SDK member that carries it and
-the samples that show it. It is generated from the contract: run `node scripts/sample-parity.mjs` at the
-repository root after changing a sample (`--check` reports whether it is out of date).
+the JS samples that show it, and the same for the .NET SDK and its samples. It is generated from the contract: run
+`node scripts/sample-parity.mjs` at the repository root after changing a sample (`--check` reports whether it is
+out of date). The .NET columns come from `samples/parity-net.json`; refresh it with
+`node scripts/sample-parity.mjs --net <path to a clone of sketch-thru-plan-sdk-net>`.
 
 ## Which SDK build the samples load
 

@@ -125,6 +125,26 @@ async function start(){
         logEvent("CoaSwitched " + (coa?.poid ? coa.poid + " '" + coa.name + "'" : "(none)"));
         renderCoas();
     };
+    // The task org in force changed. Switching to a COA that has its own task org (setCoaTaskOrg) brings that task
+    // org in; switching to one without brings back the default for the affiliation
+    stpsdk.onTaskOrgSwitched = (taskOrg) => {
+        currentTaskOrg = taskOrg?.poid ? taskOrg : undefined;
+        logEvent("TaskOrgSwitched " + (taskOrg?.poid ? taskOrg.poid + " '" + taskOrg.name + "' (" + taskOrg.affiliation + ")" : "(none)"));
+        renderTaskOrgs();
+    };
+    // Keep the list of task orgs to choose from
+    stpsdk.onTaskOrgAdded = (taskOrg, isUndo) => {
+        if (taskOrg?.poid) taskOrgs.set(taskOrg.poid, taskOrg);
+        renderTaskOrgs();
+    };
+    stpsdk.onTaskOrgModified = (poid, taskOrg, isUndo) => {
+        taskOrgs.set(poid, taskOrg);
+        renderTaskOrgs();
+    };
+    stpsdk.onTaskOrgDeleted = (poid, isUndo) => {
+        taskOrgs.delete(poid);
+        renderTaskOrgs();
+    };
     // The role (and with it the COA the role works on) changed
     stpsdk.onRoleSwitched = (role) => {
         logEvent("RoleSwitched " + (role ?? "(reset)"));
@@ -331,7 +351,45 @@ async function refreshCoas() {
             coas.set(obj.poid, obj);
         }
     }
-    log("Scenario has " + coas.size + " COA(s)");
+    // The task orgs that can be tied to a COA
+    taskOrgs.clear();
+    for (const to of await stpsdk.getScenarioTaskOrgList() ?? []) {
+        if (to?.poid) taskOrgs.set(to.poid, to);
+    }
+    log("Scenario has " + coas.size + " COA(s) and " + taskOrgs.size + " task org(s)");
+    renderCoas();
+    renderTaskOrgs();
+}
+
+// Task orgs known to this client, by poid, and the one in force
+const taskOrgs = new Map();
+let currentTaskOrg = undefined;
+
+/**
+ * Name a task org by its poid, when it is known
+ */
+function taskOrgName(poid) {
+    const to = taskOrgs.get(poid);
+    return to ? to.name + ' (' + to.affiliation + ')' : poid;
+}
+
+/**
+ * Show the task orgs to choose from and the one in force
+ */
+function renderTaskOrgs() {
+    const select = document.getElementById('taskOrgs');
+    const chosen = select.value;
+    select.innerHTML = '';
+    for (const [poid, to] of taskOrgs) {
+        const option = document.createElement('option');
+        option.value = poid;
+        option.textContent = to.name + ' (' + to.affiliation + ')';
+        select.appendChild(option);
+    }
+    if (taskOrgs.has(chosen)) select.value = chosen;
+    document.getElementById('currentTo').textContent = currentTaskOrg
+        ? currentTaskOrg.name + ' (' + currentTaskOrg.affiliation + ') ' + currentTaskOrg.poid
+        : 'none';
     renderCoas();
 }
 
@@ -352,7 +410,9 @@ function renderCoas() {
             '<td>' + esc(coa.name) + '<br><small>' + esc(poid) + '</small></td>' +
             '<td>' + esc(coa.affiliation) + '</td>' +
             '<td>' + esc(coa.creatorRole) +
-                (coa.friendTaskOrg || coa.hostileTaskOrg ? '<br><small>TO ' + esc(coa.friendTaskOrg ?? coa.hostileTaskOrg) + '</small>' : '') +
+                // The task orgs tied to this COA (setCoaTaskOrg); without one the COA uses the affiliation default
+                (coa.friendTaskOrg ? '<br><small>friend TO: ' + esc(taskOrgName(coa.friendTaskOrg)) + '</small>' : '') +
+                (coa.hostileTaskOrg ? '<br><small>hostile TO: ' + esc(taskOrgName(coa.hostileTaskOrg)) + '</small>' : '') +
             '</td>' +
             '<td>' +
                 '<button data-act="current">Current</button> ' +
@@ -444,11 +504,16 @@ async function importCoa() {
  * task org's affiliation
  */
 async function bindTaskOrg(poid) {
-    const toPoid = prompt("Poid of the task org to use with this COA");
-    if (!toPoid) return;
+    const toPoid = document.getElementById('taskOrgs').value;
+    if (!toPoid) {
+        log("The scenario has no task org to choose - load one first (see the Task Org sample)", "Error");
+        return;
+    }
     try {
         await stpsdk.setCoaTaskOrg(toPoid, poid);
-        log("Task org " + toPoid + " tied to COA " + poid);
+        // The binding is stored on the COA (friendTaskOrg / hostileTaskOrg): CoaModified brings it to every client,
+        // and a client whose current COA this is gets TaskOrgSwitched
+        log("Task org " + taskOrgName(toPoid) + " tied to COA " + poid + " - make the COA current to switch to it");
     } catch (error) {
         // Engines before STP-1077 refuse a per-COA task org
         log(error, 'Error');

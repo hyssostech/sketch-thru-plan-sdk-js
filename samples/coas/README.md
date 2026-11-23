@@ -70,11 +70,24 @@ const importedPoid = await stpsdk.importCoaContent(content);
 
 ### A task org for one COA
 
-`setCoaTaskOrg(toPoid, coaPoid)` ties a task org to one COA: while that COA is current it uses that task org instead
-of the default for the task org's affiliation. `resetCoaTaskOrg({ coaPoid })` clears it (the task org itself is
-not deleted). Engines before STP-1077 refuse a per-COA task org.
+Each affiliation has a default task org (ORBAT). A COA can have its own instead: `setCoaTaskOrg(toPoid, coaPoid)`
+ties a task org to that one COA, and while the COA is current it uses that task org instead of the default for the
+task org's affiliation. `resetCoaTaskOrg({ coaPoid })` clears it (the task org itself is not deleted) and the COA
+falls back to the default. Engines before STP-1077 refuse a per-COA task org.
+
+The binding is stored on the COA as `friendTaskOrg` / `hostileTaskOrg`, so `onCoaModified` brings it to every client
+and the sample shows it in the COA's row. Switching COA switches task org: when the task org in force changes, STP
+sends `onTaskOrgSwitched`, and the sample shows the task org in force under the table. To try it, load a task org
+(for example with the [Task Org sample](../to)), pick it in the list, press **Task org** on a COA, then make that
+COA and another one current in turn.
+
+Join does not replay task orgs, so the sample reads the list with `getScenarioTaskOrgList` and keeps it current with
+`onTaskOrgAdded` / `onTaskOrgModified` / `onTaskOrgDeleted`.
 
 ```javascript
-await stpsdk.setCoaTaskOrg(toPoid, coaPoid);
-await stpsdk.resetCoaTaskOrg({ coaPoid });
+const taskOrgs = await stpsdk.getScenarioTaskOrgList();        // poid, name, affiliation of each
+await stpsdk.setCoaTaskOrg(toPoid, coaPoid);                    // onCoaModified: coa.friendTaskOrg = toPoid
+await stpsdk.setCurrentCoa(coaPoid);                            // onCoaSwitched, then onTaskOrgSwitched
+stpsdk.onTaskOrgSwitched = (taskOrg) => { /* the task org now in force */ };
+await stpsdk.resetCoaTaskOrg({ coaPoid });                      // back to the affiliation default
 ```
