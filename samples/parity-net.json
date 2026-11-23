@@ -1,7 +1,7 @@
 {
  "repo": "hyssostech/sketch-thru-plan-sdk-net",
  "branch": "claude/STP-1802-net-512-samples",
- "commit": "4bd49a6c15d67a79d821819a4b9fbb4c3d9bfe4e",
+ "commit": "a33f92eef688eea0c3187e47bab79024af2437a0",
  "mapping": "docs/articles/contract-name-mapping.md",
  "methods": {
   "SendPenDown": {
