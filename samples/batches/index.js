@@ -8,7 +8,7 @@ let googleMapsKey = "<Enter your Google Maps API key here>";
 let mapCenter = { lat: 58.967774948, lon: 11.196062412 };
 let zoomLevel = 13; 
 
-let webSocketUrl  = "ws://<STP server>:<STP port>";//"wss://<STP server/proxy_path";
+let webSocketUrl  = "wss://<STP server/proxy_path>";// or "ws://<STP server>:<STP port>" for a local server without TLS
 // The person using this client. STP 5.12 records it as the author of this client's changes in the task history,
 // and a client that registers without one cannot add task comments
 let userName = "Sample user";
