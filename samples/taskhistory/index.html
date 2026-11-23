@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Sketch-thru-Plan Browser App</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
@@ -33,9 +33,15 @@
     <div id="messages"></div>
     <div id="panel">
       <h3>Tasks</h3>
-      <table><tbody id="taskRows"></tbody></table>
+      <table>
+        <thead><tr><th>Task</th><th>History</th></tr></thead>
+        <tbody id="taskRows"></tbody>
+      </table>
       <h3>History of the selected task (newest first)</h3>
-      <table><tbody id="historyRows"></tbody></table>
+      <table>
+        <thead><tr><th>When / kind</th><th>Author / source</th><th>Text</th><th>Actions</th></tr></thead>
+        <tbody id="historyRows"></tbody>
+      </table>
       <h3>Task history events</h3>
       <div id="log"></div>
     </div>

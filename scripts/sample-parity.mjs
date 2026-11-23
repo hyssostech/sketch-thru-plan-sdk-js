@@ -22,6 +22,8 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+// Code-unit order, as a plain sort() gives, stated explicitly
+const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const NET_PENDING = 'pending (STP-1802)';
 const netJsonPath = join(root, 'samples/parity-net.json');
 const contract = JSON.parse(readFileSync(join(root, 'json-api/sketch-thru-plan-api.json'), 'utf8'));
@@ -107,7 +109,7 @@ function extractNet(netRoot) {
     const rel = relative(netRoot, f).split('\\').join('/');
     return { sample: rel.startsWith('quickstart/') ? 'quickstart' : rel.split('/')[1], text: readFileSync(f, 'utf8') };
   });
-  const used = (test) => [...new Set(sampleCode.filter((s) => test(s.text)).map((s) => s.sample))].sort();
+  const used = (test) => [...new Set(sampleCode.filter((s) => test(s.text)).map((s) => s.sample))].sort(byCodeUnit);
 
   // An argument is an ObjectSet when it is a new ObjectSet, a variable or field declared as one, or the parameter of a
   // lambda passed where a Func<ObjectSet, ...> / Action<ObjectSet, ...> is expected
@@ -221,7 +223,7 @@ const code = SAMPLE_FILES.map((f) => ({ sample: sampleOf(f), text: readFileSync(
 const samplesUsing = (regexes) => {
   const found = new Set();
   for (const { sample, text } of code) if (regexes.some((r) => r.test(text))) found.add(sample);
-  return [...found].sort();
+  return [...found].sort(byCodeUnit);
 };
 
 // The member must be declared on its owner in the built types
