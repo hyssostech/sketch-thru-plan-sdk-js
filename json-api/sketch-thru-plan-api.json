@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.12"
+    "version": "0.9.13"
   },
   "methods": [
     {
@@ -9576,6 +9576,39 @@
       ],
       "examples": [
         {
+          "name": "GetNaming, a plan publish the store has not taken yet (illustrative)",
+          "description": "STP-1823: right after a plan publish, before the plan's store has taken it. stored is false until it has (the clients of that plan then get NamingChanged with stored true); plan_id names the loaded plan the layer belongs to; also_stored lists an earlier publish to the same plan that the store took after this one came in. Stamps and ids invented.",
+          "params": [],
+          "result": {
+            "name": "notice",
+            "value": {
+              "schema": 1,
+              "scope": "S1",
+              "stamp": "5d41402abc4b2a76",
+              "baseline_stamp": "9a0364b9e99bb480",
+              "layers": [
+                {
+                  "layer": "global",
+                  "stamp": "e3b0c44298fc1c14"
+                },
+                {
+                  "layer": "plan",
+                  "stamp": "7c211433f0207159",
+                  "stored": false,
+                  "plan_id": "0f3c9a52-6d1e-4b7a-9c2e-5a8d41f07b63",
+                  "also_stored": [
+                    "c4ca4238a0b92382"
+                  ]
+                }
+              ],
+              "word_lists": [],
+              "naming_rows": [],
+              "registrations": [],
+              "issues": []
+            }
+          }
+        },
+        {
           "name": "GetNaming (illustrative)",
           "description": "A session whose plan layer adds CAT to MISCELLANEOUSDESIGNATORS; the global layer is empty. Stamps invented.",
           "params": [],
@@ -9621,7 +9654,7 @@
     },
     {
       "name": "PublishNaming",
-      "description": "Publish a naming customization layer (STP-1706): target global (the server's layer, every session of this engine), plan (this session's scenario, saved and replicated with its plan data) or both. layer replaces the target layer whole. baseStamp is the target layer's stamp the edit started from (from GetNaming's or NamingChanged's layers; for both, the global and plan stamps joined by a comma; empty for a layer that did not exist): if someone published in between, nothing is stored and the answer is status stale_base with the current notice - reload, re-apply the edits and publish again. With checkOnly nothing is stored and effects say what would change (for global, how many sessions it reaches): show that to the author before a global publish. Blocked items are left out and listed in the notice's issues; the rest applies. A plan or both publish needs an active scenario in the session (one created or loaded): without one it is refused, checkOnly included, and nothing is stored; a global publish needs no scenario. Answers a NamingPublishResult; success is true for applied and check_only, false for stale_base and refused (the result still carries the status, message and notice). An applied publish that changes a session's effective convention sends NamingChanged to that session's clients - for global, to every session it reaches. Engines before STP-1706 answer No handler (success=false).",
+      "description": "Publish a naming customization layer (STP-1706): target global (the server's layer, in force in every plan loaded on this engine), plan (the loaded plan, saved and replicated with its plan data) or both. layer replaces the target layer whole. baseStamp is the target layer's stamp the edit started from (from GetNaming's or NamingChanged's layers; for both, the global and plan stamps joined by a comma; empty for a layer that did not exist): if someone published in between, nothing is stored and the answer is status stale_base with the current notice - reload, re-apply the edits and publish again. With checkOnly nothing is stored and effects say what would change (for global, how many distinct loaded plans it reaches): show that to the author before a global publish. Blocked items are left out and listed in the notice's issues; the rest applies. A plan or both publish needs a loaded plan (a scenario created or loaded): without one it is refused, checkOnly included, and nothing is stored; a global publish needs no scenario. Answers a NamingPublishResult; success is true for applied and check_only, false for stale_base and refused (the result still carries the status, message and notice). An applied publish that changes a loaded plan's effective convention sends NamingChanged to the clients of that plan - for global, to the clients of every loaded plan it reaches. Engines before STP-1706 answer No handler (success=false).",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -9714,16 +9747,16 @@
           "note": "result status refused; from the engine source, not a live capture"
         },
         {
-          "when": "target plan or both from a connection with no session",
+          "when": "target plan or both from a connection that routes to no loaded plan (its AUTH names no session)",
           "outcome": "refused",
-          "message": "a plan publish needs the session whose scenario holds the plan (AUTH has none)",
+          "message": "a plan publish needs a loaded plan, and no plan is loaded - nothing published",
           "note": "result status refused, effects empty, nothing stored; checked before the active-scenario and baseStamp checks; checkOnly gives the same refusal; from the engine source (STP-1706 P2), not a live capture"
         },
         {
-          "when": "target plan or both with no active scenario in the session (none created or loaded)",
+          "when": "target plan or both with no plan loaded (no scenario created or loaded)",
           "outcome": "refused",
-          "message": "a plan publish needs an active scenario in this session (none is created or loaded) - nothing published; create or load a scenario, or publish to global",
-          "note": "result status refused with the current notice, effects empty, nothing stored (operator ruling 283(a): the next scenario create or load would otherwise wipe it); checked after the no-session check and before baseStamp; checkOnly gives the same refusal; target global needs no scenario and applies. From the engine source and its tests (STP-1706 P2), not a live capture"
+          "message": "a plan publish needs a loaded plan (no scenario is created or loaded) - nothing published; create or load a scenario, or publish to global",
+          "note": "result status refused with the current notice, effects empty, nothing stored (operator ruling 283(a): the next scenario create or load would otherwise wipe it); checked after the no-loaded-plan check and before baseStamp; checkOnly gives the same refusal; target global needs no scenario and applies. From the engine source and its tests (STP-1706 P2), not a live capture"
         }
       ],
       "examples": [
@@ -9893,7 +9926,7 @@
             "value": {
               "status": "refused",
               "target": "plan",
-              "message": "a plan publish needs an active scenario in this session (none is created or loaded) - nothing published; create or load a scenario, or publish to global",
+              "message": "a plan publish needs a loaded plan (no scenario is created or loaded) - nothing published; create or load a scenario, or publish to global",
               "notice": {
                 "schema": 1,
                 "scope": "S1",
@@ -11482,7 +11515,7 @@
           },
           "sessions_reached": {
             "type": "integer",
-            "description": "global target only: how many sessions of this engine the change reaches; absent otherwise."
+            "description": "global target only: how many distinct loaded plans on this engine the change reaches - a plan loaded in several sessions counts once, a session with no plan loaded not at all (STP-1823); absent otherwise. The wire name is kept."
           }
         },
         "required": [

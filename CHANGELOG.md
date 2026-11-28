@@ -1,5 +1,8 @@
 # Sketch-Thru-Plan Change Log
 ## Unreleased
+- OpenRPC contract 0.9.13 (STP-1823): the PublishNaming refusal texts match the engine's reworded
+  ones (a loaded plan, not a session), `sessions_reached` counts distinct loaded plans (wire name
+  kept), and a GetNaming example carries `stored`, `plan_id` and `also_stored`.
 - OpenRPC contract: `NamingLayerStamp` gains two optional plan-layer fields, `publish_id` and
   `also_stored_publishes` (STP-1823). An engine names each plan publish, so a client waiting for
   the store matches its own publish by id, not by stamp, which another publish of the same names
