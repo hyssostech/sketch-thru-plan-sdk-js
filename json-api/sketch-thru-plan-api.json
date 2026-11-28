@@ -11088,11 +11088,26 @@
         "properties": {
           "layer": {
             "type": "string",
-            "description": "global (the server's layer), session (what refresh_wordlists submitted this engine session, not persisted) or plan (the session's scenario's layer)."
+            "description": "global (the server's layer), plan (the layer stored in the plan the caller's session has loaded) or session (the word lists refresh_wordlists submitted to this engine, not persisted; this layer is ruled for removal, so the scopes are global and plan)."
           },
           "stamp": {
             "type": "string",
             "description": "Sixteen lower-case hex digits identifying the layer's content as stored; the empty layer's stamp is e3b0c44298fc1c14. This is the baseStamp PublishNaming takes."
+          },
+          "stored": {
+            "type": "boolean",
+            "description": "Plan layer only, optional (STP-1823): true when the plan holds this layer; false after a publish until the plan's store has taken it (the plan's clients then get the notice again, same stamp, with true). Absent from every other layer and from every stamp."
+          },
+          "plan_id": {
+            "type": "string",
+            "description": "Plan layer only, optional (STP-1823): the identity of the plan the layer belongs to (its scenario's poid), empty when no plan is loaded. stored and also_stored are about that plan: two plans without names have the same stamp. Absent when the engine does not know it, from every other layer and from every stamp."
+          },
+          "also_stored": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Plan layer only, optional (STP-1823): the stamps of plan publishes to this plan that its store took after another publish had come in before the store answered - stored and superseded, not lost. Absent when there is none, and from every stamp."
           },
           "publish_id": {
             "type": "string",
