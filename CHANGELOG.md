@@ -228,6 +228,12 @@
   publish from a connection with no session; a global publish needs no scenario
 - Call-validation rules 1.0.12, checked against contract 0.9.12: a rule for `PublishNaming`, with no
   `activeScenario` precondition (the engine refuses a plan publish without one; a global publish needs none)
+- OpenRPC contract raised to 0.9.13 (STP-1658): naming has two layers, `global` and `plan`; the session layer and
+  `both` are gone. `PublishNaming` requires `target` `global` or `plan` (no default; `both` is refused), and a plan
+  publish with no plan loaded is refused with `no plan loaded - nothing published; ...`; a loaded plan with no naming
+  layer yet is an empty layer the first publish creates. `NamingChanged` / `NamingNotice` `scope` is `global` or
+  `plan` (no longer a session id); on the engine wire `naming_changed` carries AUTH, so a plan notice reaches only
+  its own session. `sessions_reached` is unchanged. Call-validation rules contract version 0.9.13; no rule changed
 - Change sets (STP-1265): new `onBatchStarted(batch)` and `onBatchEnded(batch)` handlers. The engine now groups a
   bulk operation's object events - a load, an import, a reconcile, a Confirm all, a multi-delete, a join's replay - into
   a change set, and every object handler (`onSymbolAdded` ... `onCoaDeleted`) receives the change set's id as a new

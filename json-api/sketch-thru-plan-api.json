@@ -2,7 +2,7 @@
   "openrpc": "2.0.0",
   "info": {
     "title": "Sketch-thru-Plan API",
-    "version": "0.9.12"
+    "version": "0.9.13"
   },
   "methods": [
     {
@@ -9552,7 +9552,7 @@
     },
     {
       "name": "GetNaming",
-      "description": "Return the effective naming convention of this client's session (STP-1706): the word lists, naming rows and registrations that differ from the shipped baseline - the full difference, not only the latest change - with its stamp, the stamps of the layers folded in (global, session, plan) and the conflict check's findings. Read it after connecting, and register NamingChanged to follow it. A client that derives anything from it (speech models, name suggestions) keys that by the stamp and redoes nothing while it is unchanged. The baseStamp a PublishNaming needs is the target layer's stamp from layers. Read-only. Engines before STP-1706 answer No handler (success=false).",
+      "description": "Return the effective naming convention of this client's session (STP-1706): the word lists, naming rows and registrations that differ from the shipped baseline - the full difference, not only the latest change - with its stamp, the stamps of the layers folded in (global, then plan) and the conflict check's findings. With a plan loaded in the session the notice is the plan's (scope plan, its plan layer included); with none it is the global one (scope global). Read it after connecting, and register NamingChanged to follow it. A client that derives anything from it (speech models, name suggestions) keys that by the stamp and redoes nothing while it is unchanged. The baseStamp a PublishNaming needs is the target layer's stamp from layers. Read-only. Engines before STP-1706 answer No handler (success=false).",
       "x-stpSafety": "read",
       "x-stpEmits": [],
       "params": [],
@@ -9583,7 +9583,7 @@
             "name": "notice",
             "value": {
               "schema": 1,
-              "scope": "S1",
+              "scope": "plan",
               "stamp": "5d41402abc4b2a76",
               "baseline_stamp": "9a0364b9e99bb480",
               "layers": [
@@ -9621,7 +9621,7 @@
     },
     {
       "name": "PublishNaming",
-      "description": "Publish a naming customization layer (STP-1706): target global (the server's layer, every session of this engine), plan (this session's scenario, saved and replicated with its plan data) or both. layer replaces the target layer whole. baseStamp is the target layer's stamp the edit started from (from GetNaming's or NamingChanged's layers; for both, the global and plan stamps joined by a comma; empty for a layer that did not exist): if someone published in between, nothing is stored and the answer is status stale_base with the current notice - reload, re-apply the edits and publish again. With checkOnly nothing is stored and effects say what would change (for global, how many sessions it reaches): show that to the author before a global publish. Blocked items are left out and listed in the notice's issues; the rest applies. A plan or both publish needs an active scenario in the session (one created or loaded): without one it is refused, checkOnly included, and nothing is stored; a global publish needs no scenario. Answers a NamingPublishResult; success is true for applied and check_only, false for stale_base and refused (the result still carries the status, message and notice). An applied publish that changes a session's effective convention sends NamingChanged to that session's clients - for global, to every session it reaches. Engines before STP-1706 answer No handler (success=false).",
+      "description": "Publish a naming customization layer (STP-1706): target global (the server's layer, every session of this engine) or plan (the plan loaded in this session, saved and replicated with its plan data); target is required - there is no default and no both (STP-1658). layer replaces the target layer whole. baseStamp is the target layer's stamp the edit started from (from GetNaming's or NamingChanged's layers; empty for a layer that did not exist): if someone published in between, nothing is stored and the answer is status stale_base with the current notice - reload, re-apply the edits and publish again. With checkOnly nothing is stored and effects say what would change (for global, how many sessions it reaches): show that to the author before a global publish. Blocked items are left out and listed in the notice's issues; the rest applies. A plan publish needs a plan loaded in the session (one created or loaded): without one it is refused, checkOnly included, and nothing is stored; a global publish needs no plan. A loaded plan with no naming layer yet is an empty layer: the first plan publish creates it. Answers a NamingPublishResult; success is true for applied and check_only, false for stale_base and refused (the result still carries the status, message and notice). An applied publish that changes a session's effective convention sends NamingChanged to that session's clients - for global, to every session it reaches (each session receives its own plan's notice, scope plan, and clients with no plan the global one). Engines before STP-1706 answer No handler (success=false).",
       "x-stpSafety": "destructive",
       "x-stpEmits": [
         {
@@ -9640,19 +9640,18 @@
       "params": [
         {
           "name": "target",
-          "description": "global, plan or both (case-insensitive).",
+          "description": "global or plan (case-insensitive); required.",
           "schema": {
             "type": "string",
             "enum": [
               "global",
-              "plan",
-              "both"
+              "plan"
             ]
           }
         },
         {
           "name": "baseStamp",
-          "description": "The stamp of the target layer the edit started from; for both, GLOBAL,PLAN; empty (or absent) for a layer published for the first time.",
+          "description": "The stamp of the target layer the edit started from; empty (or absent) for a layer published for the first time.",
           "schema": {
             "type": "string"
           }
@@ -9696,16 +9695,16 @@
           "note": "result status stale_base with the current notice; from the engine source (STP-1706 P2), not a live capture"
         },
         {
-          "when": "unknown or missing target",
+          "when": "missing or empty target",
           "outcome": "refused",
-          "message": "TARGET 'x' is not one of global, plan, both",
-          "note": "result status refused; from the engine source, not a live capture"
+          "message": "TARGET is required (global or plan) - nothing published",
+          "note": "result status refused; there is no default target (STP-1658); from the engine source, not a live capture"
         },
         {
-          "when": "target both with a baseStamp that is not GLOBAL,PLAN",
+          "when": "unknown target (both included)",
           "outcome": "refused",
-          "message": "TARGET both needs BASE_STAMP as GLOBAL,PLAN (the two layer stamps the client edited from)",
-          "note": "result status refused; from the engine source, not a live capture"
+          "message": "TARGET 'both' is not global or plan - nothing published",
+          "note": "result status refused; from the engine source (STP-1658), not a live capture"
         },
         {
           "when": "layer that is not a naming customization",
@@ -9714,16 +9713,16 @@
           "note": "result status refused; from the engine source, not a live capture"
         },
         {
-          "when": "target plan or both from a connection with no session",
+          "when": "target plan with no plan loaded in the session (none created or loaded)",
           "outcome": "refused",
-          "message": "a plan publish needs the session whose scenario holds the plan (AUTH has none)",
-          "note": "result status refused, effects empty, nothing stored; checked before the active-scenario and baseStamp checks; checkOnly gives the same refusal; from the engine source (STP-1706 P2), not a live capture"
+          "message": "no plan loaded - nothing published; load or create a plan, or use TARGET global",
+          "note": "result status refused with the current notice, effects empty, nothing stored (operator ruling 283(a), STP-1658 Q269); checked before baseStamp; checkOnly gives the same refusal; target global needs no plan and applies. From the engine source and its tests (STP-1658), not a live capture"
         },
         {
-          "when": "target plan or both with no active scenario in the session (none created or loaded)",
+          "when": "target plan while the plan is still being loaded (its naming layer not in yet)",
           "outcome": "refused",
-          "message": "a plan publish needs an active scenario in this session (none is created or loaded) - nothing published; create or load a scenario, or publish to global",
-          "note": "result status refused with the current notice, effects empty, nothing stored (operator ruling 283(a): the next scenario create or load would otherwise wipe it); checked after the no-session check and before baseStamp; checkOnly gives the same refusal; target global needs no scenario and applies. From the engine source and its tests (STP-1706 P2), not a live capture"
+          "message": "the plan is still being loaded (its naming entity is not in yet) - nothing published; try again",
+          "note": "result status refused, nothing stored; once the load ends the same publish applies. A store that cannot tell answers 'could not tell whether a plan is loaded - nothing published' (or '... whether the plan is still being loaded ...'). From the engine source and its tests (STP-1658), not a live capture"
         }
       ],
       "examples": [
@@ -9765,7 +9764,7 @@
               "target": "plan",
               "notice": {
                 "schema": 1,
-                "scope": "S1",
+                "scope": "plan",
                 "stamp": "5d41402abc4b2a76",
                 "baseline_stamp": "9a0364b9e99bb480",
                 "layers": [
@@ -9822,7 +9821,7 @@
               "event": "NamingChanged",
               "params": {
                 "schema": 1,
-                "scope": "S1",
+                "scope": "plan",
                 "stamp": "5d41402abc4b2a76",
                 "baseline_stamp": "9a0364b9e99bb480",
                 "layers": [
@@ -9858,8 +9857,8 @@
           ]
         },
         {
-          "name": "PublishNaming refused with no active scenario (illustrative)",
-          "description": "A plan publish in a session that has not created or loaded a scenario: refused, nothing stored, success false; checkOnly true answers the same. The notice is the session's current one (here the baseline, no layers). Stamps invented.",
+          "name": "PublishNaming refused with no plan loaded (illustrative)",
+          "description": "A plan publish in a session that has not created or loaded a plan: refused, nothing stored, success false; checkOnly true answers the same. The notice is the global one (no plan loaded; here the baseline, no layers). Stamps invented.",
           "params": [
             {
               "name": "target",
@@ -9893,10 +9892,10 @@
             "value": {
               "status": "refused",
               "target": "plan",
-              "message": "a plan publish needs an active scenario in this session (none is created or loaded) - nothing published; create or load a scenario, or publish to global",
+              "message": "no plan loaded - nothing published; load or create a plan, or use TARGET global",
               "notice": {
                 "schema": 1,
-                "scope": "S1",
+                "scope": "global",
                 "stamp": "9a0364b9e99bb480",
                 "baseline_stamp": "9a0364b9e99bb480",
                 "layers": [],
@@ -11088,7 +11087,11 @@
         "properties": {
           "layer": {
             "type": "string",
-            "description": "global (the server's layer), session (what refresh_wordlists submitted this engine session, not persisted) or plan (the session's scenario's layer)."
+            "description": "global (the server's layer) or plan (the layer of the plan loaded in the session). There is no session layer (STP-1658): the engine's word list refresh, refresh_wordlists(AUTH, WORDLISTS, NAMINGROWS, RESET, TARGET, WARNINGS), writes TARGET global or plan.",
+            "enum": [
+              "global",
+              "plan"
+            ]
           },
           "stamp": {
             "type": "string",
@@ -11123,7 +11126,7 @@
           },
           "layer": {
             "type": "string",
-            "description": "The layer the item came from (global, session, plan); absent for the effective convention as a whole."
+            "description": "The layer the item came from (global or plan); absent for the effective convention as a whole."
           },
           "items": {
             "type": "array",
@@ -11231,7 +11234,11 @@
           },
           "scope": {
             "type": "string",
-            "description": "global (for clients with no session), or the session id whose convention this is (its plan layer included)."
+            "enum": [
+              "global",
+              "plan"
+            ],
+            "description": "global (the convention with no plan, for every client) or plan (the convention of the plan loaded in the session, its plan layer included). On the engine wire the notice is naming_changed(SCOPE, STAMP, NOTICE, AUTH): AUTH is [] for global and [session: ROUTE] for plan, so a plan notice reaches only the clients of that plan's session (STP-1658)."
           },
           "stamp": {
             "type": "string",
@@ -11490,7 +11497,7 @@
           },
           "notice": {
             "$ref": "#/components/schemas/NamingNotice",
-            "description": "The effective convention of the requester's session: after the publish (applied), as it would be (check_only) or as it is now (refused). Absent when the engine has no naming convention to report."
+            "description": "The effective convention of the requester's session (scope plan with a plan loaded, else global): after the publish (applied), as it would be (check_only) or as it is now (refused). Absent when the engine has no naming convention to report."
           },
           "effects": {
             "type": "array",
@@ -12535,7 +12542,7 @@
     },
     {
       "name": "NamingChanged",
-      "description": "Emitted when the effective naming convention changes (STP-1706): a PublishNaming, a word list refresh, a plan's layer arriving with a scenario. params are a NamingNotice - the FULL difference from the shipped baseline, so a client rebuilds from any one notice and a late joiner needs nothing else. A client receives the global-scope notice (for clients with no session) and its own session's (scope the session id, its plan layer included); once a session-scoped one has arrived, prefer it and ignore global ones. Same stamp, same convention: do no work when it has not changed.",
+      "description": "Emitted when the effective naming convention changes (STP-1706): a PublishNaming, a word list refresh, a plan's layer arriving with a scenario. params are a NamingNotice - the FULL difference from the shipped baseline, so a client rebuilds from any one notice and a late joiner needs nothing else. A client receives the global notice (scope global: the convention with no plan) and the notice of the plan loaded in its own session (scope plan, its plan layer included; the engine routes it by the session's AUTH, so another session's plan notice never arrives); once a plan notice has arrived, prefer it and ignore global ones. Same stamp, same convention: do no work when it has not changed.",
       "params": [
         {
           "name": "schema",
@@ -12546,9 +12553,13 @@
         },
         {
           "name": "scope",
-          "description": "global (for clients with no session), or the session id whose convention this is (its plan layer included).",
+          "description": "global (the convention with no plan, for every client) or plan (the convention of the plan loaded in the session, its plan layer included). On the engine wire the notice is naming_changed(SCOPE, STAMP, NOTICE, AUTH): AUTH is [] for global and [session: ROUTE] for plan, so a plan notice reaches only the clients of that plan's session (STP-1658).",
           "schema": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "global",
+              "plan"
+            ]
           }
         },
         {
