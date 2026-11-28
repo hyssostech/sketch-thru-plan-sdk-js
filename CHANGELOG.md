@@ -1,4 +1,9 @@
 # Sketch-Thru-Plan Change Log
+## Unreleased
+- OpenRPC contract: `NamingLayerStamp` gains two optional plan-layer fields, `publish_id` and
+  `also_stored_publishes` (STP-1823). An engine names each plan publish, so a client waiting for
+  the store matches its own publish by id, not by stamp, which another publish of the same names
+  shares. Both are absent from an older engine's notices; a client then matches by stamp as before
 ## Version 0.6.17 - BREAKING: task enum values now match the wire
 - BREAKING: `TaskWhat`, `TaskHow`, `TaskWhy` and `TaskROE` values are now the engine's
   member names, which is what the engine sends: `"ambush"` -> `"AMBUSH"`,

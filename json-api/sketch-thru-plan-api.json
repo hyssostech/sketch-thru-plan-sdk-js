@@ -11093,6 +11093,17 @@
           "stamp": {
             "type": "string",
             "description": "Sixteen lower-case hex digits identifying the layer's content as stored; the empty layer's stamp is e3b0c44298fc1c14. This is the baseStamp PublishNaming takes."
+          },
+          "publish_id": {
+            "type": "string",
+            "description": "Plan layer only, optional (STP-1823): the identity the engine gave the publish that set this layer. Two publishes of the same names have the same stamp but different ids, so a client waiting for the store to take its publish matches stored by this id when it is present, and by stamp when it is absent (an older engine). Absent from every stamp."
+          },
+          "also_stored_publishes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Plan layer only, optional (STP-1823): the ids (publish_id) of earlier publishes to this plan that the store has taken since, though another publish is the plan's layer now. A client waiting on an id treats its publish as stored when the id is here; the stamps in also_stored are not matched for such a client, since another publish of the same names has the same stamp."
           }
         },
         "required": [
